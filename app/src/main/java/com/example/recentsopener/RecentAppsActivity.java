@@ -1,4 +1,4 @@
-package com.example.recentsopener;
+package eu.recentsopener;
 
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;

@@ -1,4 +1,4 @@
-package com.example.recentsopener;
+package eu.recentsopener;
 
 import android.app.Activity;
 import android.content.Intent;

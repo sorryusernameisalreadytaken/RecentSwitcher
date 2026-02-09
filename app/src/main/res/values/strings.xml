@@ -2,6 +2,10 @@
 <resources>
     <!-- Display name of the app -->
     <string name="app_name">RecentAppSwitcher</string>
+    <!-- Toast displayed when no launch intent is available for the selected app -->
+    <string name="no_launch_intent">Cannot open selected app</string>
+    <!-- Toast displayed when no recent app could be determined -->
+    <string name="no_recent_app">No recent app found</string>
     <string name="open_recents_button">Letzte Apps öffnen</string>
     <string name="enable_service_button">Dienst aktivieren</string>
     <string name="service_not_enabled">Bitte aktiviere den Dienst "RecentsOpener" in den Einstellungen für Bedienungshilfen, um die Übersicht zu öffnen.</string>

@@ -1,4 +1,4 @@
-package com.example.recentsopener;
+package eu.recentsopener;
 
 import android.accessibilityservice.AccessibilityService;
 import android.view.accessibility.AccessibilityEvent;

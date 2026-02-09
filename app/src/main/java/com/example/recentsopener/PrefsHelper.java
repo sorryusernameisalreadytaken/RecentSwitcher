@@ -1,4 +1,4 @@
-package com.example.recentsopener;
+package eu.recentsopener;
 
 import android.content.Context;
 import android.content.SharedPreferences;

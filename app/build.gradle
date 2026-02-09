@@ -3,11 +3,13 @@ plugins {
 }
 
 android {
-    namespace 'com.example.recentsopener'
+    // Use a new namespace matching the new package name
+    namespace 'eu.recentsopener'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.recentsopener"
+        // Bump the application id to our new reversed domain
+        applicationId "eu.recentsopener"
         minSdk 21
         targetSdk 34
         versionCode 1
