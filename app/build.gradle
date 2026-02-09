@@ -4,14 +4,14 @@ plugins {
 
 android {
     namespace 'com.example.recentsopener'
-    compileSdkVersion 34
+    compileSdk 34
 
     defaultConfig {
-        applicationId 'com.example.recentsopener'
-        minSdkVersion 23
-        targetSdkVersion 34
+        applicationId "com.example.recentsopener"
+        minSdk 21
+        targetSdk 34
         versionCode 1
-        versionName '1.0'
+        versionName "1.0"
     }
 
     buildTypes {
@@ -19,12 +19,33 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            // nix nötig
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+/**
+ * Fix für "Duplicate class kotlin.*":
+ * Irgendeine Dependency zieht kotlin-stdlib 1.8.22 und irgendwo hängt noch 1.6.21 dran.
+ * Wir zwingen alle kotlin-stdlib* Artefakte auf 1.8.22.
+ */
+configurations.configureEach {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == "org.jetbrains.kotlin"
+                && details.requested.name != null
+                && details.requested.name.startsWith("kotlin-stdlib")) {
+            details.useVersion "1.8.22"
+        }
     }
 }
 
 dependencies {
-    // Nimm die stabile AppCompat-Version (ohne Kotlin)
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    // Nutze die Java-Version von core (1.13.1 ist okay)
     implementation 'androidx.core:core:1.13.1'
 }
