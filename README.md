@@ -1,6 +1,6 @@
 # ⚠️ IMPORTANT NOTE
 
-**This project is a ChatGPT AI experiment / side project — essentially an “AI flop” / proof-of-concept.**  
+**This project is a ChatGPT AI experiment / side project — essentially an “AI slop” / proof-of-concept.**  
 It exists because the Android TV platform *itself* fails to provide a usable solution for app switching.
 
 The code works, the app is useful — but the need for this app highlights a platform-level UX regression.
