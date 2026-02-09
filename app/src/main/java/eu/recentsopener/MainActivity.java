@@ -10,22 +10,18 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * MainActivity provides a simple user interface for triggering the system
- * recents screen via an accessibility service, viewing the recent apps list
- * using the UsageStats API and managing excluded applications. Only the
- * "Open Recents" button requires the accessibility service; other
- * functionality works without it. Alt‑Tab behaviour is provided via
- * the LastAppActivity for external key‑mapping, but no longer via a
- * dedicated button in the main UI.
+ * MainActivity provides a simple user interface for viewing the recent
+ * apps list using the UsageStats API, switching back to the last app and
+ * managing excluded applications. The accessibility service can still be
+ * enabled via a dedicated button but is not used for showing the system
+ * overview on TV devices without a recents button.
  */
 public class MainActivity extends AppCompatActivity {
 
     private TextView tvStatus;
-    private Button btnOpenRecents;
     private Button btnEnableService;
     private Button btnShowRecentApps;
-    // Button to switch directly to the last app has been removed. Alt-tab functionality
-    // is now triggered through the recents list or via key-mapper aliases.
+    private Button btnOpenLastApp;
     private Button btnManageExcluded;
 
     @Override
@@ -34,32 +30,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         tvStatus = findViewById(R.id.tv_status);
-        btnOpenRecents = findViewById(R.id.btn_open_recents);
         btnEnableService = findViewById(R.id.btn_enable_service);
         btnShowRecentApps = findViewById(R.id.btn_show_recent_apps);
+        btnOpenLastApp = findViewById(R.id.btn_open_last_app);
         btnManageExcluded = findViewById(R.id.btn_manage_excluded);
 
         // Show the list of recent apps via UsageStats API
         btnShowRecentApps.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, RecentAppsActivity.class)));
 
+        // Show the last app without requiring accessibility service
+        btnOpenLastApp.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, LastAppActivity.class)));
 
         // Launch activity to manage excluded apps
         btnManageExcluded.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, ExcludedAppsActivity.class)));
-
-        // Open the system recents screen if the accessibility service is enabled;
-        // otherwise fall back to our own recent apps list. This makes the
-        // "Letzte Apps öffnen" button useful even without special permissions.
-        btnOpenRecents.setOnClickListener(v -> {
-            if (RecentsAccessibilityService.isServiceEnabled()) {
-                RecentsAccessibilityService.showRecents();
-                finish();
-            } else {
-                // Without the service, show our own recent apps list
-                startActivity(new Intent(MainActivity.this, RecentAppsActivity.class));
-            }
-        });
 
         // Launch the accessibility settings screen
         btnEnableService.setOnClickListener(v -> {
@@ -82,16 +68,17 @@ public class MainActivity extends AppCompatActivity {
      * The other buttons remain visible regardless of service state.
      */
     private void updateUi() {
+        // Always hide the open recents button since we no longer trigger
+        // the system overview. Still show a status message about the
+        // accessibility service and provide an enable button if it is not
+        // active. The other buttons remain visible regardless of service state.
         boolean serviceEnabled = RecentsAccessibilityService.isServiceEnabled();
         if (serviceEnabled) {
             tvStatus.setText(R.string.service_enabled);
-            // Hide the enable button once the service is active
             btnEnableService.setVisibility(View.GONE);
         } else {
             tvStatus.setText(R.string.service_not_enabled);
             btnEnableService.setVisibility(View.VISIBLE);
         }
-        // Always show the recents button so the user can fall back to the list
-        btnOpenRecents.setVisibility(View.VISIBLE);
     }
 }

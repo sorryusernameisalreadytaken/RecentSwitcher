@@ -75,7 +75,8 @@ public class RecentAppsActivity extends AppCompatActivity {
             if (!PrefsHelper.isExcluded(this, entry.packageName)) {
                 Intent launchIntent = getPackageManager().getLaunchIntentForPackage(entry.packageName);
                 if (launchIntent != null) {
-                    PrefsHelper.setLastPackage(this, entry.packageName);
+                    // Update the last/previous history before launching
+                    PrefsHelper.updateHistory(this, entry.packageName);
                     startActivity(launchIntent);
                     finish();
                 } else {
@@ -84,6 +85,8 @@ public class RecentAppsActivity extends AppCompatActivity {
                         Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
                         settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         try {
+                            // Update history for settings as well
+                            PrefsHelper.updateHistory(this, entry.packageName);
                             startActivity(settingsIntent);
                             finish();
                         } catch (Exception e) {
@@ -170,11 +173,9 @@ public class RecentAppsActivity extends AppCompatActivity {
         }
         Collections.reverse(packagesInOrder);
         PackageManager pm = getPackageManager();
-        // Skip excluded packages entirely in the recents list. They are only visible
-        // in the manage-excluded screen.
-        Set<String> excludedPkgs = PrefsHelper.getExcludedApps(this);
         for (String pkg : packagesInOrder) {
-            if (excludedPkgs.contains(pkg)) {
+            // Skip excluded packages entirely from the recents list
+            if (PrefsHelper.isExcluded(this, pkg)) {
                 continue;
             }
             try {
@@ -231,8 +232,13 @@ public class RecentAppsActivity extends AppCompatActivity {
                 // Build display text as "Label (package)"
                 String text = entry.label + " (" + entry.packageName + ")";
                 textView.setText(text);
-                // Use the default text colour from the current theme for all entries
-                textView.setTextColor(getResources().getColor(android.R.color.primary_text_light));
+                // Highlight excluded packages in red
+                if (PrefsHelper.isExcluded(getContext(), entry.packageName)) {
+                    textView.setTextColor(getResources().getColor(android.R.color.holo_red_light));
+                } else {
+                    // Use a darker text colour for better contrast on grey backgrounds
+                    textView.setTextColor(getResources().getColor(android.R.color.primary_text_dark));
+                }
             }
             return view;
         }

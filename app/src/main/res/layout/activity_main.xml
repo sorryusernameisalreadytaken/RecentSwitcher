@@ -23,14 +23,6 @@
         android:textSize="16sp" />
 
     <Button
-        android:id="@+id/btn_open_recents"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/open_recents_button"
-        android:padding="12dp"
-        android:visibility="gone" />
-
-    <Button
         android:id="@+id/btn_enable_service"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -46,6 +38,13 @@
         android:text="@string/show_recent_apps_button"
         android:padding="12dp" />
 
+    <!-- Button to immediately switch back to the last app -->
+    <Button
+        android:id="@+id/btn_open_last_app"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/open_last_app_button"
+        android:padding="12dp" />
 
     <!-- Button to manage excluded applications -->
     <Button

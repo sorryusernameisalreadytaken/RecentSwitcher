@@ -15,6 +15,14 @@ import java.util.Set;
 public final class PrefsHelper {
     private static final String PREF_NAME = "recent_app_switcher_prefs";
     private static final String KEY_LAST_PACKAGE = "last_package";
+    /**
+     * Key used to store the package name that was previously launched
+     * before the current last package. This enables true Alt‑Tab behaviour
+     * by remembering not just the most recently launched app but also
+     * the one used immediately prior. When switching back, the previous
+     * package becomes the new last package and vice versa.
+     */
+    private static final String KEY_PREVIOUS_PACKAGE = "previous_package";
     private static final String KEY_EXCLUDED_APPS = "excluded_apps";
 
     private PrefsHelper() {
@@ -22,22 +30,51 @@ public final class PrefsHelper {
     }
 
     /**
-     * Stores the name of the most recently launched package. This value
-     * persists between sessions and is used by LastAppActivity to
-     * implement Alt-Tab-like behaviour.
+     * Updates the history of launched packages. When a new package is
+     * launched, the current last package (if any) is shifted into the
+     * previous slot and the new package becomes the last package. If
+     * the new package is the same as the current last package then no
+     * change is made. This method should be called whenever the user
+     * explicitly launches an app via the recent apps list or via the
+     * last‑app shortcut.
+     *
+     * @param context Context used to access SharedPreferences.
+     * @param newPackage The package name of the newly launched app.
      */
-    public static void setLastPackage(Context context, String pkg) {
+    public static void updateHistory(Context context, String newPackage) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putString(KEY_LAST_PACKAGE, pkg).apply();
+        String currentLast = prefs.getString(KEY_LAST_PACKAGE, null);
+        if (currentLast != null && !currentLast.equals(newPackage)) {
+            // Shift the current last package into the previous slot
+            prefs.edit()
+                    .putString(KEY_PREVIOUS_PACKAGE, currentLast)
+                    .putString(KEY_LAST_PACKAGE, newPackage)
+                    .apply();
+        } else {
+            // Just record the new package as last
+            prefs.edit().putString(KEY_LAST_PACKAGE, newPackage).apply();
+        }
     }
 
     /**
-     * Returns the most recently launched package or null if none has
-     * been recorded.
+     * Retrieves the most recently launched package. This is the app that
+     * the user launched last via the recent apps list or via our
+     * last‑app shortcut. May return null if no launch has been recorded.
      */
     public static String getLastPackage(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         return prefs.getString(KEY_LAST_PACKAGE, null);
+    }
+
+    /**
+     * Retrieves the package name that was launched immediately prior to
+     * the current last package. This value can be null if the user has
+     * only launched one app via the switcher. Excluded apps are not
+     * filtered here; callers should check the exclusion list.
+     */
+    public static String getPreviousPackage(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        return prefs.getString(KEY_PREVIOUS_PACKAGE, null);
     }
 
     /**
