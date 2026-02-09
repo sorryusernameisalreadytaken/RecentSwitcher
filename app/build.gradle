@@ -23,7 +23,8 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    // core-ktx raus, weil du kein Kotlin nutzt
+    // Nimm die stabile AppCompat-Version (ohne Kotlin)
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    // Nutze die Java-Version von core (1.13.1 ist okay)
     implementation 'androidx.core:core:1.13.1'
 }
