@@ -7,20 +7,19 @@
     (overview) screen using performGlobalAction(GLOBAL_ACTION_RECENTS).
     To use the service the user must explicitly enable it in the system
     accessibility settings.
+
+    RecentsOpener:
+    - MainActivity zeigt nur einen Button
+    - AccessibilityService ruft performGlobalAction(GLOBAL_ACTION_RECENTS) auf
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.recentsopener">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
         android:allowBackup="true"
         android:label="RecentsOpener"
-        android:icon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
-        <!-- Main entry point.
-             The activity simply provides a button to trigger the recents
-             panel via the accessibility service. -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -30,9 +29,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Accessibility service definition.
-             The service is not exported and will only be bound by the system.
-             The service metadata references a configuration file under res/xml/. -->
         <service
             android:name=".RecentsAccessibilityService"
             android:exported="false"
