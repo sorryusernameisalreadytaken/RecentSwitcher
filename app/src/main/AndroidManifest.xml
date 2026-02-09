@@ -13,6 +13,16 @@
     - AccessibilityService ruft performGlobalAction(GLOBAL_ACTION_RECENTS) auf
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Allow querying launcher activities of other packages. Without
+         this <queries> element, Android 11+ restricts visibility of
+         packages outside this application. We need to enumerate and
+         launch other apps via PackageManager. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
     <!-- Permission to query recent app usage -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
 
@@ -46,7 +56,24 @@
         <!-- Activity showing a list of recent apps using UsageStatsManager -->
         <activity
             android:name=".RecentAppsActivity"
-            android:exported="false" />
+            android:exported="true">
+            <!-- Intent filter so external tools (e.g. Key Mapper) can open the recents list -->
+            <intent-filter>
+                <action android:name="com.example.recentsopener.SHOW_RECENTS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- Activity that immediately switches to the last used app. Theme.NoDisplay prevents any UI flicker. -->
+        <activity
+            android:name=".LastAppActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="com.example.recentsopener.SHOW_LAST_APP" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
     </application>
 

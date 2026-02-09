@@ -4,14 +4,20 @@ import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,8 +38,15 @@ import java.util.Set;
  * accessibility service can still be used independently of this screen.
  */
 public class RecentAppsActivity extends AppCompatActivity {
-    private final List<String> recentPackages = new ArrayList<>();
-    private String lastLaunchedPackage = null;
+    /**
+     * List of AppEntry objects representing recently used apps. Each entry
+     * contains the package name, user-facing label and application icon.
+     */
+    private final List<AppEntry> recentApps = new ArrayList<>();
+    /**
+     * Flag indicating whether we are currently showing the recents list. Used
+     * by onNewIntent to determine if a last app switch should occur.
+     */
     private boolean showingRecents = false;
 
     @Override
@@ -50,42 +63,64 @@ public class RecentAppsActivity extends AppCompatActivity {
         btnCloseOthers.setOnClickListener(v ->
             Toast.makeText(this, getString(R.string.close_others_stub), Toast.LENGTH_SHORT).show());
 
-        // Check if we have usage access; if not, ask the user to grant it.
+        // If usage access is not granted, prompt the user and bail. We do not
+        // combine this activity with the accessibility service; the usage
+        // permission is required to populate the recents list.
         if (!hasUsageAccess()) {
             requestUsageAccess();
             return;
         }
 
+        // Load the recent apps and attach a custom adapter that shows the
+        // icon, label and package name. Long-press toggles exclusion.
         loadRecents();
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, recentPackages);
+        RecentAppsAdapter adapter = new RecentAppsAdapter(this, recentApps);
         listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String pkg = recentPackages.get(position);
-                PackageManager pm = getPackageManager();
-                Intent launchIntent = pm.getLaunchIntentForPackage(pkg);
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            AppEntry entry = recentApps.get(position);
+            // Launch the selected app if it is not excluded
+            if (!PrefsHelper.isExcluded(this, entry.packageName)) {
+                Intent launchIntent = getPackageManager().getLaunchIntentForPackage(entry.packageName);
                 if (launchIntent != null) {
-                    lastLaunchedPackage = pkg;
+                    PrefsHelper.setLastPackage(this, entry.packageName);
                     startActivity(launchIntent);
                     finish();
                 }
             }
+        });
+        listView.setOnItemLongClickListener((parent, view, position, id) -> {
+            AppEntry entry = recentApps.get(position);
+            boolean excluded = PrefsHelper.isExcluded(this, entry.packageName);
+            if (excluded) {
+                PrefsHelper.removeExcludedApp(this, entry.packageName);
+                Toast.makeText(this, getString(R.string.app_included, entry.label), Toast.LENGTH_SHORT).show();
+            } else {
+                PrefsHelper.addExcludedApp(this, entry.packageName);
+                Toast.makeText(this, getString(R.string.app_excluded, entry.label), Toast.LENGTH_SHORT).show();
+            }
+            // Refresh list to update highlighting
+            loadRecents();
+            RecentAppsAdapter newAdapter = new RecentAppsAdapter(this, recentApps);
+            listView.setAdapter(newAdapter);
+            return true;
         });
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        // If recents were shown previously and a last app exists, switch to it
-        if (showingRecents && lastLaunchedPackage != null) {
-            PackageManager pm = getPackageManager();
-            Intent launchIntent = pm.getLaunchIntentForPackage(lastLaunchedPackage);
-            if (launchIntent != null) {
-                startActivity(launchIntent);
-                finish();
-                return;
+        // When this activity is launched again while recents are already
+        // displayed, automatically switch back to the last app. The last
+        // package is persisted in preferences and will be honoured as long
+        // as it is not excluded.
+        if (showingRecents) {
+            String lastPkg = PrefsHelper.getLastPackage(this);
+            if (lastPkg != null && !PrefsHelper.isExcluded(this, lastPkg)) {
+                Intent launchIntent = getPackageManager().getLaunchIntentForPackage(lastPkg);
+                if (launchIntent != null) {
+                    startActivity(launchIntent);
+                    finish();
+                }
             }
         }
     }
@@ -117,19 +152,21 @@ public class RecentAppsActivity extends AppCompatActivity {
      */
     private void loadRecents() {
         showingRecents = true;
-        recentPackages.clear();
+        recentApps.clear();
         long end = System.currentTimeMillis();
         long begin = end - 1000L * 60 * 60 * 24; // last 24 hours
         UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         UsageEvents events = usm.queryEvents(begin, end);
         Set<String> seen = new HashSet<>();
         List<String> packagesInOrder = new ArrayList<>();
+        UsageEvents.Event event = new UsageEvents.Event();
         while (events.hasNextEvent()) {
-            UsageEvents.Event event = new UsageEvents.Event();
             events.getNextEvent(event);
             if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
                 String pkg = event.getPackageName();
+                // Skip our own app
                 if (!getPackageName().equals(pkg)) {
+                    // Maintain order of last occurrence
                     if (seen.contains(pkg)) {
                         packagesInOrder.remove(pkg);
                     }
@@ -139,6 +176,74 @@ public class RecentAppsActivity extends AppCompatActivity {
             }
         }
         Collections.reverse(packagesInOrder);
-        recentPackages.addAll(packagesInOrder);
+        PackageManager pm = getPackageManager();
+        Set<String> excluded = PrefsHelper.getExcludedApps(this);
+        for (String pkg : packagesInOrder) {
+            if (excluded.contains(pkg)) {
+                continue;
+            }
+            try {
+                ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
+                String label = pm.getApplicationLabel(appInfo).toString();
+                Drawable icon = pm.getApplicationIcon(appInfo);
+                recentApps.add(new AppEntry(pkg, label, icon));
+            } catch (PackageManager.NameNotFoundException e) {
+                // skip unknown packages
+            }
+        }
+    }
+
+    /**
+     * A simple model class describing an app to be displayed in the recents
+     * list. Holds the package name, user-visible label and application
+     * icon. The label and icon are resolved via PackageManager.
+     */
+    private static class AppEntry {
+        final String packageName;
+        final String label;
+        final Drawable icon;
+
+        AppEntry(String packageName, String label, Drawable icon) {
+            this.packageName = packageName;
+            this.label = label;
+            this.icon = icon;
+        }
+    }
+
+    /**
+     * Custom adapter that renders each AppEntry in the recents list. The
+     * icon is displayed on the left, followed by the app name and package
+     * name. Excluded apps are highlighted in red.
+     */
+    private class RecentAppsAdapter extends ArrayAdapter<AppEntry> {
+        private final LayoutInflater inflater;
+        public RecentAppsAdapter(Context ctx, List<AppEntry> apps) {
+            super(ctx, 0, apps);
+            inflater = LayoutInflater.from(ctx);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View view = convertView;
+            if (view == null) {
+                view = inflater.inflate(R.layout.item_recent_app, parent, false);
+            }
+            AppEntry entry = getItem(position);
+            ImageView iconView = view.findViewById(R.id.app_icon);
+            TextView textView = view.findViewById(R.id.app_text);
+            if (entry != null) {
+                iconView.setImageDrawable(entry.icon);
+                // Build display text as "Label (package)"
+                String text = entry.label + " (" + entry.packageName + ")";
+                textView.setText(text);
+                // Highlight excluded packages in red
+                if (PrefsHelper.isExcluded(getContext(), entry.packageName)) {
+                    textView.setTextColor(getResources().getColor(android.R.color.holo_red_light));
+                } else {
+                    textView.setTextColor(getResources().getColor(android.R.color.primary_text_light));
+                }
+            }
+            return view;
+        }
     }
 }
