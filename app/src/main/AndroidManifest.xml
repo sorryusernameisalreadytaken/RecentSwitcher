@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     This manifest defines the basic configuration for the RecentsOpener app.
-    The app consists of a single Activity and an AccessibilityService. The
-    AccessibilityService is used to request the system to show the recents
+    The app consists of a single Activity and an AccessibilityService.
+
+    The AccessibilityService is used to request the system to show the recents
     (overview) screen using performGlobalAction(GLOBAL_ACTION_RECENTS).
     To use the service the user must explicitly enable it in the system
     accessibility settings.
@@ -13,12 +14,13 @@
     <application
         android:allowBackup="true"
         android:label="RecentsOpener"
-        <!-- No custom icon defined. Android will generate a default icon -->
+        android:icon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
-        <!-- Main entry point. The activity simply provides a button to
-             trigger the recents panel via the accessibility service. -->
+        <!-- Main entry point.
+             The activity simply provides a button to trigger the recents
+             panel via the accessibility service. -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -28,9 +30,9 @@
             </intent-filter>
         </activity>
 
-        <!-- Accessibility service definition. The service is not exported
-             and will only be bound by the system. The service metadata
-             references a configuration file under res/xml/. -->
+        <!-- Accessibility service definition.
+             The service is not exported and will only be bound by the system.
+             The service metadata references a configuration file under res/xml/. -->
         <service
             android:name=".RecentsAccessibilityService"
             android:exported="false"
