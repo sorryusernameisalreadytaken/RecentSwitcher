@@ -14,8 +14,7 @@
     <string name="grant_usage_access">Grant usage access to show recent apps</string>
     <string name="show_recent_apps_button">Recent Apps</string>
 
-    <!-- Button texts for new actions -->
-    <string name="open_last_app_button">Letzte App</string>
+    <!-- Button text to open the manage-excluded screen -->
     <string name="manage_excluded_button">Ausgeschlossene Apps verwalten</string>
 
     <!-- Message when there are no excluded apps to manage -->
