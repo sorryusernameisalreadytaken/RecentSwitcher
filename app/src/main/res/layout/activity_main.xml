@@ -38,4 +38,12 @@
         android:padding="12dp"
         android:visibility="gone" />
 
+    <!-- Button to launch the recent apps screen (UsageStats) -->
+    <Button
+        android:id="@+id/btn_show_recent_apps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_button"
+        android:padding="12dp" />
+
 </LinearLayout>

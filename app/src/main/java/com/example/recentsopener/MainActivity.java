@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvStatus;
     private Button btnOpenRecents;
     private Button btnEnableService;
+    private Button btnShowRecentApps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +29,12 @@ public class MainActivity extends AppCompatActivity {
         tvStatus = findViewById(R.id.tv_status);
         btnOpenRecents = findViewById(R.id.btn_open_recents);
         btnEnableService = findViewById(R.id.btn_enable_service);
+
+        // Handle showing the list of recent apps via UsageStats API
+        btnShowRecentApps = findViewById(R.id.btn_show_recent_apps);
+        btnShowRecentApps.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, RecentAppsActivity.class));
+        });
 
         // Configure button behaviour. When the recents button is tapped we
         // delegate to the accessibility service to perform the action and
