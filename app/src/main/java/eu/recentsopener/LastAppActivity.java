@@ -2,6 +2,8 @@ package eu.recentsopener;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -27,7 +29,18 @@ public class LastAppActivity extends Activity {
             if (launchIntent != null) {
                 startActivity(launchIntent);
             } else {
-                Toast.makeText(this, lastPackage + " cannot be launched", Toast.LENGTH_SHORT).show();
+                // Attempt to launch system settings if this is a settings package
+                if (lastPackage.contains("settings")) {
+                    Intent settingsIntent = new Intent(android.provider.Settings.ACTION_SETTINGS);
+                    settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    try {
+                        startActivity(settingsIntent);
+                    } catch (Exception e) {
+                        Toast.makeText(this, lastPackage + " cannot be launched", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(this, lastPackage + " cannot be launched", Toast.LENGTH_SHORT).show();
+                }
             }
         } else {
             Toast.makeText(this, getString(R.string.no_last_app), Toast.LENGTH_SHORT).show();

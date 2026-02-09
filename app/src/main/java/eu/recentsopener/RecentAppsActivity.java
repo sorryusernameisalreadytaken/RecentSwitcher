@@ -12,7 +12,6 @@ import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -32,10 +31,8 @@ import java.util.Set;
  * RecentAppsActivity displays a list of recently used packages using the
  * UsageStatsManager API. It allows the user to grant usage access if not
  * already granted and to launch one of the recently used apps when tapped.
- *
- * This activity is separate from the main screen so that the main UI
- * (which deals with the accessibility service) remains unchanged. The
- * accessibility service can still be used independently of this screen.
+ * Long-press toggles exclusion of an app. Excluded apps remain in the list
+ * but are highlighted in red and will not be launched when tapped.
  */
 public class RecentAppsActivity extends AppCompatActivity {
     /**
@@ -43,11 +40,6 @@ public class RecentAppsActivity extends AppCompatActivity {
      * contains the package name, user-facing label and application icon.
      */
     private final List<AppEntry> recentApps = new ArrayList<>();
-    /**
-     * Flag indicating whether we are currently showing the recents list. Used
-     * by onNewIntent to determine if a last app switch should occur.
-     */
-    private boolean showingRecents = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +50,11 @@ public class RecentAppsActivity extends AppCompatActivity {
         Button btnCloseOthers = findViewById(R.id.btn_close_others);
         ListView listView = findViewById(R.id.listView);
 
+        // The close buttons are stubs: inform users that closing other apps is not allowed
         btnCloseAll.setOnClickListener(v ->
-            Toast.makeText(this, getString(R.string.close_all_stub), Toast.LENGTH_SHORT).show());
+                Toast.makeText(this, getString(R.string.close_all_stub), Toast.LENGTH_SHORT).show());
         btnCloseOthers.setOnClickListener(v ->
-            Toast.makeText(this, getString(R.string.close_others_stub), Toast.LENGTH_SHORT).show());
+                Toast.makeText(this, getString(R.string.close_others_stub), Toast.LENGTH_SHORT).show());
 
         // If usage access is not granted, prompt the user and bail. We do not
         // combine this activity with the accessibility service; the usage
@@ -85,7 +78,24 @@ public class RecentAppsActivity extends AppCompatActivity {
                     PrefsHelper.setLastPackage(this, entry.packageName);
                     startActivity(launchIntent);
                     finish();
+                } else {
+                    // Special-case system settings packages
+                    if (entry.packageName.contains("settings")) {
+                        Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
+                        settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        try {
+                            startActivity(settingsIntent);
+                            finish();
+                        } catch (Exception e) {
+                            Toast.makeText(this, entry.packageName + " cannot be launched", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(this, entry.packageName + " cannot be launched", Toast.LENGTH_SHORT).show();
+                    }
                 }
+            } else {
+                // Inform the user that the app is excluded
+                Toast.makeText(this, getString(R.string.app_excluded, entry.label), Toast.LENGTH_SHORT).show();
             }
         });
         listView.setOnItemLongClickListener((parent, view, position, id) -> {
@@ -98,31 +108,12 @@ public class RecentAppsActivity extends AppCompatActivity {
                 PrefsHelper.addExcludedApp(this, entry.packageName);
                 Toast.makeText(this, getString(R.string.app_excluded, entry.label), Toast.LENGTH_SHORT).show();
             }
-            // Refresh list to update highlighting
+            // Refresh list to update highlighting but keep order
             loadRecents();
             RecentAppsAdapter newAdapter = new RecentAppsAdapter(this, recentApps);
             listView.setAdapter(newAdapter);
             return true;
         });
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        // When this activity is launched again while recents are already
-        // displayed, automatically switch back to the last app. The last
-        // package is persisted in preferences and will be honoured as long
-        // as it is not excluded.
-        if (showingRecents) {
-            String lastPkg = PrefsHelper.getLastPackage(this);
-            if (lastPkg != null && !PrefsHelper.isExcluded(this, lastPkg)) {
-                Intent launchIntent = getPackageManager().getLaunchIntentForPackage(lastPkg);
-                if (launchIntent != null) {
-                    startActivity(launchIntent);
-                    finish();
-                }
-            }
-        }
     }
 
     /**
@@ -142,16 +133,18 @@ public class RecentAppsActivity extends AppCompatActivity {
      */
     private void requestUsageAccess() {
         Toast.makeText(this, getString(R.string.grant_usage_access), Toast.LENGTH_LONG).show();
-        startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
+        Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     /**
      * Loads the list of recent packages from usage events in the last 24
      * hours. Duplicates are removed while maintaining order. The list is
-     * reversed so that the most recently used app appears first.
+     * reversed so that the most recently used app appears first. Excluded
+     * apps remain in the list and are highlighted by the adapter.
      */
     private void loadRecents() {
-        showingRecents = true;
         recentApps.clear();
         long end = System.currentTimeMillis();
         long begin = end - 1000L * 60 * 60 * 24; // last 24 hours
@@ -177,11 +170,7 @@ public class RecentAppsActivity extends AppCompatActivity {
         }
         Collections.reverse(packagesInOrder);
         PackageManager pm = getPackageManager();
-        Set<String> excluded = PrefsHelper.getExcludedApps(this);
         for (String pkg : packagesInOrder) {
-            if (excluded.contains(pkg)) {
-                continue;
-            }
             try {
                 ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
                 String label = pm.getApplicationLabel(appInfo).toString();
@@ -196,7 +185,7 @@ public class RecentAppsActivity extends AppCompatActivity {
     /**
      * A simple model class describing an app to be displayed in the recents
      * list. Holds the package name, user-visible label and application
-     * icon. The label and icon are resolved via PackageManager.
+     * icon.
      */
     private static class AppEntry {
         final String packageName;
@@ -240,6 +229,7 @@ public class RecentAppsActivity extends AppCompatActivity {
                 if (PrefsHelper.isExcluded(getContext(), entry.packageName)) {
                     textView.setTextColor(getResources().getColor(android.R.color.holo_red_light));
                 } else {
+                    // Use the default text colour from the current theme
                     textView.setTextColor(getResources().getColor(android.R.color.primary_text_light));
                 }
             }

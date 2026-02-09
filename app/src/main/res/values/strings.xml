@@ -2,10 +2,6 @@
 <resources>
     <!-- Display name of the app -->
     <string name="app_name">RecentAppSwitcher</string>
-    <!-- Toast displayed when no launch intent is available for the selected app -->
-    <string name="no_launch_intent">Cannot open selected app</string>
-    <!-- Toast displayed when no recent app could be determined -->
-    <string name="no_recent_app">No recent app found</string>
     <string name="open_recents_button">Letzte Apps öffnen</string>
     <string name="enable_service_button">Dienst aktivieren</string>
     <string name="service_not_enabled">Bitte aktiviere den Dienst "RecentsOpener" in den Einstellungen für Bedienungshilfen, um die Übersicht zu öffnen.</string>
@@ -17,6 +13,13 @@
     <string name="close_others_stub">Close Others (stub)</string>
     <string name="grant_usage_access">Grant usage access to show recent apps</string>
     <string name="show_recent_apps_button">Recent Apps</string>
+
+    <!-- Button texts for new actions -->
+    <string name="open_last_app_button">Letzte App</string>
+    <string name="manage_excluded_button">Ausgeschlossene Apps verwalten</string>
+
+    <!-- Message when there are no excluded apps to manage -->
+    <string name="no_excluded_apps">Keine ausgeschlossenen Apps gefunden</string>
 
     <!-- Messages for excluded/included apps and fallback when no last app exists -->
     <string name="app_excluded">%1$s wurde ausgeschlossen</string>

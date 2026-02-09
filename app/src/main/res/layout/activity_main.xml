@@ -46,4 +46,20 @@
         android:text="@string/show_recent_apps_button"
         android:padding="12dp" />
 
+    <!-- Button to immediately switch back to the last app -->
+    <Button
+        android:id="@+id/btn_open_last_app"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/open_last_app_button"
+        android:padding="12dp" />
+
+    <!-- Button to manage excluded applications -->
+    <Button
+        android:id="@+id/btn_manage_excluded"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/manage_excluded_button"
+        android:padding="12dp" />
+
 </LinearLayout>

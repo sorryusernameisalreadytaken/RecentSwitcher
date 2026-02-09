@@ -8,6 +8,9 @@ import android.view.accessibility.AccessibilityEvent;
  * reference to itself once bound by the system. This allows other
  * components (such as the MainActivity) to request the service to perform
  * global actions, for example opening the recents (overview) screen.
+ *
+ * Note: This service is only required when using the "Open Recents" button.
+ * The rest of the app works without the accessibility service enabled.
  */
 public class RecentsAccessibilityService extends AccessibilityService {
 

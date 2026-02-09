@@ -1,50 +1,182 @@
-**This is a ChatGPT AI flop**
+# ⚠️ IMPORTANT NOTE
+
+**This project is a ChatGPT AI experiment / side project — essentially an “AI slop” / proof-of-concept.**  
+It exists because the Android TV platform *itself* fails to provide a usable solution for app switching.
+
+The code works, the app is useful — but the need for this app highlights a platform-level UX regression.
+
+---
 
 # RecentAppSwitcher (RAS)
 
-RecentAppSwitcher exists because many Android TV and Google TV devices ship without a working overview of recently used apps.  On Android TV 14 the system task switcher can be hidden and third‑party apps cannot force other apps to close.  RAS uses the Usage Stats API to build its own list of recently used packages and makes it easy to jump back and forth between them.
+**RecentAppSwitcher** (short: **RAS**) is a utility app for **Android TV / Google TV (Android 11–14)**  
+that solves a problem intentionally left unsolved by Google and many device manufacturers:
 
-## Why this project?
+> 👉 **On many Android TV devices, the system “Recent Apps / App Switcher” simply does not exist.**
 
-* **No built‑in "Recents" on many TV devices.** Vendors remove the overview button and SystemUI disables the usual long‑press actions.  It can be frustrating to jump between apps with a remote control.
-* **Android 14 restricts killing other apps.** The system API `killBackgroundProcesses()` only stops this app's own process on modern releases.  Without root or system privileges it is not possible to close other tasks.
-* **Usage Stats as a workaround.** Android exposes anonymised statistics to apps with the "Usage access" privilege.  RAS reads this data to determine which app was most recently visible and presents them in a simple list.  No root is required.
+This app provides a **clean, non-root, system-compliant workaround**.
 
-## Features
+---
 
-* **Last app switcher:** a large button on the main screen launches the most recently foregrounded app.  If the optional Accessibility service is enabled the system Recents panel will appear instead.
-* **Recent app list:** a secondary activity shows a scrollable list of recent apps, complete with icons and package names.  Tapping an entry launches the app.  Long‑press an entry to exclude it from future lists.
-* **Blocked‑apps persistence:** excluded packages are stored in shared preferences.  They disappear from the list automatically until manually re‑added by long‑pressing again.
-* **Dark/light theme:** uses the AppCompat DayNight theme and follows the system setting.
+## Why does this app exist?
 
-## Usage instructions
+On phones, app switching is trivial.  
+On **Android TV / Google TV**, reality looks like this:
 
-1. **Install the APK** compiled from this repository on your Android TV/Google TV device.
-2. **Grant the Usage Access permission.** On first launch RAS prompts you to open the usage access settings.  Enable access for this app.
-3. *(Optional)* **Enable the accessibility service.** This is only required if you want the button on the main screen to open the system "Recents" panel.  Without it the button will simply launch the most recent app directly.
-4. **Open RAS** and tap the button to return to the last app or open the list of recents via the app menu.
-5. **Exclude troublesome packages** by long‑pressing them in the list.  They will turn red and be ignored in the switcher.  Long‑press again to restore.
+- ❌ No system “Recents” UI on many devices  
+- ❌ `KEYCODE_APP_SWITCH` / `RECENTS` does nothing  
+- ❌ `com.android.systemui.TOGGLE_RECENTS` is removed or blocked  
+- ❌ Android 14 forbids third-party apps from killing or managing other apps  
+- ❌ Launchers intentionally hide multitasking to simplify remote control UX  
 
-## KeyMapper integration
+**Result:**  
+👉 No fast way to switch between two apps (e.g. YouTube ↔ Jellyfin ↔ Browser)
 
-Many users of key remapping tools such as *KeyMapper* or *Button Mapper* want a shortcut that jumps back to the last app without opening RAS manually.  RAS exposes two exported broadcast intents that you can assign to a hardware button:
+**RecentAppSwitcher exists solely to fix that gap.**
 
-| Action | Effect |
-|-------|-------|
-| `eu.recentsopener.OPEN_LAST_APP` | Launches the most recently used app directly. |
-| `eu.recentsopener.SHOW_RECENT_LIST` | Shows the full recents list activity. |
+---
 
-To configure in KeyMapper:
+## What does RecentAppSwitcher do?
 
-1. Create a new button mapping and choose **Custom Intent**.
-2. Enter the package name `eu.recentsopener`.
-3. Enter the action string from the table above.
-4. Save and test.  The mapping will launch RAS in the background and perform the requested action.
+### ✅ Core Features
 
-## Limitations
+- 📜 **Shows recently used apps**
+  - based on `UsageStatsManager` (official, allowed API)
+- 🔁 **Alt-Tab–like behavior**
+  - jump back to the last used app instantly
+- 🚀 **Launch apps directly**
+  - click an entry → app opens
+- 🚫 **Exclude apps**
+  - long-press → app is marked red and ignored
+  - perfect for launchers & system apps
+- 💾 **Persistent storage**
+  - exclusions & last app survive reboots
+- 🧩 **Intent-based control**
+  - ideal for automation & key remapping
+- ♿ **Accessibility optional**
+  - not required for core functionality
 
-RAS cannot close other apps or clear recent tasks due to platform restrictions.  Apps may reopen themselves or maintain state when launched from the recents list.  Some system apps such as the Settings app might refuse to launch via the standard launch intent on certain OEM TV builds.
+---
 
-## Building and releasing
+## What this app intentionally does NOT do
 
-The included GitHub Actions workflow automatically builds a debug APK when new commits land on `main`.  To publish a release and upload the APK to the Releases page, create a new tag or release in the repository and push it to GitHub.  The workflow will assemble the debug APK and attach it to the release assets.
+Due to **Android 14 platform restrictions**:
+
+- ❌ No “Close all apps”
+- ❌ No killing or force-stopping other apps
+- ❌ No hidden SystemUI intents
+- ❌ No root access required
+
+> 💡 Everything this app does is **Google-compliant**, stable, and update-safe.
+
+---
+
+## Requirements
+
+- Android TV / Google TV (Android 11+ recommended)
+- **Usage Access permission**
+  - the app guides you there automatically on first launch
+
+Optional:
+- **Key Mapper** (open-source)
+
+---
+
+## Quick Start
+
+1. Install APK (ADB or file manager)
+2. Launch the app
+3. Grant **Usage Access**
+4. Done 🎉
+
+---
+
+## Using RecentAppSwitcher with Key Mapper (recommended)
+
+With **Key Mapper**, RAS behaves like a real system feature.
+
+---
+
+### 🔁 Last App (Alt-Tab behavior)
+
+**Custom Intent configuration:**
+
+- **Package:**  
+  `com.example.recentsopener`
+- **Action:**  
+  `com.example.recentsopener.SHOW_LAST_APP`
+
+➡ Result:  
+One button press → instantly switch back to the last app  
+(e.g. YouTube ↔ Jellyfin)
+
+---
+
+### 📜 Open Recent Apps List
+
+**Custom Intent configuration:**
+
+- **Package:**  
+  `com.example.recentsopener`
+- **Action:**  
+  `com.example.recentsopener.SHOW_RECENTS`
+
+➡ Result:  
+Sorted list of recently used apps  
+(click = open, long-press = exclude)
+
+---
+
+## App List UI Explained
+
+Each entry shows:
+
+- 📱 App icon  
+- 🏷 App name  
+- 📦 Package ID (in parentheses)
+
+### Actions
+
+- **Short press:** Launch app  
+- **Long press:**  
+  Mark app red → excluded from switching & lists
+
+---
+
+## Accessibility — why does it still exist?
+
+Currently:
+- 🔧 **Not required**
+- 📴 Can stay disabled
+
+Potential future use:
+- Automated navigation inside system settings
+- Support for extremely restricted TV firmwares
+- Experimental UI automation (optional only)
+
+---
+
+## Build & Releases
+
+- GitHub Actions automatically build:
+  - Debug APK
+  - Release APK
+- Release APK is published under **GitHub Releases**
+- No Android Studio required
+
+---
+
+## Project Goal
+
+**RecentAppSwitcher is not a hack.**  
+It is a **utility born out of necessity** to restore basic multitasking on Android TV —  
+as far as the platform still allows.
+
+---
+
+## License
+
+Open Source.  
+Use it, fork it, improve it 🙂
+
+PRs, ideas, and discussions are welcome.
