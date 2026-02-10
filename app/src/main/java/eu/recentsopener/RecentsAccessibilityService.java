@@ -34,7 +34,14 @@ public class RecentsAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        // We do not need to respond to events for this simple service.
+        // Record window state changes to build a history of foreground packages.
+        if (event != null && event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            CharSequence pkgCs = event.getPackageName();
+            if (pkgCs != null) {
+                PrefsHelper.addAccessibilityEvent(this, pkgCs.toString());
+            }
+        }
+        // Otherwise no action is required for this service.
     }
 
     @Override

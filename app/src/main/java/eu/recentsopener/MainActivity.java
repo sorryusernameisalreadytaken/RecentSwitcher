@@ -23,6 +23,10 @@ public class MainActivity extends AppCompatActivity {
     private Button btnShowRecentApps;
     private Button btnShowRecentAppsV2;
     private Button btnShowRecentAppsV3;
+    private Button btnShowRecentAppsV4;
+    private Button btnShowRecentAppsV5;
+    private Button btnShowRecentAppsV6;
+    private Button btnShowRecentAppsV7;
     private Button btnCollectDebug;
     private Button btnOpenLastApp;
     private Button btnManageExcluded;
@@ -37,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentApps = findViewById(R.id.btn_show_recent_apps);
         btnShowRecentAppsV2 = findViewById(R.id.btn_show_recent_apps_v2);
         btnShowRecentAppsV3 = findViewById(R.id.btn_show_recent_apps_v3);
+        btnShowRecentAppsV4 = findViewById(R.id.btn_show_recent_apps_v4);
+        btnShowRecentAppsV5 = findViewById(R.id.btn_show_recent_apps_v5);
+        btnShowRecentAppsV6 = findViewById(R.id.btn_show_recent_apps_v6);
+        btnShowRecentAppsV7 = findViewById(R.id.btn_show_recent_apps_v7);
         btnCollectDebug = findViewById(R.id.btn_collect_debug);
         btnOpenLastApp = findViewById(R.id.btn_open_last_app);
         btnManageExcluded = findViewById(R.id.btn_manage_excluded);
@@ -52,6 +60,22 @@ public class MainActivity extends AppCompatActivity {
         // Launch Variant C recents list (daily usage stats)
         btnShowRecentAppsV3.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, RecentAppsActivityV3.class)));
+
+        // Launch Variant D recents list (unfiltered aggregated usage stats)
+        btnShowRecentAppsV4.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, RecentAppsActivityV4.class)));
+
+        // Launch Variant E recents list (last-used map)
+        btnShowRecentAppsV5.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, RecentAppsActivityV5.class)));
+
+        // Launch Variant F recents list (accessibility events history)
+        btnShowRecentAppsV6.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, RecentAppsActivityV6.class)));
+
+        // Launch Variant G recents list (no filtering, diagnostic)
+        btnShowRecentAppsV7.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, RecentAppsActivityV7.class)));
 
         // Show the last app without requiring accessibility service
         btnOpenLastApp.setOnClickListener(v ->

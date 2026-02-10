@@ -20,6 +20,12 @@
     <string name="show_recent_apps_b_button">Recent Apps (Variante B)</string>
     <string name="show_recent_apps_c_button">Recent Apps (Variante C)</string>
 
+    <!-- Additional variant buttons for alternative recents implementations -->
+    <string name="show_recent_apps_d_button">Recent Apps (Variante D)</string>
+    <string name="show_recent_apps_e_button">Recent Apps (Variante E)</string>
+    <string name="show_recent_apps_f_button">Recent Apps (Variante F)</string>
+    <string name="show_recent_apps_g_button">Recent Apps (Variante G)</string>
+
     <!-- Button texts for new actions -->
     <string name="open_last_app_button">Letzte App</string>
     <string name="manage_excluded_button">Ausgeschlossene Apps verwalten</string>

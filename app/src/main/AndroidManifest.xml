@@ -13,6 +13,7 @@
     - AccessibilityService ruft performGlobalAction(GLOBAL_ACTION_RECENTS) auf
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="eu.recentsopener">
     <!-- Allow querying launcher activities of other packages. Without
          this <queries> element, Android 11+ restricts visibility of
@@ -26,6 +27,11 @@
     </queries>
     <!-- Permission to query recent app usage -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+
+    <!-- Permission to query all packages for variant D. This is flagged by Google Play so we ignore the lint warning. -->
+    <uses-permission
+        android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
 
     <application
         android:allowBackup="true"
@@ -74,6 +80,26 @@
         <!-- Variant C: Activity showing recent apps using daily UsageStats -->
         <activity
             android:name=".RecentAppsActivityV3"
+            android:exported="true" />
+
+        <!-- Variant D: Activity showing recent apps using unfiltered aggregated stats -->
+        <activity
+            android:name=".RecentAppsActivityV4"
+            android:exported="true" />
+
+        <!-- Variant E: Activity showing recent apps using the last-used time map -->
+        <activity
+            android:name=".RecentAppsActivityV5"
+            android:exported="true" />
+
+        <!-- Variant F: Activity showing recent apps using accessibility history -->
+        <activity
+            android:name=".RecentAppsActivityV6"
+            android:exported="true" />
+
+        <!-- Variant G: Activity showing recent apps with no filtering (diagnostic) -->
+        <activity
+            android:name=".RecentAppsActivityV7"
             android:exported="true" />
         <!-- Provide a launcher alias to quickly open the recents list via key mapping -->
         <activity-alias

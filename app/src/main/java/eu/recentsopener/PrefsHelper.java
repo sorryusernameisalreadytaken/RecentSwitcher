@@ -25,6 +25,25 @@ public final class PrefsHelper {
     private static final String KEY_PREVIOUS_PACKAGE = "previous_package";
     private static final String KEY_EXCLUDED_APPS = "excluded_apps";
 
+    /**
+     * Key used to persist a map of package names to their last known
+     * foreground timestamps. This map enables variant E (history
+     * persistence) to reconstruct a recents list even after a device
+     * reboot by merging system UsageStats data with locally stored
+     * times. The value is stored as a JSON object where keys are
+     * package names and values are epoch milliseconds.
+     */
+    private static final String KEY_LAST_USED_MAP = "last_used_map";
+
+    /**
+     * Key used to persist a list of package names captured via
+     * accessibility events. This list enables variant F to display
+     * a history of foreground packages observed by the accessibility
+     * service. The value is stored as a JSON array of package names
+     * ordered from oldest to newest.
+     */
+    private static final String KEY_ACCESSIBILITY_HISTORY = "accessibility_history";
+
     private PrefsHelper() {
         // no instances
     }
@@ -125,5 +144,119 @@ public final class PrefsHelper {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         Set<String> excluded = prefs.getStringSet(KEY_EXCLUDED_APPS, null);
         return excluded != null && excluded.contains(pkg);
+    }
+
+    // ----------------------------------------------------------------------
+    // Last-used time map (for variant E)
+    // ----------------------------------------------------------------------
+
+    /**
+     * Retrieves a mapping of package names to their last foreground
+     * timestamps. The map may be empty but will never be null. The
+     * timestamps are epoch milliseconds. The data is stored as a
+     * JSON object in the preferences. Malformed JSON will result in
+     * an empty map being returned.
+     */
+    public static java.util.Map<String, Long> getLastUsedMap(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        String jsonString = prefs.getString(KEY_LAST_USED_MAP, null);
+        java.util.Map<String, Long> map = new java.util.HashMap<>();
+        if (jsonString == null) {
+            return map;
+        }
+        try {
+            org.json.JSONObject jsonObject = new org.json.JSONObject(jsonString);
+            java.util.Iterator<String> keys = jsonObject.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                long value = jsonObject.getLong(key);
+                map.put(key, value);
+            }
+        } catch (Exception ignore) {
+            // ignore malformed JSON
+        }
+        return map;
+    }
+
+    /**
+     * Persists the provided map of last used times to the shared
+     * preferences. The map is converted to a JSON object string.
+     */
+    private static void saveLastUsedMap(Context context, java.util.Map<String, Long> map) {
+        org.json.JSONObject jsonObject = new org.json.JSONObject(map);
+        String jsonString = jsonObject.toString();
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString(KEY_LAST_USED_MAP, jsonString).apply();
+    }
+
+    /**
+     * Updates the stored last used map with a single package/time pair.
+     * If the package is already present and the provided time is more
+     * recent than the stored one, the value is replaced. Otherwise
+     * the package/time is added.
+     */
+    public static void updateLastUsedTime(Context context, String pkg, long time) {
+        java.util.Map<String, Long> map = getLastUsedMap(context);
+        Long existing = map.get(pkg);
+        if (existing == null || time > existing) {
+            map.put(pkg, time);
+            saveLastUsedMap(context, map);
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // Accessibility history (for variant F)
+    // ----------------------------------------------------------------------
+
+    /**
+     * Retrieves the list of packages recorded by the accessibility
+     * service. The list is ordered from oldest to newest. The list
+     * may be empty but will never be null. Malformed JSON results in
+     * an empty list.
+     */
+    public static java.util.List<String> getAccessibilityHistory(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        String jsonString = prefs.getString(KEY_ACCESSIBILITY_HISTORY, null);
+        java.util.List<String> list = new java.util.ArrayList<>();
+        if (jsonString == null) {
+            return list;
+        }
+        try {
+            org.json.JSONArray array = new org.json.JSONArray(jsonString);
+            for (int i = 0; i < array.length(); i++) {
+                String pkg = array.optString(i, null);
+                if (pkg != null) {
+                    list.add(pkg);
+                }
+            }
+        } catch (Exception ignore) {
+            // ignore malformed JSON
+        }
+        return list;
+    }
+
+    /**
+     * Appends a package name to the accessibility history. If the
+     * package already exists in the history, it is removed before
+     * being appended so that newer entries appear at the end. The
+     * history is truncated to the most recent 50 entries to prevent
+     * unbounded growth.
+     */
+    public static void addAccessibilityEvent(Context context, String pkg) {
+        if (pkg == null) return;
+        java.util.List<String> list = getAccessibilityHistory(context);
+        // Remove existing occurrences
+        list.remove(pkg);
+        list.add(pkg);
+        // Limit to 50 entries
+        if (list.size() > 50) {
+            list = list.subList(list.size() - 50, list.size());
+        }
+        org.json.JSONArray array = new org.json.JSONArray();
+        for (String p : list) {
+            array.put(p);
+        }
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString(KEY_ACCESSIBILITY_HISTORY, array.toString()).apply();
     }
 }

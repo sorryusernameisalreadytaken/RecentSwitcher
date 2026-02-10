@@ -54,6 +54,38 @@
         android:text="@string/show_recent_apps_c_button"
         android:padding="12dp" />
 
+    <!-- Button to launch the recent apps screen using unfiltered aggregated stats (Variant D) -->
+    <Button
+        android:id="@+id/btn_show_recent_apps_v4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_d_button"
+        android:padding="12dp" />
+
+    <!-- Button to launch the recent apps screen using last used map (Variant E) -->
+    <Button
+        android:id="@+id/btn_show_recent_apps_v5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_e_button"
+        android:padding="12dp" />
+
+    <!-- Button to launch the recent apps screen based on accessibility events (Variant F) -->
+    <Button
+        android:id="@+id/btn_show_recent_apps_v6"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_f_button"
+        android:padding="12dp" />
+
+    <!-- Button to launch the recent apps screen without filtering (Variant G) -->
+    <Button
+        android:id="@+id/btn_show_recent_apps_v7"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_g_button"
+        android:padding="12dp" />
+
     <!-- Button to immediately switch back to the last app -->
     <Button
         android:id="@+id/btn_open_last_app"
