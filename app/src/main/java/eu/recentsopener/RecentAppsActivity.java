@@ -158,7 +158,12 @@ public class RecentAppsActivity extends AppCompatActivity {
         UsageEvents.Event event = new UsageEvents.Event();
         while (events.hasNextEvent()) {
             events.getNextEvent(event);
-            if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+            int type = event.getEventType();
+            // Consider both MOVE_TO_FOREGROUND and ACTIVITY_RESUMED events as indicators
+            // that an app was recently brought to the foreground. Some TV apps only
+            // emit ACTIVITY_RESUMED and never MOVE_TO_FOREGROUND, so include both.
+            if (type == UsageEvents.Event.MOVE_TO_FOREGROUND ||
+                    type == UsageEvents.Event.ACTIVITY_RESUMED) {
                 String pkg = event.getPackageName();
                 // Skip our own app
                 if (!getPackageName().equals(pkg)) {

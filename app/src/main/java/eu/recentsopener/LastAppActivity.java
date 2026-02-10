@@ -26,15 +26,42 @@ public class LastAppActivity extends Activity {
         String lastPackage = PrefsHelper.getLastPackage(this);
         Set<String> excluded = PrefsHelper.getExcludedApps(this);
 
+        // Determine a target package: try preferences first, then fall back to usage stats
         String target = null;
         if (previousPackage != null && !excluded.contains(previousPackage)) {
             target = previousPackage;
         } else if (lastPackage != null && !excluded.contains(lastPackage)) {
             target = lastPackage;
+        } else {
+            // Fallback: query UsageStats for the most recent app excluding this one
+            android.app.usage.UsageStatsManager usm = (android.app.usage.UsageStatsManager) getSystemService(android.content.Context.USAGE_STATS_SERVICE);
+            long now = System.currentTimeMillis();
+            long begin = now - 1000L * 60 * 60; // last hour
+            android.app.usage.UsageEvents events = usm.queryEvents(begin, now);
+            java.util.Set<String> candidates = new java.util.LinkedHashSet<>();
+            android.app.usage.UsageEvents.Event evt = new android.app.usage.UsageEvents.Event();
+            while (events.hasNextEvent()) {
+                events.getNextEvent(evt);
+                int type = evt.getEventType();
+                if (type == android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND ||
+                        type == android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED) {
+                    String pkg = evt.getPackageName();
+                    if (!getPackageName().equals(pkg) && !excluded.contains(pkg)) {
+                        // maintain order by removing duplicates
+                        candidates.remove(pkg);
+                        candidates.add(pkg);
+                    }
+                }
+            }
+            // choose the most recent candidate (last element in the set)
+            java.util.List<String> list = new java.util.ArrayList<>(candidates);
+            if (!list.isEmpty()) {
+                target = list.get(list.size() - 1);
+            }
         }
 
         if (target != null) {
-            Intent launchIntent = getPackageManager().getLaunchIntentForPackage(target);
+            android.content.Intent launchIntent = getPackageManager().getLaunchIntentForPackage(target);
             if (launchIntent != null) {
                 // Before launching, update history so that Alt‑Tab toggles between packages
                 PrefsHelper.updateHistory(this, target);
@@ -42,21 +69,21 @@ public class LastAppActivity extends Activity {
             } else {
                 // Attempt to launch system settings if this is a settings package
                 if (target.contains("settings")) {
-                    Intent settingsIntent = new Intent(android.provider.Settings.ACTION_SETTINGS);
-                    settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    android.content.Intent settingsIntent = new android.content.Intent(android.provider.Settings.ACTION_SETTINGS);
+                    settingsIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
                     try {
                         PrefsHelper.updateHistory(this, target);
                         startActivity(settingsIntent);
                     } catch (Exception e) {
-                        Toast.makeText(this, target + " cannot be launched", Toast.LENGTH_SHORT).show();
+                        android.widget.Toast.makeText(this, target + " cannot be launched", android.widget.Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(this, target + " cannot be launched", Toast.LENGTH_SHORT).show();
+                    android.widget.Toast.makeText(this, target + " cannot be launched", android.widget.Toast.LENGTH_SHORT).show();
                 }
             }
         } else {
             // No candidate found; inform the user
-            Toast.makeText(this, getString(R.string.no_last_app), Toast.LENGTH_SHORT).show();
+            android.widget.Toast.makeText(this, getString(R.string.no_last_app), android.widget.Toast.LENGTH_SHORT).show();
         }
         // Immediately finish to avoid leaving our activity in the task stack
         finish();
