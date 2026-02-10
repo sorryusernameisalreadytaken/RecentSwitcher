@@ -69,7 +69,7 @@ public class LastAppActivity extends Activity {
                     if (type == android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND ||
                             type == android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED ||
                             type == 16 ||
-                            type == android.app.usage.UsageEvents.Event.NOTIFICATION_INTERRUPTION ||
+                            // Use literal 10 for NOTIFICATION_INTERRUPTION (constant may not exist on this API level)
                             type == 10) {
                         String pkg = e.getPackageName();
                         if (!getPackageName().equals(pkg) && !excluded.contains(pkg)) {

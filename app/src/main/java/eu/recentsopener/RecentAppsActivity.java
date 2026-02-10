@@ -215,7 +215,7 @@ public class RecentAppsActivity extends AppCompatActivity {
                 if (type == UsageEvents.Event.MOVE_TO_FOREGROUND ||
                         type == UsageEvents.Event.ACTIVITY_RESUMED ||
                         type == 16 ||
-                        type == UsageEvents.Event.NOTIFICATION_INTERRUPTION ||
+                        // Some API levels do not define NOTIFICATION_INTERRUPTION; use 10 directly
                         type == 10) {
                     String pkg = event.getPackageName();
                     // Skip our own app
