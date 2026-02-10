@@ -162,8 +162,13 @@ public class RecentAppsActivity extends AppCompatActivity {
             // Consider both MOVE_TO_FOREGROUND and ACTIVITY_RESUMED events as indicators
             // that an app was recently brought to the foreground. Some TV apps only
             // emit ACTIVITY_RESUMED and never MOVE_TO_FOREGROUND, so include both.
+            // Use the literal value 16 for ACTIVITY_RESUMED in case the constant
+            // does not exist on this API level.
             if (type == UsageEvents.Event.MOVE_TO_FOREGROUND ||
-                    type == UsageEvents.Event.ACTIVITY_RESUMED) {
+                    type == UsageEvents.Event.ACTIVITY_RESUMED ||
+                    type == 16 ||
+                    type == UsageEvents.Event.NOTIFICATION_INTERRUPTION ||
+                    type == 10) {
                 String pkg = event.getPackageName();
                 // Skip our own app
                 if (!getPackageName().equals(pkg)) {

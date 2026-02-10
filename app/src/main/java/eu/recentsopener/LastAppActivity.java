@@ -26,41 +26,51 @@ public class LastAppActivity extends Activity {
         String lastPackage = PrefsHelper.getLastPackage(this);
         Set<String> excluded = PrefsHelper.getExcludedApps(this);
 
-        // Determine a target package: try preferences first, then fall back to usage stats
+        // Determine the best candidate to launch: prefer the previous package, then last
+        // package and finally fall back to the most recent UsageStats entry. Excluded
+        // packages are ignored throughout.
         String target = null;
         if (previousPackage != null && !excluded.contains(previousPackage)) {
             target = previousPackage;
         } else if (lastPackage != null && !excluded.contains(lastPackage)) {
             target = lastPackage;
         } else {
-            // Fallback: query UsageStats for the most recent app excluding this one
+            // Fallback: query the most recent app from usage events in the last hour
             android.app.usage.UsageStatsManager usm = (android.app.usage.UsageStatsManager) getSystemService(android.content.Context.USAGE_STATS_SERVICE);
             long now = System.currentTimeMillis();
             long begin = now - 1000L * 60 * 60; // last hour
             android.app.usage.UsageEvents events = usm.queryEvents(begin, now);
-            java.util.Set<String> candidates = new java.util.LinkedHashSet<>();
-            android.app.usage.UsageEvents.Event evt = new android.app.usage.UsageEvents.Event();
+            java.util.LinkedHashSet<String> candidates = new java.util.LinkedHashSet<>();
+            android.app.usage.UsageEvents.Event e = new android.app.usage.UsageEvents.Event();
             while (events.hasNextEvent()) {
-                events.getNextEvent(evt);
-                int type = evt.getEventType();
+                events.getNextEvent(e);
+                int type = e.getEventType();
                 if (type == android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND ||
-                        type == android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED) {
-                    String pkg = evt.getPackageName();
+                        type == android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED ||
+                        type == 16 ||
+                        type == android.app.usage.UsageEvents.Event.NOTIFICATION_INTERRUPTION ||
+                        type == 10) {
+                    String pkg = e.getPackageName();
                     if (!getPackageName().equals(pkg) && !excluded.contains(pkg)) {
-                        // maintain order by removing duplicates
+                        // maintain order by removing duplicates before re‑adding
                         candidates.remove(pkg);
                         candidates.add(pkg);
                     }
                 }
             }
-            // choose the most recent candidate (last element in the set)
-            java.util.List<String> list = new java.util.ArrayList<>(candidates);
-            if (!list.isEmpty()) {
-                target = list.get(list.size() - 1);
+            if (!candidates.isEmpty()) {
+                // pick the most recent candidate (last in iteration order)
+                java.util.Iterator<String> it = candidates.iterator();
+                String last = null;
+                while (it.hasNext()) {
+                    last = it.next();
+                }
+                target = last;
             }
         }
 
         if (target != null) {
+            // Attempt to launch the determined package
             android.content.Intent launchIntent = getPackageManager().getLaunchIntentForPackage(target);
             if (launchIntent != null) {
                 // Before launching, update history so that Alt‑Tab toggles between packages
@@ -74,7 +84,7 @@ public class LastAppActivity extends Activity {
                     try {
                         PrefsHelper.updateHistory(this, target);
                         startActivity(settingsIntent);
-                    } catch (Exception e) {
+                    } catch (Exception e1) {
                         android.widget.Toast.makeText(this, target + " cannot be launched", android.widget.Toast.LENGTH_SHORT).show();
                     }
                 } else {
