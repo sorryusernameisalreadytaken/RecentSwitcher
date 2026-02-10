@@ -35,7 +35,23 @@
         android:id="@+id/btn_show_recent_apps"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/show_recent_apps_button"
+        android:text="@string/show_recent_apps_a_button"
+        android:padding="12dp" />
+
+    <!-- Button to launch the recent apps screen using events only (Variant B) -->
+    <Button
+        android:id="@+id/btn_show_recent_apps_v2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_b_button"
+        android:padding="12dp" />
+
+    <!-- Button to launch the recent apps screen using daily usage stats (Variant C) -->
+    <Button
+        android:id="@+id/btn_show_recent_apps_v3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_c_button"
         android:padding="12dp" />
 
     <!-- Button to immediately switch back to the last app -->
@@ -52,6 +68,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/manage_excluded_button"
+        android:padding="12dp" />
+
+    <!-- Button to collect a debug report with usage events and stats -->
+    <Button
+        android:id="@+id/btn_collect_debug"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/collect_debug_button"
         android:padding="12dp" />
 
 </LinearLayout>

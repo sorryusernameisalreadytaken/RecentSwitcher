@@ -15,11 +15,15 @@
     <string name="close_all_stub">Close All (stub)</string>
     <string name="close_others_stub">Close Others (stub)</string>
     <string name="grant_usage_access">Grant usage access to show recent apps</string>
-    <string name="show_recent_apps_button">Recent Apps</string>
+    <!-- Button texts for different recent apps variants -->
+    <string name="show_recent_apps_a_button">Recent Apps (Variante A)</string>
+    <string name="show_recent_apps_b_button">Recent Apps (Variante B)</string>
+    <string name="show_recent_apps_c_button">Recent Apps (Variante C)</string>
 
     <!-- Button texts for new actions -->
     <string name="open_last_app_button">Letzte App</string>
     <string name="manage_excluded_button">Ausgeschlossene Apps verwalten</string>
+    <string name="collect_debug_button">Debug‑Bericht erstellen</string>
 
     <!-- Message when there are no excluded apps to manage -->
     <string name="no_excluded_apps">Keine ausgeschlossenen Apps gefunden</string>

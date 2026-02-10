@@ -21,6 +21,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvStatus;
     private Button btnEnableService;
     private Button btnShowRecentApps;
+    private Button btnShowRecentAppsV2;
+    private Button btnShowRecentAppsV3;
+    private Button btnCollectDebug;
     private Button btnOpenLastApp;
     private Button btnManageExcluded;
 
@@ -32,12 +35,23 @@ public class MainActivity extends AppCompatActivity {
         tvStatus = findViewById(R.id.tv_status);
         btnEnableService = findViewById(R.id.btn_enable_service);
         btnShowRecentApps = findViewById(R.id.btn_show_recent_apps);
+        btnShowRecentAppsV2 = findViewById(R.id.btn_show_recent_apps_v2);
+        btnShowRecentAppsV3 = findViewById(R.id.btn_show_recent_apps_v3);
+        btnCollectDebug = findViewById(R.id.btn_collect_debug);
         btnOpenLastApp = findViewById(R.id.btn_open_last_app);
         btnManageExcluded = findViewById(R.id.btn_manage_excluded);
 
-        // Show the list of recent apps via UsageStats API
+        // Launch Variant A recents list (aggregated usage stats with event fallback)
         btnShowRecentApps.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, RecentAppsActivity.class)));
+
+        // Launch Variant B recents list (event-only)
+        btnShowRecentAppsV2.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, RecentAppsActivityV2.class)));
+
+        // Launch Variant C recents list (daily usage stats)
+        btnShowRecentAppsV3.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, RecentAppsActivityV3.class)));
 
         // Show the last app without requiring accessibility service
         btnOpenLastApp.setOnClickListener(v ->
@@ -46,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
         // Launch activity to manage excluded apps
         btnManageExcluded.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, ExcludedAppsActivity.class)));
+
+        // Collect debug information and save to a file
+        btnCollectDebug.setOnClickListener(v -> DebugHelper.collectDebugInfo(MainActivity.this));
 
         // Launch the accessibility settings screen
         btnEnableService.setOnClickListener(v -> {

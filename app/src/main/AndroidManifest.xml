@@ -66,6 +66,15 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <!-- Variant B: Activity showing recent apps using only UsageEvents -->
+        <activity
+            android:name=".RecentAppsActivityV2"
+            android:exported="true" />
+
+        <!-- Variant C: Activity showing recent apps using daily UsageStats -->
+        <activity
+            android:name=".RecentAppsActivityV3"
+            android:exported="true" />
         <!-- Provide a launcher alias to quickly open the recents list via key mapping -->
         <activity-alias
             android:name=".RecentsLauncher"
