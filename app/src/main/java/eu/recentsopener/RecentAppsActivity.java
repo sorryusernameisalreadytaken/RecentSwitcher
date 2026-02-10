@@ -162,8 +162,15 @@ public class RecentAppsActivity extends AppCompatActivity {
         if (stats != null && !stats.isEmpty()) {
             // Sort entries by lastTimeUsed descending so that the most recently
             // used package comes first. Skip our own package and excluded apps.
+            // Avoid using ArrayList(Collection) constructor on the entry set
+            // because the entrySet implementation (MapCollections$EntrySet) does not
+            // support toArray(), which ArrayList(Collection) calls internally. Instead,
+            // copy the entries manually.
             java.util.List<java.util.Map.Entry<String, android.app.usage.UsageStats>> entries =
-                    new java.util.ArrayList<>(stats.entrySet());
+                    new java.util.ArrayList<>();
+            for (java.util.Map.Entry<String, android.app.usage.UsageStats> entry : stats.entrySet()) {
+                entries.add(entry);
+            }
             java.util.Collections.sort(entries, (a, b) -> {
                 long t1 = a.getValue().getLastTimeUsed();
                 long t2 = b.getValue().getLastTimeUsed();
