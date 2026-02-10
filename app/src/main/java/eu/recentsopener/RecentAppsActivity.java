@@ -1,7 +1,6 @@
 package eu.recentsopener;
 
 import android.app.usage.UsageEvents;
-import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
@@ -153,97 +152,39 @@ public class RecentAppsActivity extends AppCompatActivity {
         long end = System.currentTimeMillis();
         long begin = end - 1000L * 60 * 60 * 24; // last 24 hours
         UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-        // Prefer aggregated usage stats over raw events. queryUsageStats returns a list of
-        // UsageStats objects, each containing the last time the package was used. This
-        // approach works even for apps that do not emit MOVE_TO_FOREGROUND events (e.g. some
-        // Android TV apps). If no stats are returned, we fall back to the event‑based
-        // approach below.
-        List<UsageStats> stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, begin, end);
-        if (stats != null && !stats.isEmpty()) {
-            // Filter and sort the stats by lastTimeUsed descending
-            List<UsageStats> filtered = new ArrayList<>();
-            for (UsageStats s : stats) {
-                String pkg = s.getPackageName();
-                // Skip our own package
-                if (getPackageName().equals(pkg)) {
-                    continue;
-                }
-                // Skip excluded packages entirely
-                if (PrefsHelper.isExcluded(this, pkg)) {
-                    continue;
-                }
-                // If the app has not been used in the time window, ignore it
-                if (s.getLastTimeUsed() == 0) {
-                    continue;
-                }
-                filtered.add(s);
-            }
-            // Sort descending by lastTimeUsed
-            Collections.sort(filtered, (a, b) -> Long.compare(b.getLastTimeUsed(), a.getLastTimeUsed()));
-            PackageManager pm = getPackageManager();
-            Set<String> added = new HashSet<>();
-            for (UsageStats s : filtered) {
-                String pkg = s.getPackageName();
-                // Avoid duplicates
-                if (added.contains(pkg)) {
-                    continue;
-                }
-                added.add(pkg);
-                try {
-                    ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
-                    String label = pm.getApplicationLabel(appInfo).toString();
-                    Drawable icon = pm.getApplicationIcon(appInfo);
-                    recentApps.add(new AppEntry(pkg, label, icon));
-                } catch (PackageManager.NameNotFoundException e) {
-                    // skip unknown packages
-                }
-            }
-        } else {
-            // Fall back to usage events if no aggregated stats are available
-            UsageEvents events = usm.queryEvents(begin, end);
-            Set<String> seen = new HashSet<>();
-            List<String> packagesInOrder = new ArrayList<>();
-            UsageEvents.Event event = new UsageEvents.Event();
-            while (events.hasNextEvent()) {
-                events.getNextEvent(event);
-                int type = event.getEventType();
-                // Consider both MOVE_TO_FOREGROUND and ACTIVITY_RESUMED events as indicators
-                // that an app was recently brought to the foreground. Some TV apps only
-                // emit ACTIVITY_RESUMED and never MOVE_TO_FOREGROUND, so include both.
-                // Use the literal values 16 (ACTIVITY_RESUMED) and 10 (NOTIFICATION_INTERRUPTION)
-                // in case the constants do not exist on this API level.
-                if (type == UsageEvents.Event.MOVE_TO_FOREGROUND ||
-                        type == UsageEvents.Event.ACTIVITY_RESUMED ||
-                        type == 16 ||
-                        // Some API levels do not define NOTIFICATION_INTERRUPTION; use 10 directly
-                        type == 10) {
-                    String pkg = event.getPackageName();
-                    // Skip our own app
-                    if (!getPackageName().equals(pkg)) {
-                        // Maintain order of last occurrence
-                        if (seen.contains(pkg)) {
-                            packagesInOrder.remove(pkg);
-                        }
-                        packagesInOrder.add(pkg);
-                        seen.add(pkg);
+        UsageEvents events = usm.queryEvents(begin, end);
+        Set<String> seen = new HashSet<>();
+        List<String> packagesInOrder = new ArrayList<>();
+        UsageEvents.Event event = new UsageEvents.Event();
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event);
+            if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                String pkg = event.getPackageName();
+                // Skip our own app
+                if (!getPackageName().equals(pkg)) {
+                    // Maintain order of last occurrence
+                    if (seen.contains(pkg)) {
+                        packagesInOrder.remove(pkg);
                     }
+                    packagesInOrder.add(pkg);
+                    seen.add(pkg);
                 }
             }
-            Collections.reverse(packagesInOrder);
-            PackageManager pm = getPackageManager();
-            for (String pkg : packagesInOrder) {
-                // Skip excluded packages entirely from the recents list
-                if (PrefsHelper.isExcluded(this, pkg)) {
-                    continue;
-                }
-                try {
-                    ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
-                    String label = pm.getApplicationLabel(appInfo).toString();
-                    Drawable icon = pm.getApplicationIcon(appInfo);
-                    recentApps.add(new AppEntry(pkg, label, icon));
-                } catch (PackageManager.NameNotFoundException e) {
-                    // skip unknown packages
-                }
+        }
+        Collections.reverse(packagesInOrder);
+        PackageManager pm = getPackageManager();
+        for (String pkg : packagesInOrder) {
+            // Skip excluded packages entirely from the recents list
+            if (PrefsHelper.isExcluded(this, pkg)) {
+                continue;
+            }
+            try {
+                ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
+                String label = pm.getApplicationLabel(appInfo).toString();
+                Drawable icon = pm.getApplicationIcon(appInfo);
+                recentApps.add(new AppEntry(pkg, label, icon));
+            } catch (PackageManager.NameNotFoundException e) {
+                // skip unknown packages
             }
         }
     }

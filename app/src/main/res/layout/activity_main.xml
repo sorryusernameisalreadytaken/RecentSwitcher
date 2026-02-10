@@ -54,4 +54,12 @@
         android:text="@string/manage_excluded_button"
         android:padding="12dp" />
 
+    <!-- Button to generate a debug report for troubleshooting -->
+    <Button
+        android:id="@+id/btn_collect_debug"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/collect_debug_button"
+        android:padding="12dp" />
+
 </LinearLayout>
