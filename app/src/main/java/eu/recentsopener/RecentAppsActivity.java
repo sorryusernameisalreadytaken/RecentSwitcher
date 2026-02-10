@@ -167,7 +167,6 @@ public class RecentAppsActivity extends AppCompatActivity {
             if (type == UsageEvents.Event.MOVE_TO_FOREGROUND ||
                     type == UsageEvents.Event.ACTIVITY_RESUMED ||
                     type == 16 ||
-                    type == UsageEvents.Event.NOTIFICATION_INTERRUPTION ||
                     type == 10) {
                 String pkg = event.getPackageName();
                 // Skip our own app
