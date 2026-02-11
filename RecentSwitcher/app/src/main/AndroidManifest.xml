@@ -13,7 +13,6 @@
     - AccessibilityService ruft performGlobalAction(GLOBAL_ACTION_RECENTS) auf
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="eu.recentsopener">
     <!-- Allow querying launcher activities of other packages. Without
          this <queries> element, Android 11+ restricts visibility of
@@ -27,7 +26,6 @@
     </queries>
     <!-- Permission to query recent app usage -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
-
 
     <application
         android:allowBackup="true"

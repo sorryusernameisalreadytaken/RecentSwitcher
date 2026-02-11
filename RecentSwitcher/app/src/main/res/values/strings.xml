@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Display name of the app -->
+    <string name="app_name">RecentAppSwitcher</string>
+    <string name="open_recents_button">Letzte Apps öffnen</string>
+    <string name="enable_service_button">Dienst aktivieren</string>
+    <!-- Status messages shown on the main screen. We no longer trigger the
+         system recents UI via accessibility; these messages simply
+         indicate whether the accessibility service is enabled. -->
+    <string name="service_not_enabled">Der Bedienungshilfe‑Dienst ist nicht aktiv. Du kannst ihn in den Einstellungen einschalten, falls er für andere Funktionen benötigt wird.</string>
+    <string name="service_enabled">Der Bedienungshilfe‑Dienst ist aktiv.</string>
+    <string name="accessibility_settings_title">Einstellungen für Bedienungshilfen</string>
+
+    <!-- Strings for the recent apps screen and usage access -->
+    <string name="close_all_stub">Close All (stub)</string>
+    <string name="close_others_stub">Close Others (stub)</string>
+    <string name="grant_usage_access">Grant usage access to show recent apps</string>
+    <string name="show_recent_apps_button">Recent Apps</string>
+
+    <!-- Button texts for new actions -->
+    <string name="open_last_app_button">Letzte App</string>
+    <string name="manage_excluded_button">Ausgeschlossene Apps verwalten</string>
+
+    <!-- Message when there are no excluded apps to manage -->
+    <string name="no_excluded_apps">Keine ausgeschlossenen Apps gefunden</string>
+
+    <!-- Messages for excluded/included apps and fallback when no last app exists -->
+    <string name="app_excluded">%1$s wurde ausgeschlossen</string>
+    <string name="app_included">%1$s wurde wieder hinzugefügt</string>
+    <string name="no_last_app">Keine vorherige App gefunden</string>
+    <!-- Content description for icons in the recent apps list -->
+    <string name="app_icon_desc">App-Symbol</string>
+
+    <!-- Button to collect a debug report of usage events and stats -->
+    <string name="collect_debug_button">Debug-Bericht erstellen</string>
+</resources>

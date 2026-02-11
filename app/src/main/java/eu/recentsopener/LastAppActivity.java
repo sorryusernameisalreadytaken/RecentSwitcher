@@ -96,7 +96,10 @@ public class LastAppActivity extends Activity {
 
         if (target != null) {
             android.content.pm.PackageManager pm = getPackageManager();
-            android.content.Intent launchIntent = pm.getLaunchIntentForPackage(target);
+            android.content.Intent launchIntent = pm.getLeanbackLaunchIntentForPackage(target);
+            if (launchIntent == null) {
+                launchIntent = pm.getLaunchIntentForPackage(target);
+            }
             if (launchIntent != null) {
                 // Before launching, update history so that Alt‑Tab toggles between packages
                 PrefsHelper.updateHistory(this, target);

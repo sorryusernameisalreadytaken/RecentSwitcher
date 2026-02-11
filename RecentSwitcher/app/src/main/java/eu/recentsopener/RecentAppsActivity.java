@@ -73,12 +73,7 @@ public class RecentAppsActivity extends AppCompatActivity {
             AppEntry entry = recentApps.get(position);
             // Launch the selected app if it is not excluded
             if (!PrefsHelper.isExcluded(this, entry.packageName)) {
-                // Try to obtain a Leanback launch intent first (for Android TV apps)
-                PackageManager pm = getPackageManager();
-                Intent launchIntent = pm.getLeanbackLaunchIntentForPackage(entry.packageName);
-                if (launchIntent == null) {
-                    launchIntent = pm.getLaunchIntentForPackage(entry.packageName);
-                }
+                Intent launchIntent = getPackageManager().getLaunchIntentForPackage(entry.packageName);
                 if (launchIntent != null) {
                     // Update the last/previous history before launching
                     PrefsHelper.updateHistory(this, entry.packageName);
@@ -157,68 +152,17 @@ public class RecentAppsActivity extends AppCompatActivity {
         long end = System.currentTimeMillis();
         long begin = end - 1000L * 60 * 60 * 24; // last 24 hours
         UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-        // We'll attempt to use aggregated usage stats first. This API returns
-        // a map keyed by package name with the UsageStats object as the value.
-        // It merges multiple UsageStats entries for the same package and is
-        // ideal for determining the last time an app was used.
-        java.util.Map<String, android.app.usage.UsageStats> stats =
-                usm.queryAndAggregateUsageStats(begin, end);
-        java.util.List<String> packagesInOrder = new java.util.ArrayList<>();
-        if (stats != null && !stats.isEmpty()) {
-            // Sort entries by lastTimeUsed descending so that the most recently
-            // used package comes first. Skip our own package and excluded apps.
-            // Avoid using ArrayList(Collection) constructor on the entry set
-            // because the entrySet implementation (MapCollections$EntrySet) does not
-            // support toArray(), which ArrayList(Collection) calls internally. Instead,
-            // copy the entries manually.
-            java.util.List<java.util.Map.Entry<String, android.app.usage.UsageStats>> entries =
-                    new java.util.ArrayList<>();
-            for (java.util.Map.Entry<String, android.app.usage.UsageStats> entry : stats.entrySet()) {
-                entries.add(entry);
-            }
-            java.util.Collections.sort(entries, (a, b) -> {
-                long t1 = a.getValue().getLastTimeUsed();
-                long t2 = b.getValue().getLastTimeUsed();
-                return Long.compare(t2, t1);
-            });
-            for (java.util.Map.Entry<String, android.app.usage.UsageStats> e : entries) {
-                String pkg = e.getKey();
-                if (pkg == null) continue;
-                // Skip our own app package
-                if (pkg.equals(getPackageName())) continue;
-                // Skip excluded packages
-                if (PrefsHelper.isExcluded(this, pkg)) continue;
-                // Only consider packages that have actually been used (lastTimeUsed > 0)
-                if (e.getValue().getLastTimeUsed() > 0) {
-                    packagesInOrder.add(pkg);
-                }
-            }
-        }
-        // If aggregated stats are unavailable or return no packages (e.g. on some TV devices),
-        // fall back to processing usage events. We look for multiple event types
-        // that indicate an app came to the foreground (resumed) or was paused/stopped.
-        if (packagesInOrder.isEmpty()) {
-            UsageEvents events = usm.queryEvents(begin, end);
-            java.util.Set<String> seen = new java.util.HashSet<>();
-            UsageEvents.Event event = new UsageEvents.Event();
-            while (events != null && events.hasNextEvent()) {
-                events.getNextEvent(event);
-                int type = event.getEventType();
-                if (type == UsageEvents.Event.MOVE_TO_FOREGROUND ||
-                        type == 1 /* ACTIVITY_RESUMED */ ||
-                        type == 2 /* ACTIVITY_PAUSED */ ||
-                        type == 23 /* ACTIVITY_STOPPED */) {
-                    String pkg = event.getPackageName();
-                    if (pkg == null) continue;
-                    // Skip our own package
-                    if (pkg.equals(getPackageName())) {
-                        continue;
-                    }
-                    // Skip excluded packages
-                    if (PrefsHelper.isExcluded(this, pkg)) {
-                        continue;
-                    }
-                    // Maintain order by removing and re-adding if already seen
+        UsageEvents events = usm.queryEvents(begin, end);
+        Set<String> seen = new HashSet<>();
+        List<String> packagesInOrder = new ArrayList<>();
+        UsageEvents.Event event = new UsageEvents.Event();
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event);
+            if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                String pkg = event.getPackageName();
+                // Skip our own app
+                if (!getPackageName().equals(pkg)) {
+                    // Maintain order of last occurrence
                     if (seen.contains(pkg)) {
                         packagesInOrder.remove(pkg);
                     }
@@ -226,18 +170,20 @@ public class RecentAppsActivity extends AppCompatActivity {
                     seen.add(pkg);
                 }
             }
-            // events produce oldest first; reverse to make most recent first
-            java.util.Collections.reverse(packagesInOrder);
         }
-        // Build AppEntry objects for each package
-        android.content.pm.PackageManager pm = getPackageManager();
+        Collections.reverse(packagesInOrder);
+        PackageManager pm = getPackageManager();
         for (String pkg : packagesInOrder) {
+            // Skip excluded packages entirely from the recents list
+            if (PrefsHelper.isExcluded(this, pkg)) {
+                continue;
+            }
             try {
-                android.content.pm.ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
+                ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
                 String label = pm.getApplicationLabel(appInfo).toString();
-                android.graphics.drawable.Drawable icon = pm.getApplicationIcon(appInfo);
+                Drawable icon = pm.getApplicationIcon(appInfo);
                 recentApps.add(new AppEntry(pkg, label, icon));
-            } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+            } catch (PackageManager.NameNotFoundException e) {
                 // skip unknown packages
             }
         }

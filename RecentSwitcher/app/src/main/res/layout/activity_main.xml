@@ -35,9 +35,8 @@
         android:id="@+id/btn_show_recent_apps"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/show_recent_apps_a_button"
+        android:text="@string/show_recent_apps_button"
         android:padding="12dp" />
-
 
     <!-- Button to immediately switch back to the last app -->
     <Button
@@ -55,5 +54,12 @@
         android:text="@string/manage_excluded_button"
         android:padding="12dp" />
 
+    <!-- Button to generate a debug report for troubleshooting -->
+    <Button
+        android:id="@+id/btn_collect_debug"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/collect_debug_button"
+        android:padding="12dp" />
 
 </LinearLayout>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- List of recent packages retrieved via UsageStatsManager -->
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Button to close all apps. Stub only: shows a toast explaining system limitation. -->
+    <Button
+        android:id="@+id/btn_close_all"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/close_all_stub" />
+
+    <!-- Button to close other apps except this one. Stub only. -->
+    <Button
+        android:id="@+id/btn_close_others"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/close_others_stub" />
+
+</LinearLayout>

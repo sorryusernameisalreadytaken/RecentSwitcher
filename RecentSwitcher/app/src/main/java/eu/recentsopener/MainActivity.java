@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnShowRecentApps;
     private Button btnOpenLastApp;
     private Button btnManageExcluded;
+    private Button btnCollectDebug;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,11 +35,11 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentApps = findViewById(R.id.btn_show_recent_apps);
         btnOpenLastApp = findViewById(R.id.btn_open_last_app);
         btnManageExcluded = findViewById(R.id.btn_manage_excluded);
+        btnCollectDebug = findViewById(R.id.btn_collect_debug);
 
-        // Launch Variant A recents list (aggregated usage stats with event fallback)
+        // Show the list of recent apps via UsageStats API
         btnShowRecentApps.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, RecentAppsActivity.class)));
-
 
         // Show the last app without requiring accessibility service
         btnOpenLastApp.setOnClickListener(v ->
@@ -48,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
         btnManageExcluded.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, ExcludedAppsActivity.class)));
 
+        // Generate a debug report containing usage events/stats for troubleshooting
+        btnCollectDebug.setOnClickListener(v -> DebugHelper.collectDebugInfo(MainActivity.this));
 
         // Launch the accessibility settings screen
         btnEnableService.setOnClickListener(v -> {
