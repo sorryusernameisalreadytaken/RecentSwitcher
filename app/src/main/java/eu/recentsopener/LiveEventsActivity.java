@@ -229,25 +229,45 @@ public class LiveEventsActivity extends AppCompatActivity {
         }
     }
 
-    /** Returns a human-readable name for a usage event type. */
+    /**
+     * Returns a human‑readable name for a usage event type. The Android
+     * platform defines multiple constants that may map to the same numeric
+     * value (for example MOVE_TO_FOREGROUND and ACTIVITY_RESUMED can be
+     * identical). Using conditional checks avoids duplicate case labels.
+     * If the NOTIFICATION constant is unavailable on this API level we
+     * fall back to checking the numeric code 10.
+     */
     private static String getEventTypeName(int eventType) {
-        switch (eventType) {
-            case UsageEvents.Event.MOVE_TO_FOREGROUND:
-                return "MOVE_TO_FOREGROUND";
-            case UsageEvents.Event.MOVE_TO_BACKGROUND:
-                return "MOVE_TO_BACKGROUND";
-            case UsageEvents.Event.ACTIVITY_RESUMED:
-                return "ACTIVITY_RESUMED";
-            case UsageEvents.Event.ACTIVITY_PAUSED:
-                return "ACTIVITY_PAUSED";
-            case UsageEvents.Event.ACTIVITY_STOPPED:
-                return "ACTIVITY_STOPPED";
-            case UsageEvents.Event.USER_INTERACTION:
-                return "USER_INTERACTION";
-            case UsageEvents.Event.NOTIFICATION_INTERRUPTION:
-                return "NOTIFICATION";
-            default:
-                return "TYPE_" + eventType;
+        if (eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+            return "MOVE_TO_FOREGROUND";
         }
+        if (eventType == UsageEvents.Event.MOVE_TO_BACKGROUND) {
+            return "MOVE_TO_BACKGROUND";
+        }
+        if (eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
+            return "ACTIVITY_RESUMED";
+        }
+        if (eventType == UsageEvents.Event.ACTIVITY_PAUSED) {
+            return "ACTIVITY_PAUSED";
+        }
+        if (eventType == UsageEvents.Event.ACTIVITY_STOPPED) {
+            return "ACTIVITY_STOPPED";
+        }
+        if (eventType == UsageEvents.Event.USER_INTERACTION) {
+            return "USER_INTERACTION";
+        }
+        // Notification interruption: constant may not exist on all API levels
+        try {
+            int notifCode = android.app.usage.UsageEvents.Event.class.getField("NOTIFICATION_INTERRUPTION").getInt(null);
+            if (eventType == notifCode) {
+                return "NOTIFICATION";
+            }
+        } catch (Exception ignored) {
+            // If field doesn't exist, treat code 10 as notification
+            if (eventType == 10) {
+                return "NOTIFICATION";
+            }
+        }
+        return "TYPE_" + eventType;
     }
 }
