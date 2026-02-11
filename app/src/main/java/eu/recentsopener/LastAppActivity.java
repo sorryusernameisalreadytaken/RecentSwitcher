@@ -36,7 +36,9 @@ public class LastAppActivity extends Activity {
         // If no previous/last candidate, attempt to determine the most recently used
         // app from usage statistics. We check aggregated UsageStats first and then
         // fall back to usage events. Only apps not in the exclusion list and not
-        // our own package are considered.
+        // our own package are considered. When evaluating aggregated stats we
+        // further verify that the most recent usage event for the package
+        // represents a foreground transition (RESUMED or MOVE_TO_FOREGROUND).
         if (target == null) {
             try {
                 long end = System.currentTimeMillis();
@@ -47,6 +49,21 @@ public class LastAppActivity extends Activity {
                         usm.queryAndAggregateUsageStats(begin, end);
                 String pkgCandidate = null;
                 long latestTime = 0L;
+                // Build a map of last event type per package
+                java.util.Map<String, Integer> lastEventMap = new java.util.HashMap<>();
+                try {
+                    android.app.usage.UsageEvents evs = usm.queryEvents(begin, end);
+                    android.app.usage.UsageEvents.Event ev = new android.app.usage.UsageEvents.Event();
+                    while (evs != null && evs.hasNextEvent()) {
+                        evs.getNextEvent(ev);
+                        String pkg = ev.getPackageName();
+                        if (pkg != null) {
+                            lastEventMap.put(pkg, ev.getEventType());
+                        }
+                    }
+                } catch (Exception ignore) {
+                    // ignore
+                }
                 if (stats != null && !stats.isEmpty()) {
                     for (java.util.Map.Entry<String, android.app.usage.UsageStats> e : stats.entrySet()) {
                         String pkg = e.getKey();
@@ -58,9 +75,17 @@ public class LastAppActivity extends Activity {
                         }
                         android.app.usage.UsageStats u = e.getValue();
                         long lastUsed = u.getLastTimeUsed();
-                        if (lastUsed > latestTime && lastUsed > 0) {
-                            latestTime = lastUsed;
-                            pkgCandidate = pkg;
+                        if (lastUsed <= 0) {
+                            continue;
+                        }
+                        // Check last event: require foreground event
+                        Integer lastType = lastEventMap.get(pkg);
+                        if (lastType != null &&
+                                (lastType == android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND || lastType == 1 /* ACTIVITY_RESUMED */)) {
+                            if (lastUsed > latestTime) {
+                                latestTime = lastUsed;
+                                pkgCandidate = pkg;
+                            }
                         }
                     }
                 }

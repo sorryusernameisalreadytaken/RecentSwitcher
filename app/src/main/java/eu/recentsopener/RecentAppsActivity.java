@@ -160,10 +160,30 @@ public class RecentAppsActivity extends AppCompatActivity {
         // We'll attempt to use aggregated usage stats first. This API returns
         // a map keyed by package name with the UsageStats object as the value.
         // It merges multiple UsageStats entries for the same package and is
-        // ideal for determining the last time an app was used.
+        // ideal for determining the last time an app was used. To avoid
+        // foreground services or background tasks pushing an app to the top of
+        // the list, we additionally consult the last recorded usage event for
+        // each package and only include packages whose most recent event is
+        // considered a "foreground" event (RESUMED or MOVE_TO_FOREGROUND).
         java.util.Map<String, android.app.usage.UsageStats> stats =
                 usm.queryAndAggregateUsageStats(begin, end);
         java.util.List<String> packagesInOrder = new java.util.ArrayList<>();
+        // Precompute the last event type per package over the same interval. We
+        // scan the events and record the most recent type for each package.
+        java.util.Map<String, Integer> lastEventMap = new java.util.HashMap<>();
+        try {
+            UsageEvents evs = usm.queryEvents(begin, end);
+            UsageEvents.Event evt = new UsageEvents.Event();
+            while (evs != null && evs.hasNextEvent()) {
+                evs.getNextEvent(evt);
+                String pkg = evt.getPackageName();
+                if (pkg != null) {
+                    lastEventMap.put(pkg, evt.getEventType());
+                }
+            }
+        } catch (Exception ignore) {
+            // ignore errors reading events
+        }
         if (stats != null && !stats.isEmpty()) {
             // Sort entries by lastTimeUsed descending so that the most recently
             // used package comes first. Skip our own package and excluded apps.
@@ -189,7 +209,20 @@ public class RecentAppsActivity extends AppCompatActivity {
                 // Skip excluded packages
                 if (PrefsHelper.isExcluded(this, pkg)) continue;
                 // Only consider packages that have actually been used (lastTimeUsed > 0)
-                if (e.getValue().getLastTimeUsed() > 0) {
+                if (e.getValue().getLastTimeUsed() <= 0) {
+                    continue;
+                }
+                // Check last event: only include if the most recent event is a foreground type
+                Integer lastType = lastEventMap.get(pkg);
+                if (lastType != null) {
+                    // Accept if last event is MOVE_TO_FOREGROUND or ACTIVITY_RESUMED
+                    if (lastType == UsageEvents.Event.MOVE_TO_FOREGROUND || lastType == 1 /* ACTIVITY_RESUMED */) {
+                        packagesInOrder.add(pkg);
+                    } else {
+                        // Otherwise ignore this package
+                    }
+                } else {
+                    // If we don't know the last event type, include the package by default
                     packagesInOrder.add(pkg);
                 }
             }
