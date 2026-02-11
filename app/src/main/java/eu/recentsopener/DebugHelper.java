@@ -14,40 +14,34 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * DebugHelper provides helper methods to collect diagnostic information
- * about the app usage history. It gathers raw usage events and
- * aggregated usage statistics for the last 24 hours and writes them
- * to a text file in the application's external files directory.
- *
- * <p>The resulting report is useful for troubleshooting cases where
- * certain packages do not appear in the recent apps list. It also
- * records the current list of excluded packages and the last/previous
- * launch history as stored by {@link PrefsHelper}. A toast message
- * indicates where the report has been saved.</p>
+ * DebugHelper provides methods to generate a diagnostic report of usage
+ * events and aggregated usage statistics. The report is written to a text
+ * file in the app's external files directory so that the user can retrieve
+ * it via a file manager. This helper is intended for troubleshooting cases
+ * where certain apps do not appear in the recents list.
  */
 public final class DebugHelper {
     private DebugHelper() {
-        // static helper
+        // no instances
     }
 
     /**
-     * Collects usage events and aggregated usage stats for the last 24
-     * hours and writes them to a timestamped file. The file is created
-     * in the application's external files directory (falling back to
-     * internal storage if necessary). A toast will notify the user of
-     * the location of the saved report.
+     * Collects usage events and statistics for the last {@code durationMs}
+     * milliseconds and writes them to a file. The report includes the
+     * timestamp, event type and package name for each usage event,
+     * followed by a summary of aggregated usage stats (package name,
+     * lastTimeUsed, totalTimeInForeground). The list of excluded apps
+     * and the last/previous packages are also recorded. A toast message
+     * is shown indicating where the file was saved.
      *
-     * @param context the context used to access system services and
-     *                file locations
+     * @param context application context used for accessing system services and file system
+     * @param durationMs time range in milliseconds to include in the report
      */
-    public static void collectDebugInfo(Context context) {
+    public static void collectDebugInfo(Context context, long durationMs) {
         long end = System.currentTimeMillis();
-        long begin = end - 1000L * 60 * 60 * 24;
+        long begin = end - durationMs;
         UsageStatsManager usm = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
-
-        // Determine the output directory. Prefer external files so the
-        // user can retrieve the report via a file manager. If that is
-        // unavailable, fall back to the internal files directory.
+        // Determine output directory: prefer external files, fall back to internal
         File dir = context.getExternalFilesDir(null);
         if (dir == null) {
             dir = context.getFilesDir();
@@ -58,22 +52,21 @@ public final class DebugHelper {
         try {
             writer = new FileWriter(outFile);
             writer.write("Debug report generated at " + new Date().toString() + "\n\n");
-            // Write the list of excluded apps and history
+            // Write excluded apps and history
             writer.write("Excluded apps: " + PrefsHelper.getExcludedApps(context) + "\n");
             writer.write("Last package: " + PrefsHelper.getLastPackage(context) + "\n");
             writer.write("Previous package: " + PrefsHelper.getPreviousPackage(context) + "\n\n");
-
-            // Write raw usage events
-            writer.write("UsageEvents (last 24h):\n");
+            // Write usage events
+            writer.write("UsageEvents (last " + durationMs / 1000 + "s):\n");
             UsageEvents events = usm.queryEvents(begin, end);
             UsageEvents.Event event = new UsageEvents.Event();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US);
             while (events != null && events.hasNextEvent()) {
                 events.getNextEvent(event);
-                String time = sdf.format(new Date(event.getTimeStamp()));
+                String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
+                        .format(new Date(event.getTimeStamp()));
                 writer.write(time + "," + event.getEventType() + "," + event.getPackageName() + "\n");
             }
-            writer.write("\nUsageStats (last 24h):\n");
+            writer.write("\nUsageStats (last " + durationMs / 1000 + "s):\n");
             List<UsageStats> stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, begin, end);
             if (stats != null) {
                 for (UsageStats s : stats) {
@@ -93,9 +86,21 @@ public final class DebugHelper {
                 try {
                     writer.close();
                 } catch (IOException ignore) {
-                    // ignore
+                    // ignored
                 }
             }
         }
+    }
+
+    /**
+     * Collects usage events and statistics for a default time range (5 minutes).
+     * This method calls {@link #collectDebugInfo(Context, long)} with a
+     * predefined duration. It is kept for backwards compatibility.
+     *
+     * @param context application context used for accessing system services and file system
+     */
+    public static void collectDebugInfo(Context context) {
+        // Default to last 5 minutes (300 seconds)
+        collectDebugInfo(context, 1000L * 60 * 5);
     }
 }

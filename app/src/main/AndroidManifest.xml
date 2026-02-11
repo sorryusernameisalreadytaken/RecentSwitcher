@@ -13,7 +13,6 @@
     - AccessibilityService ruft performGlobalAction(GLOBAL_ACTION_RECENTS) auf
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="eu.recentsopener">
     <!-- Allow querying launcher activities of other packages. Without
          this <queries> element, Android 11+ restricts visibility of
@@ -30,10 +29,7 @@
 
     <!-- Permission to query all installed packages. Required so that UsageStats and
          PackageManager queries include apps like ARD or Prime Video on Android 11+. -->
-    <uses-permission
-        android:name="android.permission.QUERY_ALL_PACKAGES"
-        tools:ignore="QueryAllPackagesPermission" />
-
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <application
         android:allowBackup="true"
@@ -109,6 +105,11 @@
         <!-- Activity for managing excluded apps -->
         <activity
             android:name=".ExcludedAppsActivity"
+            android:exported="true" />
+
+        <!-- Activity showing a live, unfiltered list of recent usage events -->
+        <activity
+            android:name=".LiveEventsActivity"
             android:exported="true" />
 
     </application>

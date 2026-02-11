@@ -2,6 +2,7 @@ package eu.recentsopener;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -27,103 +28,50 @@ public class LastAppActivity extends Activity {
         Set<String> excluded = PrefsHelper.getExcludedApps(this);
 
         String target = null;
+        // Prefer using usage events to determine the most recent package if none recorded
         if (previousPackage != null && !excluded.contains(previousPackage)) {
             target = previousPackage;
         } else if (lastPackage != null && !excluded.contains(lastPackage)) {
             target = lastPackage;
-        }
-
-        // If no previous/last candidate, attempt to determine the most recently used
-        // app from usage statistics. We check aggregated UsageStats first and then
-        // fall back to usage events. Only apps not in the exclusion list and not
-        // our own package are considered. When evaluating aggregated stats we
-        // further verify that the most recent usage event for the package
-        // represents a foreground transition (RESUMED or MOVE_TO_FOREGROUND).
-        if (target == null) {
+        } else {
+            // Attempt to compute the most recent used package via usage events
             try {
-                long end = System.currentTimeMillis();
-                long begin = end - 1000L * 60 * 60; // last 1 hour
-                android.app.usage.UsageStatsManager usm =
-                        (android.app.usage.UsageStatsManager) getSystemService(android.content.Context.USAGE_STATS_SERVICE);
-                java.util.Map<String, android.app.usage.UsageStats> stats =
-                        usm.queryAndAggregateUsageStats(begin, end);
-                String pkgCandidate = null;
-                long latestTime = 0L;
-                // Build a map of last event type per package
-                java.util.Map<String, Integer> lastEventMap = new java.util.HashMap<>();
-                try {
-                    android.app.usage.UsageEvents evs = usm.queryEvents(begin, end);
-                    android.app.usage.UsageEvents.Event ev = new android.app.usage.UsageEvents.Event();
-                    while (evs != null && evs.hasNextEvent()) {
-                        evs.getNextEvent(ev);
+                android.app.usage.UsageStatsManager usm = (android.app.usage.UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+                long now = System.currentTimeMillis();
+                long begin = now - 1000L * 60 * 60; // last hour
+                android.app.usage.UsageEvents events = usm.queryEvents(begin, now);
+                java.util.Set<String> seen = new java.util.HashSet<>();
+                java.util.List<String> pkgs = new java.util.ArrayList<>();
+                android.app.usage.UsageEvents.Event ev = new android.app.usage.UsageEvents.Event();
+                while (events != null && events.hasNextEvent()) {
+                    events.getNextEvent(ev);
+                    int type = ev.getEventType();
+                    if (type == android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND ||
+                        type == android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED) {
                         String pkg = ev.getPackageName();
-                        if (pkg != null) {
-                            lastEventMap.put(pkg, ev.getEventType());
-                        }
-                    }
-                } catch (Exception ignore) {
-                    // ignore
-                }
-                if (stats != null && !stats.isEmpty()) {
-                    for (java.util.Map.Entry<String, android.app.usage.UsageStats> e : stats.entrySet()) {
-                        String pkg = e.getKey();
-                        if (pkg == null || pkg.equals(getPackageName())) {
-                            continue;
-                        }
-                        if (excluded.contains(pkg)) {
-                            continue;
-                        }
-                        android.app.usage.UsageStats u = e.getValue();
-                        long lastUsed = u.getLastTimeUsed();
-                        if (lastUsed <= 0) {
-                            continue;
-                        }
-                        // Check last event: require foreground event
-                        Integer lastType = lastEventMap.get(pkg);
-                        if (lastType != null &&
-                                (lastType == android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND || lastType == 1 /* ACTIVITY_RESUMED */)) {
-                            if (lastUsed > latestTime) {
-                                latestTime = lastUsed;
-                                pkgCandidate = pkg;
-                            }
+                        if (pkg != null && !pkg.equals(getPackageName())) {
+                            if (seen.contains(pkg)) pkgs.remove(pkg);
+                            pkgs.add(pkg);
+                            seen.add(pkg);
                         }
                     }
                 }
-                // If no candidate from aggregated stats, try event-based
-                if (pkgCandidate == null) {
-                    android.app.usage.UsageEvents events = usm.queryEvents(begin, end);
-                    android.app.usage.UsageEvents.Event event = new android.app.usage.UsageEvents.Event();
-                    while (events != null && events.hasNextEvent()) {
-                        events.getNextEvent(event);
-                        int type = event.getEventType();
-                        if (type == android.app.usage.UsageEvents.Event.MOVE_TO_FOREGROUND ||
-                                type == 1 /* ACTIVITY_RESUMED */ ||
-                                type == 2 /* ACTIVITY_PAUSED */ ||
-                                type == 23 /* ACTIVITY_STOPPED */) {
-                            String pkg = event.getPackageName();
-                            if (pkg == null) continue;
-                            if (pkg.equals(getPackageName()) || excluded.contains(pkg)) {
-                                continue;
-                            }
-                            // Use the first package found (most recent event)
-                            pkgCandidate = pkg;
-                        }
+                java.util.Collections.reverse(pkgs);
+                for (String pkg : pkgs) {
+                    if (!excluded.contains(pkg)) {
+                        target = pkg;
+                        break;
                     }
                 }
-                // Assign candidate if found
-                if (pkgCandidate != null) {
-                    target = pkgCandidate;
-                }
-            } catch (Exception e) {
-                // ignore errors and fall back to null
+            } catch (Exception ignore) {
+                // ignore errors and fallback
             }
         }
 
         if (target != null) {
-            android.content.pm.PackageManager pm = getPackageManager();
-            android.content.Intent launchIntent = pm.getLeanbackLaunchIntentForPackage(target);
+            Intent launchIntent = getPackageManager().getLeanbackLaunchIntentForPackage(target);
             if (launchIntent == null) {
-                launchIntent = pm.getLaunchIntentForPackage(target);
+                launchIntent = getPackageManager().getLaunchIntentForPackage(target);
             }
             if (launchIntent != null) {
                 // Before launching, update history so that Alt‑Tab toggles between packages
@@ -132,7 +80,7 @@ public class LastAppActivity extends Activity {
             } else {
                 // Attempt to launch system settings if this is a settings package
                 if (target.contains("settings")) {
-                    android.content.Intent settingsIntent = new android.content.Intent(android.provider.Settings.ACTION_SETTINGS);
+                    Intent settingsIntent = new Intent(android.provider.Settings.ACTION_SETTINGS);
                     settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     try {
                         PrefsHelper.updateHistory(this, target);
