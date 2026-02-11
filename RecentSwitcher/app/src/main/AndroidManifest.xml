@@ -107,6 +107,11 @@
             android:name=".ExcludedAppsActivity"
             android:exported="true" />
 
+        <!-- Activity showing a live, unfiltered list of recent usage events -->
+        <activity
+            android:name=".LiveEventsActivity"
+            android:exported="true" />
+
     </application>
 
 </manifest>

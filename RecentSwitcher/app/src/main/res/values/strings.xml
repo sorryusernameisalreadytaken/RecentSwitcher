@@ -33,4 +33,7 @@
 
     <!-- Button to collect a debug report of usage events and stats -->
     <string name="collect_debug_button">Debug-Bericht erstellen</string>
+
+    <!-- Button text for live events screen -->
+    <string name="show_live_events_button">Live-Events</string>
 </resources>

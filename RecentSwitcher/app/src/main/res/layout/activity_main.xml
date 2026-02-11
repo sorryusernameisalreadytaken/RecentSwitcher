@@ -62,4 +62,12 @@
         android:text="@string/collect_debug_button"
         android:padding="12dp" />
 
+    <!-- Button to show live events with detailed info -->
+    <Button
+        android:id="@+id/btn_show_live_events"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_live_events_button"
+        android:padding="12dp" />
+
 </LinearLayout>

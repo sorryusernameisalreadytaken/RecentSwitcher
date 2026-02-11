@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnOpenLastApp;
     private Button btnManageExcluded;
     private Button btnCollectDebug;
+    private Button btnShowLiveEvents;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
         btnOpenLastApp = findViewById(R.id.btn_open_last_app);
         btnManageExcluded = findViewById(R.id.btn_manage_excluded);
         btnCollectDebug = findViewById(R.id.btn_collect_debug);
+        btnShowLiveEvents = findViewById(R.id.btn_show_live_events);
 
         // Show the list of recent apps via UsageStats API
         btnShowRecentApps.setOnClickListener(v ->
@@ -51,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Generate a debug report containing usage events/stats for troubleshooting
         btnCollectDebug.setOnClickListener(v -> DebugHelper.collectDebugInfo(MainActivity.this));
+
+        // Show the live events diagnostic screen
+        btnShowLiveEvents.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, LiveEventsActivity.class)));
 
         // Launch the accessibility settings screen
         btnEnableService.setOnClickListener(v -> {

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Layout for the LiveEventsActivity. It shows a continuously updating
+    list of usage events and aggregated statistics. Each list item
+    displays the app icon, label, package name and the source/time
+    information. Excluded packages are highlighted in red but cannot
+    be removed from this diagnostic list.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- Explanatory text -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Diese Liste zeigt alle letzten Nutzungsereignisse (5 Minuten)."
+        android:textSize="14sp"
+        android:paddingBottom="8dp" />
+
+    <ListView
+        android:id="@+id/listViewLive"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp" />
+
+</LinearLayout>
