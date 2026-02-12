@@ -25,8 +25,9 @@
     <string name="service_note_not_used">Hinweis: Der Bedienungshilfe‑Dienst wird von dieser App derzeit nicht genutzt.</string>
 
     <!-- Messages and prompts on the recents screen -->
-    <string name="close_all_stub">Alle schließen (Stub)</string>
-    <string name="close_others_stub">Andere schließen (Stub)</string>
+    <!-- Buttons on the recents screen to close apps via the accessibility service -->
+    <string name="close_all_apps_button">Alle Apps schließen</string>
+    <string name="close_other_apps_button">Alle anderen Apps schließen</string>
     <string name="grant_usage_access">Erlaube Zugriff auf Nutzungsdaten, um die letzten Apps anzuzeigen.</string>
 
     <!-- Strings used when including/excluding apps -->

@@ -79,6 +79,7 @@ public class LastAppActivity extends Activity {
             }
             java.util.Collections.reverse(pkgs);
             int skip = 1; // skip the most recent package
+            PackageManager pm = getPackageManager();
             for (String pkg : pkgs) {
                 if (excluded.contains(pkg)) {
                     continue;
@@ -86,6 +87,16 @@ public class LastAppActivity extends Activity {
                 if (skip > 0) {
                     skip--;
                     continue;
+                }
+                // Skip packages that are no longer running (flagged as stopped). Launching a stopped
+                // app via recents is undesirable because it was likely just force‑stopped.
+                try {
+                    ApplicationInfo info = pm.getApplicationInfo(pkg, 0);
+                    if ((info.flags & ApplicationInfo.FLAG_STOPPED) != 0) {
+                        continue;
+                    }
+                } catch (PackageManager.NameNotFoundException ignore) {
+                    // If we cannot find app info just proceed
                 }
                 target = pkg;
                 break;
@@ -98,10 +109,26 @@ public class LastAppActivity extends Activity {
         if (target == null) {
             String previousPackage = PrefsHelper.getPreviousPackage(this);
             String lastPackage = PrefsHelper.getLastPackage(this);
+            PackageManager pm = getPackageManager();
             if (previousPackage != null && !excluded.contains(previousPackage)) {
-                target = previousPackage;
-            } else if (lastPackage != null && !excluded.contains(lastPackage)) {
-                target = lastPackage;
+                boolean stopped = false;
+                try {
+                    ApplicationInfo info = pm.getApplicationInfo(previousPackage, 0);
+                    stopped = ((info.flags & ApplicationInfo.FLAG_STOPPED) != 0);
+                } catch (PackageManager.NameNotFoundException ignore) {}
+                if (!stopped) {
+                    target = previousPackage;
+                }
+            }
+            if (target == null && lastPackage != null && !excluded.contains(lastPackage)) {
+                boolean stopped2 = false;
+                try {
+                    ApplicationInfo info2 = pm.getApplicationInfo(lastPackage, 0);
+                    stopped2 = ((info2.flags & ApplicationInfo.FLAG_STOPPED) != 0);
+                } catch (PackageManager.NameNotFoundException ignore) {}
+                if (!stopped2) {
+                    target = lastPackage;
+                }
             }
         }
 

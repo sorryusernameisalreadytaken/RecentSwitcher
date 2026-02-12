@@ -5,6 +5,24 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- Buttons to close apps. These appear at the top of the screen.
+         They will only be visible when the accessibility service is active. -->
+    <Button
+        android:id="@+id/btn_close_all"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/close_all_apps_button"
+        android:visibility="gone"
+        android:paddingBottom="8dp" />
+
+    <Button
+        android:id="@+id/btn_close_others"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/close_other_apps_button"
+        android:visibility="gone"
+        android:paddingBottom="8dp" />
+
     <!-- Explanation for the recents list -->
     <TextView
         android:layout_width="match_parent"
@@ -21,19 +39,5 @@
         android:layout_weight="1"
         android:divider="@android:color/darker_gray"
         android:dividerHeight="1dp" />
-
-    <!-- Button to close all apps. Stub only: shows a toast explaining system limitation. -->
-    <Button
-        android:id="@+id/btn_close_all"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/close_all_stub" />
-
-    <!-- Button to close other apps except this one. Stub only. -->
-    <Button
-        android:id="@+id/btn_close_others"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/close_others_stub" />
 
 </LinearLayout>

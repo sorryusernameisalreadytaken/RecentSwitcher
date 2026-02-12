@@ -95,6 +95,12 @@ public class ExcludedAppsActivity extends AppCompatActivity {
             ExcludedEntry entry = getItem(position);
             android.widget.ImageView iconView = view.findViewById(R.id.app_icon);
             android.widget.TextView textView = view.findViewById(R.id.app_text);
+            // Hide the gear/settings button in the excluded list to avoid confusion. Users should
+            // manage exclusions via tap on the list item rather than launching app settings.
+            android.widget.ImageButton settingsButton = view.findViewById(R.id.settings_button);
+            if (settingsButton != null) {
+                settingsButton.setVisibility(android.view.View.GONE);
+            }
             if (entry != null) {
                 iconView.setImageDrawable(entry.icon);
                 // Display label and package name

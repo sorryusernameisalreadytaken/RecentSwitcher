@@ -45,6 +45,44 @@ public class RecentAppsActivity extends AppCompatActivity {
     private final List<AppEntry> recentApps = new ArrayList<>();
 
     /**
+     * Handler and runnable used to periodically refresh the recents list. The list
+     * is refreshed at a fixed interval while this activity is in the foreground
+     * so that closed or newly started apps appear/disappear without requiring
+     * navigating away and back again.
+     */
+    private android.os.Handler refreshHandler;
+    private final Runnable refreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // Only refresh if usage access is granted; otherwise the list would be empty
+            if (hasUsageAccess()) {
+                loadRecents();
+                if (adapter != null) {
+                    adapter.notifyDataSetChanged();
+                }
+            }
+            // Schedule the next refresh if the handler still exists
+            if (refreshHandler != null) {
+                refreshHandler.postDelayed(this, REFRESH_INTERVAL_MS);
+            }
+        }
+    };
+
+    /**
+     * Refresh interval in milliseconds. The recents list will be reloaded on
+     * this cadence while the activity is visible.
+     */
+    private static final long REFRESH_INTERVAL_MS = 1000L;
+
+    /**
+     * Reference to the ListView that displays the recents. Stored so that we
+     * can set focus and selection when necessary.
+     */
+    private ListView listView;
+
+    // Duplicate fields (refresh interval, handler, runnable and listView) removed. These are defined earlier in the class.
+
+    /**
      * Adapter for the recents list. Stored as a field so that it can be
      * refreshed in onResume() once usage access is granted.
      */
@@ -55,16 +93,60 @@ public class RecentAppsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recent_apps);
 
+        // Initialise the handler used for periodic list refreshes on the main thread. Without
+        // instantiation the handler would remain null and schedule/removal calls would crash.
+        refreshHandler = new android.os.Handler(getMainLooper());
+
         Button btnCloseAll = findViewById(R.id.btn_close_all);
         Button btnCloseOthers = findViewById(R.id.btn_close_others);
-        // ListView is declared final so we can capture it inside the long‑click listener
-        final ListView listView = findViewById(R.id.listView);
+        // Store listView as a field so refresh handler can access it
+        listView = findViewById(R.id.listView);
+        // Allow child views (e.g. gear buttons) inside list items to take focus and be reachable via DPAD
+        listView.setItemsCanFocus(true);
+        listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
 
-        // The close buttons are stubs: inform users that closing other apps is not allowed
-        btnCloseAll.setOnClickListener(v ->
-                Toast.makeText(this, getString(R.string.close_all_stub), Toast.LENGTH_SHORT).show());
-        btnCloseOthers.setOnClickListener(v ->
-                Toast.makeText(this, getString(R.string.close_others_stub), Toast.LENGTH_SHORT).show());
+        // Close all apps via accessibility automation. Only visible/working when the
+        // accessibility service is enabled. We exclude our own app and any
+        // system settings packages. Excluded apps are skipped.
+        btnCloseAll.setOnClickListener(v -> {
+            if (!RecentsAccessibilityService.isServiceEnabled()) {
+                Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            java.util.List<String> pkgs = new java.util.ArrayList<>();
+            for (AppEntry entry : recentApps) {
+                String pkg = entry.packageName;
+                // Skip our own app
+                if (pkg.equals(getPackageName())) continue;
+                // Skip excluded apps
+                if (PrefsHelper.isExcluded(this, pkg)) continue;
+                // Skip system settings packages
+                if (pkg.startsWith("com.android.tv.settings") || pkg.startsWith("com.google.android.tv.settings") || pkg.startsWith("com.android.settings")) continue;
+                pkgs.add(pkg);
+            }
+            performBulkClose(pkgs);
+        });
+
+        // Close all apps except the one that was in the foreground immediately before
+        // this activity was opened. This approximates "Close other apps" logic.
+        btnCloseOthers.setOnClickListener(v -> {
+            if (!RecentsAccessibilityService.isServiceEnabled()) {
+                Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            // Identify the app that was foregrounded before this activity (may be null)
+            String excludePkg = getPreviousForegroundApp();
+            java.util.List<String> pkgs = new java.util.ArrayList<>();
+            for (AppEntry entry : recentApps) {
+                String pkg = entry.packageName;
+                if (pkg.equals(getPackageName())) continue;
+                if (excludePkg != null && pkg.equals(excludePkg)) continue;
+                if (PrefsHelper.isExcluded(this, pkg)) continue;
+                if (pkg.startsWith("com.android.tv.settings") || pkg.startsWith("com.google.android.tv.settings") || pkg.startsWith("com.android.settings")) continue;
+                pkgs.add(pkg);
+            }
+            performBulkClose(pkgs);
+        });
 
         // If usage access is not granted, prompt the user to enable it. We still
         // continue and set up the adapter so that the list can be populated
@@ -76,6 +158,8 @@ public class RecentAppsActivity extends AppCompatActivity {
 
         // Populate the list if we already have access; otherwise it stays empty
         if (accessGranted) {
+            // Initialise excluded apps on first access
+            PrefsHelper.getExcludedApps(this);
             loadRecents();
         }
         adapter = new RecentAppsAdapter(this, recentApps);
@@ -144,27 +228,53 @@ public class RecentAppsActivity extends AppCompatActivity {
             return true;
         });
 
+
         // Allow DPAD-LEFT to open the system settings screen for the selected app.
+        // Intercept DPAD‑LEFT and DPAD‑RIGHT presses on list items. DPAD‑RIGHT moves focus to the
+        // gear button on the current row so that the user can press enter to open settings. DPAD‑LEFT
+        // opens the system settings for the selected app and optionally triggers the force‑stop
+        // automation if the accessibility service is enabled.
         listView.setOnKeyListener((v, keyCode, event) -> {
-            if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                int pos = listView.getSelectedItemPosition();
-                if (pos != android.widget.AdapterView.INVALID_POSITION && pos < recentApps.size()) {
+            if (event.getAction() != KeyEvent.ACTION_DOWN) {
+                return false;
+            }
+            int pos = listView.getSelectedItemPosition();
+            if (pos == android.widget.AdapterView.INVALID_POSITION) {
+                return false;
+            }
+            // DPAD‑RIGHT: focus the gear button within the current row
+            if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                View row = listView.getChildAt(pos - listView.getFirstVisiblePosition());
+                if (row != null) {
+                    android.widget.ImageButton gear = row.findViewById(R.id.settings_button);
+                    if (gear != null) {
+                        gear.requestFocus();
+                        return true;
+                    }
+                }
+                return false;
+            }
+            // DPAD‑LEFT: open app settings and attempt force‑stop if applicable
+            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                if (pos < recentApps.size()) {
                     AppEntry appEntry = recentApps.get(pos);
-                    // Build intent to show app details settings for this package
                     Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                     intent.setData(Uri.parse("package:" + appEntry.packageName));
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     try {
                         startActivity(intent);
-                        // If the accessibility service is active, attempt to automate the force‑stop sequence
-                        if (RecentsAccessibilityService.isServiceEnabled()) {
-                            RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
-                            if (svc != null) {
-                                svc.performForceStopSequence();
+                        boolean isSettings = appEntry.packageName.startsWith("com.android.tv.settings") ||
+                                appEntry.packageName.startsWith("com.google.android.tv.settings") ||
+                                appEntry.packageName.startsWith("com.android.settings");
+                        if (!isSettings) {
+                            if (RecentsAccessibilityService.isServiceEnabled()) {
+                                RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
+                                if (svc != null) {
+                                    svc.performForceStopSequence();
+                                }
+                            } else {
+                                Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
                             }
-                        } else {
-                            // Inform the user that the accessibility service must be enabled for automation
-                            Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
                         }
                     } catch (Exception e) {
                         Toast.makeText(this, appEntry.packageName + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
@@ -205,6 +315,9 @@ public class RecentAppsActivity extends AppCompatActivity {
      * apps remain in the list and are highlighted by the adapter.
      */
     private void loadRecents() {
+        // Ensure excluded apps are initialised on every load. This prevents freshly installed
+        // instances from showing excluded packages before the default list has been persisted.
+        PrefsHelper.getExcludedApps(this);
         recentApps.clear();
         long end = System.currentTimeMillis();
         long begin = end - 1000L * 60 * 60 * 24; // last 24 hours
@@ -253,13 +366,135 @@ public class RecentAppsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // After returning from the usage access settings, the recents list may still be empty.
-        // If usage access has been granted and no apps are loaded yet, refresh the list.
-        if (recentApps.isEmpty() && hasUsageAccess()) {
+        boolean access = hasUsageAccess();
+        // If usage access was just granted and the list is empty, initialise excluded defaults and load recents
+        if (access && recentApps.isEmpty()) {
+            PrefsHelper.getExcludedApps(this);
             loadRecents();
             if (adapter != null) {
                 adapter.notifyDataSetChanged();
             }
+        }
+        // Set initial selection to the first item if available and request focus so that the
+        // highlighted row is the first entry rather than retaining focus on a previously
+        // selected gear button. Without requestFocus the focus may remain on a nested child.
+        if (!recentApps.isEmpty()) {
+            listView.setSelection(0);
+            listView.requestFocus();
+        }
+        // Show or hide the close buttons based on accessibility service state
+        android.widget.Button btnCloseAll = findViewById(R.id.btn_close_all);
+        android.widget.Button btnCloseOthers = findViewById(R.id.btn_close_others);
+        boolean serviceEnabled = RecentsAccessibilityService.isServiceEnabled();
+        btnCloseAll.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
+        btnCloseOthers.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
+        // Start periodic refresh if access granted
+        refreshHandler.removeCallbacks(refreshRunnable);
+        if (access) {
+            refreshHandler.postDelayed(refreshRunnable, REFRESH_INTERVAL_MS);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Stop refreshing when the activity is no longer visible
+        refreshHandler.removeCallbacks(refreshRunnable);
+    }
+
+    /**
+     * Performs a bulk closing of the provided packages. Each package will be
+     * closed sequentially by opening its settings page and invoking the
+     * force‑stop automation. A small delay is inserted between each action
+     * to allow the UI to update.
+     *
+     * @param packages list of package names to close
+     */
+    private void performBulkClose(java.util.List<String> packages) {
+        if (packages == null || packages.isEmpty()) {
+            return;
+        }
+        // Only proceed if the accessibility service is connected
+        RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
+        if (svc == null) {
+            Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        android.os.Handler handler = new android.os.Handler(getMainLooper());
+        // Delay between each close operation (ms). This allows the UI to load the settings screen
+        // and for the force‑stop automation to execute. Adjust if your device is slower or faster.
+        final long stepDelay = 2000L;
+        for (int i = 0; i < packages.size(); i++) {
+            final String pkg = packages.get(i);
+            long delay = i * stepDelay;
+            handler.postDelayed(() -> {
+                // Open the app details settings
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intent.setData(Uri.parse("package:" + pkg));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                try {
+                    startActivity(intent);
+                    // Trigger automation after a short delay
+                    handler.postDelayed(() -> {
+                        RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
+                        if (service != null) {
+                            service.performForceStopSequence();
+                        }
+                    }, 500);
+                } catch (Exception e) {
+                    Toast.makeText(this, pkg + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
+                }
+            }, delay);
+        }
+
+        // After all packages have been processed, refresh the recents list to remove
+        // any apps that were successfully stopped. We schedule this after the last
+        // operation plus an extra delay to allow the UI to finish closing.
+        long finalDelay = packages.size() * stepDelay + 1000L;
+        handler.postDelayed(() -> {
+            loadRecents();
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
+                // Restore selection/focus to the first entry
+                if (!recentApps.isEmpty()) {
+                    listView.setSelection(0);
+                    listView.requestFocus();
+                }
+            }
+        }, finalDelay);
+    }
+
+    /**
+     * Retrieves the package name of the app that was in the foreground most
+     * recently, ignoring this app. Scans usage events over the last few
+     * minutes. Returns null if no suitable event is found.
+     */
+    /**
+     * Determines which package was in the foreground immediately before this app.
+     * It scans recent usage events and returns the most recently foregrounded
+     * package that is not this app. If none are found, returns null.
+     */
+    private String getPreviousForegroundApp() {
+        try {
+            UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+            long now = System.currentTimeMillis();
+            long begin = now - 1000L * 60 * 5; // last 5 minutes
+            UsageEvents events = usm.queryEvents(begin, now);
+            UsageEvents.Event event = new UsageEvents.Event();
+            String lastNonSelf = null;
+            while (events.hasNextEvent()) {
+                events.getNextEvent(event);
+                int type = event.getEventType();
+                if (type == UsageEvents.Event.MOVE_TO_FOREGROUND || type == UsageEvents.Event.ACTIVITY_RESUMED) {
+                    String pkg = event.getPackageName();
+                    if (pkg != null && !pkg.equals(getPackageName())) {
+                        lastNonSelf = pkg;
+                    }
+                }
+            }
+            return lastNonSelf;
+        } catch (Exception e) {
+            return null;
         }
     }
 

@@ -26,8 +26,9 @@
     <string name="service_note_not_used">Note: This app does not currently make use of the accessibility service.</string>
 
     <!-- Messages and prompts on the recents screen -->
-    <string name="close_all_stub">Close All (stub)</string>
-    <string name="close_others_stub">Close Others (stub)</string>
+    <!-- Buttons on the recents screen to close apps via the accessibility service -->
+    <string name="close_all_apps_button">Close all apps</string>
+    <string name="close_other_apps_button">Close other apps</string>
     <string name="grant_usage_access">Grant usage access to show recent apps.</string>
 
     <!-- Strings used when including/excluding apps -->
