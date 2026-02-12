@@ -12,8 +12,7 @@
     - MainActivity zeigt nur einen Button
     - AccessibilityService ruft performGlobalAction(GLOBAL_ACTION_RECENTS) auf
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="eu.recentsopener">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Allow querying launcher activities of other packages. Without
          this <queries> element, Android 11+ restricts visibility of
          packages outside this application. We need to enumerate and
@@ -40,7 +39,7 @@
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
 
         <activity
-            android:name=".MainActivity"
+            android:name="eu.recentsopener.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -49,7 +48,7 @@
         </activity>
 
         <service
-            android:name=".RecentsAccessibilityService"
+            android:name="eu.recentsopener.RecentsAccessibilityService"
             android:exported="false"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
@@ -62,7 +61,7 @@
 
         <!-- Activity showing a list of recent apps using UsageStatsManager -->
         <activity
-            android:name=".RecentAppsActivity"
+            android:name="eu.recentsopener.RecentAppsActivity"
             android:exported="true">
             <!-- Intent filter so external tools (e.g. Key Mapper) can open the recents list -->
             <intent-filter>
@@ -72,8 +71,8 @@
         </activity>
         <!-- Provide a launcher alias to quickly open the recents list via key mapping -->
         <activity-alias
-            android:name=".RecentsLauncher"
-            android:targetActivity=".RecentAppsActivity"
+            android:name="eu.recentsopener.RecentsLauncher"
+            android:targetActivity="eu.recentsopener.RecentAppsActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -83,7 +82,7 @@
 
         <!-- Activity that immediately switches to the last used app. Theme.NoDisplay prevents any UI flicker. -->
         <activity
-            android:name=".LastAppActivity"
+            android:name="eu.recentsopener.LastAppActivity"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>
@@ -93,8 +92,8 @@
         </activity>
         <!-- Provide a launcher alias to quickly switch back to the last app via key mapping -->
         <activity-alias
-            android:name=".LastLauncher"
-            android:targetActivity=".LastAppActivity"
+            android:name="eu.recentsopener.LastLauncher"
+            android:targetActivity="eu.recentsopener.LastAppActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -104,29 +103,29 @@
 
         <!-- Activity for managing excluded apps -->
         <activity
-            android:name=".ExcludedAppsActivity"
+            android:name="eu.recentsopener.ExcludedAppsActivity"
             android:exported="true" />
 
         <!-- Activity showing a live, unfiltered list of recent usage events -->
         <activity
-            android:name=".LiveEventsActivity"
+            android:name="eu.recentsopener.LiveEventsActivity"
             android:exported="true" />
 
         <!-- Additional activities implementing alternative last‑app heuristics.  -->
         <activity
-            android:name=".LastAppVariant2Activity"
+            android:name="eu.recentsopener.LastAppVariant2Activity"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay" />
         <activity
-            android:name=".LastAppVariant3Activity"
+            android:name="eu.recentsopener.LastAppVariant3Activity"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay" />
         <activity
-            android:name=".LastAppVariant4Activity"
+            android:name="eu.recentsopener.LastAppVariant4Activity"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay" />
         <activity
-            android:name=".LastAppVariant5Activity"
+            android:name="eu.recentsopener.LastAppVariant5Activity"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay" />
 
