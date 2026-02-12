@@ -3,6 +3,7 @@ package eu.recentsopener;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import androidx.core.content.ContextCompat;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -99,8 +100,9 @@ public class ExcludedAppsActivity extends AppCompatActivity {
                 // Display label and package name
                 String text = entry.label + " (" + entry.packageName + ")";
                 textView.setText(text);
-                // Use a warning colour to indicate exclusion
-                textView.setTextColor(getContext().getResources().getColor(android.R.color.holo_red_light));
+                // Use a theme-aware warning colour to indicate exclusion
+                int colour = ContextCompat.getColor(getContext(), R.color.recent_app_text_color_excluded);
+                textView.setTextColor(colour);
             }
             return view;
         }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Define colour resources that automatically adapt to light and dark themes.
+    The `recent_app_text_color` resource resolves to a dark text colour when
+    running under a light theme and a light text colour when running under a
+    dark theme. `recent_app_text_color_excluded` remains red in both themes.
+    Additional colours can be added here as needed.
+-->
+<resources>
+    <!-- Default text colour for recent app entries in light mode (dark text on light background). -->
+    <color name="recent_app_text_color">@android:color/primary_text_dark</color>
+    <!-- Colour used for excluded apps; red draws attention regardless of theme. -->
+    <color name="recent_app_text_color_excluded">@android:color/holo_red_light</color>
+</resources>

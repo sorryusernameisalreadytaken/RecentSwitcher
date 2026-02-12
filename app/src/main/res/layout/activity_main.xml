@@ -19,7 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="16dp"
-        android:textColor="#000000"
+        android:textColor="?attr/textColorPrimary"
         android:textSize="16sp" />
 
     <Button
@@ -44,6 +44,37 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/open_last_app_button"
+        android:padding="12dp" />
+
+    <!-- Additional buttons to try different implementations of the last‑app
+         functionality. Each variant uses a different algorithm to determine
+         the previous app. -->
+    <Button
+        android:id="@+id/btn_open_last_app_v2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/open_last_app_v2_button"
+        android:padding="12dp" />
+
+    <Button
+        android:id="@+id/btn_open_last_app_v3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/open_last_app_v3_button"
+        android:padding="12dp" />
+
+    <Button
+        android:id="@+id/btn_open_last_app_v4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/open_last_app_v4_button"
+        android:padding="12dp" />
+
+    <Button
+        android:id="@+id/btn_open_last_app_v5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/open_last_app_v5_button"
         android:padding="12dp" />
 
     <!-- Button to manage excluded applications -->

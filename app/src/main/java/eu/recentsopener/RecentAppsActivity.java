@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import androidx.core.content.ContextCompat;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.LayoutInflater;
@@ -73,7 +74,15 @@ public class RecentAppsActivity extends AppCompatActivity {
             AppEntry entry = recentApps.get(position);
             // Launch the selected app if it is not excluded
             if (!PrefsHelper.isExcluded(this, entry.packageName)) {
-                Intent launchIntent = getPackageManager().getLaunchIntentForPackage(entry.packageName);
+                // Attempt to acquire a TV‑optimised launch intent first. Some
+                // Android TV apps only declare a LEANBACK_LAUNCHER category and
+                // therefore getLaunchIntentForPackage() returns null. See
+                // Google issue 242899915 for details【618002977037848†L92-L100】.
+                PackageManager pm = getPackageManager();
+                Intent launchIntent = pm.getLeanbackLaunchIntentForPackage(entry.packageName);
+                if (launchIntent == null) {
+                    launchIntent = pm.getLaunchIntentForPackage(entry.packageName);
+                }
                 if (launchIntent != null) {
                     // Update the last/previous history before launching
                     PrefsHelper.updateHistory(this, entry.packageName);
@@ -81,11 +90,10 @@ public class RecentAppsActivity extends AppCompatActivity {
                     finish();
                 } else {
                     // Special-case system settings packages
-                    if (entry.packageName.contains("settings")) {
+                    if (entry.packageName != null && entry.packageName.contains("settings")) {
                         Intent settingsIntent = new Intent(Settings.ACTION_SETTINGS);
                         settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         try {
-                            // Update history for settings as well
                             PrefsHelper.updateHistory(this, entry.packageName);
                             startActivity(settingsIntent);
                             finish();
@@ -227,17 +235,18 @@ public class RecentAppsActivity extends AppCompatActivity {
             AppEntry entry = getItem(position);
             ImageView iconView = view.findViewById(R.id.app_icon);
             TextView textView = view.findViewById(R.id.app_text);
-            if (entry != null) {
+                if (entry != null) {
                 iconView.setImageDrawable(entry.icon);
                 // Build display text as "Label (package)"
                 String text = entry.label + " (" + entry.packageName + ")";
                 textView.setText(text);
-                // Highlight excluded packages in red
+                // Highlight excluded packages in red or apply theme-aware colour
                 if (PrefsHelper.isExcluded(getContext(), entry.packageName)) {
-                    textView.setTextColor(getResources().getColor(android.R.color.holo_red_light));
+                    int colour = ContextCompat.getColor(getContext(), R.color.recent_app_text_color_excluded);
+                    textView.setTextColor(colour);
                 } else {
-                    // Use a darker text colour for better contrast on grey backgrounds
-                    textView.setTextColor(getResources().getColor(android.R.color.primary_text_dark));
+                    int colour = ContextCompat.getColor(getContext(), R.color.recent_app_text_color);
+                    textView.setTextColor(colour);
                 }
             }
             return view;

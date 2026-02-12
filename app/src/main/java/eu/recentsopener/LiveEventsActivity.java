@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import androidx.core.content.ContextCompat;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -85,11 +86,13 @@ public class LiveEventsActivity extends AppCompatActivity {
                     String eventName = getEventTypeName(entry.eventType);
                     String text = entry.label + " (" + entry.packageName + ")\n" + eventName + " @ " + timeStr + " [" + entry.source + "]";
                     textView.setText(text);
-                    // Highlight excluded packages in red
+                    // Highlight excluded packages or apply theme-aware colour
                     if (PrefsHelper.isExcluded(getContext(), entry.packageName)) {
-                        textView.setTextColor(getResources().getColor(android.R.color.holo_red_light));
+                        int colour = ContextCompat.getColor(getContext(), R.color.recent_app_text_color_excluded);
+                        textView.setTextColor(colour);
                     } else {
-                        textView.setTextColor(getResources().getColor(android.R.color.primary_text_dark));
+                        int colour = ContextCompat.getColor(getContext(), R.color.recent_app_text_color);
+                        textView.setTextColor(colour);
                     }
                 }
                 return view;

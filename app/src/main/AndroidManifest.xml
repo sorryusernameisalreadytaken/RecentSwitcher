@@ -66,7 +66,7 @@
             android:exported="true">
             <!-- Intent filter so external tools (e.g. Key Mapper) can open the recents list -->
             <intent-filter>
-                <action android:name="eu.recentsopener.SHOW_RECENTS" />
+                <action android:name="eu.ras.SHOW_RECENTS" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -87,7 +87,7 @@
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>
-                <action android:name="eu.recentsopener.SHOW_LAST_APP" />
+                <action android:name="eu.ras.SHOW_LAST_APP" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -111,6 +111,24 @@
         <activity
             android:name=".LiveEventsActivity"
             android:exported="true" />
+
+        <!-- Additional activities implementing alternative last‑app heuristics.  -->
+        <activity
+            android:name=".LastAppVariant2Activity"
+            android:exported="true"
+            android:theme="@android:style/Theme.NoDisplay" />
+        <activity
+            android:name=".LastAppVariant3Activity"
+            android:exported="true"
+            android:theme="@android:style/Theme.NoDisplay" />
+        <activity
+            android:name=".LastAppVariant4Activity"
+            android:exported="true"
+            android:theme="@android:style/Theme.NoDisplay" />
+        <activity
+            android:name=".LastAppVariant5Activity"
+            android:exported="true"
+            android:theme="@android:style/Theme.NoDisplay" />
 
     </application>
 

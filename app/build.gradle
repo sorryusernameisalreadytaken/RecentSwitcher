@@ -3,11 +3,17 @@ plugins {
 }
 
 android {
+    // The namespace remains eu.recentsopener so that existing Java packages
+    // continue to compile without refactoring. The applicationId below
+    // determines the final package name of the APK (eu.ras).
     namespace 'eu.recentsopener'
     compileSdk 34
 
     defaultConfig {
-        applicationId "eu.recentsopener"
+        // Publish the app under the eu.ras package id. This does not
+        // require renaming the Java packages thanks to the separate
+        // namespace defined above.
+        applicationId "eu.ras"
         minSdk 21
         targetSdk 34
         versionCode 1

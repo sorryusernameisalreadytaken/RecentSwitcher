@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Overrides for colours when the device is using a dark (night) theme. In
+    night mode the primary text colour should be light for good contrast.
+-->
+<resources>
+    <!-- Use a light text colour on dark backgrounds. -->
+    <color name="recent_app_text_color">@android:color/primary_text_light</color>
+    <color name="recent_app_text_color_excluded">@android:color/holo_red_light</color>
+</resources>
