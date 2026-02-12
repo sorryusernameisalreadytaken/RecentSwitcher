@@ -11,7 +11,7 @@
 
     <!-- Button labels on the main screen -->
     <string name="show_recent_apps_button">Recent apps</string>
-    <string name="open_last_app_button">Last app</string>
+    <string name="open_last_app_button">Open last app</string>
     <!-- Button label to open the system recents (overview) menu -->
     <string name="list_actions_button">Open system recents menu</string>
     <string name="manage_excluded_button">Manage excluded apps</string>
@@ -33,7 +33,7 @@
     <!-- Strings used when including/excluding apps -->
     <string name="no_excluded_apps">No excluded apps found.</string>
     <string name="app_excluded">%1$s has been excluded.</string>
-    <string name="app_included">%1$s has been re‑enabled.</string>
+    <string name="app_included">%1$s has been re-enabled.</string>
     <string name="no_last_app">No previous app found.</string>
 
     <!-- Content description for app icons in lists -->
@@ -54,4 +54,7 @@
     <!-- Debug report messages -->
     <string name="debug_report_saved">Debug report saved: %1$s</string>
     <string name="debug_report_failed">Failed to write debug report: %1$s</string>
+
+    <!-- Description for settings gear button in recent apps list -->
+    <string name="open_settings_description">Open app settings</string>
 </resources>

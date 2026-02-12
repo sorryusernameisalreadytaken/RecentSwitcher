@@ -18,6 +18,13 @@ public class RecentsAccessibilityService extends AccessibilityService {
     // binds the service when the user enables it via the accessibility settings.
     private static RecentsAccessibilityService sInstance;
 
+    /**
+     * The delay (in milliseconds) between automated steps when performing the
+     * force‑stop sequence. Adjust this value if the UI on your device needs
+     * more or less time to update between focus changes and button presses.
+     */
+    private static final int FORCE_SEQUENCE_DELAY_MS = 500;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -95,15 +102,15 @@ public class RecentsAccessibilityService extends AccessibilityService {
         // Step 1: wait 500ms, then click the Force stop button if present
         handler.postDelayed(() -> {
             clickButtonByText(new String[]{"Force stop", "Stoppen erzwingen", "Stopp erzwingen", "Beenden erzwingen"});
-            // Step 2: after another 500ms click the OK button on the confirmation dialog
+            // Step 2: after another delay click the OK button on the confirmation dialog
             handler.postDelayed(() -> {
-                clickButtonByText(new String[]{"OK", "Ok", "OK ", "OKAY", "Ok ", "O. K.", "Beenden"});
-                // Step 3: after another 500ms go back to the previous screen
+                clickButtonByText(new String[]{"OK", "Ok", "OK ", "OKAY", "Ok ", "O. K.", "Beenden"});
+                // Step 3: after another delay go back to the previous screen
                 handler.postDelayed(() -> {
                     svc.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
-                }, 500);
-            }, 500);
-        }, 500);
+                }, FORCE_SEQUENCE_DELAY_MS);
+            }, FORCE_SEQUENCE_DELAY_MS);
+        }, FORCE_SEQUENCE_DELAY_MS);
     }
 
     /**
@@ -121,28 +128,67 @@ public class RecentsAccessibilityService extends AccessibilityService {
         if (root == null) {
             return;
         }
-        for (String text : candidates) {
-            if (text == null || text.isEmpty()) continue;
-            java.util.List<android.view.accessibility.AccessibilityNodeInfo> nodes = root.findAccessibilityNodeInfosByText(text);
-            if (nodes != null && !nodes.isEmpty()) {
-                for (android.view.accessibility.AccessibilityNodeInfo node : nodes) {
-                    // Only click if the node is clickable and enabled
-                    if (node.isClickable() && node.isEnabled()) {
-                        node.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK);
-                        // recycle nodes to avoid leaks
-                        for (android.view.accessibility.AccessibilityNodeInfo n : nodes) {
-                            n.recycle();
+        try {
+            // First try to find the force stop button by resource ID on common packages
+            String[] idCandidates = new String[]{
+                    "com.android.settings:id/force_stop_button",
+                    "com.android.settings:id/left_button",
+                    "com.android.tv.settings:id/force_stop_button",
+                    "com.google.android.tv.settings:id/force_stop_button"
+            };
+            for (String viewId : idCandidates) {
+                try {
+                    java.util.List<android.view.accessibility.AccessibilityNodeInfo> nodesById = root.findAccessibilityNodeInfosByViewId(viewId);
+                    if (nodesById != null && !nodesById.isEmpty()) {
+                        for (android.view.accessibility.AccessibilityNodeInfo node : nodesById) {
+                            if (node != null && node.isEnabled()) {
+                                // climb up to a clickable ancestor if necessary
+                                android.view.accessibility.AccessibilityNodeInfo clickable = node;
+                                while (clickable != null && !clickable.isClickable()) {
+                                    clickable = clickable.getParent();
+                                }
+                                if (clickable != null) {
+                                    clickable.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK);
+                                    for (android.view.accessibility.AccessibilityNodeInfo n : nodesById) {
+                                        n.recycle();
+                                    }
+                                    return;
+                                }
+                            }
                         }
-                        root.recycle();
-                        return;
                     }
-                }
-                // Recycle nodes if none clicked
-                for (android.view.accessibility.AccessibilityNodeInfo n : nodes) {
-                    n.recycle();
+                } catch (Exception ignore) {
+                    // ignore invalid view IDs
                 }
             }
+            // If not found by ID, search by visible text across locales
+            for (String text : candidates) {
+                if (text == null || text.isEmpty()) continue;
+                java.util.List<android.view.accessibility.AccessibilityNodeInfo> nodes = root.findAccessibilityNodeInfosByText(text);
+                if (nodes != null && !nodes.isEmpty()) {
+                    for (android.view.accessibility.AccessibilityNodeInfo node : nodes) {
+                        if (node != null && node.isEnabled()) {
+                            android.view.accessibility.AccessibilityNodeInfo clickable = node;
+                            while (clickable != null && !clickable.isClickable()) {
+                                clickable = clickable.getParent();
+                            }
+                            if (clickable != null) {
+                                clickable.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK);
+                                for (android.view.accessibility.AccessibilityNodeInfo n : nodes) {
+                                    n.recycle();
+                                }
+                                return;
+                            }
+                        }
+                    }
+                    // Recycle nodes if none clicked
+                    for (android.view.accessibility.AccessibilityNodeInfo n : nodes) {
+                        n.recycle();
+                    }
+                }
+            }
+        } finally {
+            root.recycle();
         }
-        root.recycle();
     }
 }

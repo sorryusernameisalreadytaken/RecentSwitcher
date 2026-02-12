@@ -12,7 +12,7 @@
     <string name="show_recent_apps_button">Alle geöffneten Apps</string>
     <string name="open_last_app_button">Letzte App öffnen</string>
     <!-- German translation of the button that opens the system recents menu -->
-    <string name="list_actions_button">System‑Recents‑Menü öffnen</string>
+    <string name="list_actions_button">System-Recents-Menü öffnen</string>
     <string name="manage_excluded_button">Ausgeschlossene Apps verwalten</string>
     <string name="collect_debug_button">Debug‑Bericht erstellen</string>
     <string name="show_live_events_button">Live‑Events</string>
@@ -42,8 +42,8 @@
     <string name="accessibility_settings_title">Bedienungshilfe‑Einstellungen</string>
 
     <!-- Beschreibung und Bezeichnung für unseren Bedienungshilfe‑Dienst in den System‑Einstellungen -->
-    <string name="accessibility_service_description">Ermöglicht der App, globale Aktionen auszuführen, wie das Öffnen des System‑Recents‑Menüs und das Navigieren in den App‑Einstellungen.</string>
-    <string name="accessibility_service_label">Bedienungshilfe‑Dienst von RecentAppSwitcher</string>
+    <string name="accessibility_service_description">Ermöglicht der App, globale Aktionen auszuführen, wie das Öffnen des System-Recents-Menüs und das Navigieren in den App-Einstellungen.</string>
+    <string name="accessibility_service_label">Bedienungshilfe-Dienst von RecentAppSwitcher</string>
 
     <!-- Descriptive texts for list screens (German translations) -->
     <string name="recent_apps_description">Wähle eine App zum Starten. Langer Druck, um sie auszuschließen oder wieder aufzunehmen.</string>
@@ -53,4 +53,7 @@
     <!-- Debug report messages (German translations) -->
     <string name="debug_report_saved">Debug‑Bericht gespeichert: %1$s</string>
     <string name="debug_report_failed">Fehler beim Schreiben des Debug‑Berichts: %1$s</string>
+
+    <!-- Beschreibung für das Zahnrad-Symbol in der Liste der letzten Apps -->
+    <string name="open_settings_description">App-Einstellungen öffnen</string>
 </resources>

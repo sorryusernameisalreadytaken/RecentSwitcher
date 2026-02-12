@@ -301,6 +301,7 @@ public class RecentAppsActivity extends AppCompatActivity {
             AppEntry entry = getItem(position);
             ImageView iconView = view.findViewById(R.id.app_icon);
             TextView textView = view.findViewById(R.id.app_text);
+            android.widget.ImageButton settingsButton = view.findViewById(R.id.settings_button);
                 if (entry != null) {
                 iconView.setImageDrawable(entry.icon);
                 // Build display text as "Label (package)"
@@ -314,6 +315,18 @@ public class RecentAppsActivity extends AppCompatActivity {
                     int colour = ContextCompat.getColor(getContext(), R.color.recent_app_text_color);
                     textView.setTextColor(colour);
                 }
+                // Set click listener on the settings gear to open the application details settings
+                settingsButton.setOnClickListener(v -> {
+                    // Build intent to show app details settings for this package
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.parse("package:" + entry.packageName));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    try {
+                        getContext().startActivity(intent);
+                    } catch (Exception e) {
+                        android.widget.Toast.makeText(getContext(), entry.packageName + " cannot be opened in settings", android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
             return view;
         }
