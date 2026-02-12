@@ -39,6 +39,14 @@ public final class PrefsHelper {
         defaults.add("com.google.android.packageinstaller");
         defaults.add("com.google.android.apps.tv.dreamx");
         defaults.add("com.google.android.chromecast.chromecastservice");
+        // Additional system packages to exclude by default
+        defaults.add("com.android.intentresolver");
+        defaults.add("com.android.permissioncontroller");
+        defaults.add("com.android.packageinstaller");
+        defaults.add("com.android.launcher3");
+        defaults.add("android");
+        defaults.add("com.android.settings.intelligence");
+        defaults.add("de.mm20.launcher2.release");
         DEFAULT_EXCLUDED = java.util.Collections.unmodifiableSet(defaults);
     }
 

@@ -74,12 +74,13 @@ public final class DebugHelper {
                 }
             }
             writer.flush();
-            android.widget.Toast.makeText(context,
-                    "Debug report saved: " + outFile.getAbsolutePath(),
+            // Show a toast with the saved report path using string resources
+            String msg = context.getString(R.string.debug_report_saved, outFile.getAbsolutePath());
+            android.widget.Toast.makeText(context, msg,
                     android.widget.Toast.LENGTH_LONG).show();
         } catch (IOException e) {
-            android.widget.Toast.makeText(context,
-                    "Failed to write debug report: " + e.getMessage(),
+            String errMsg = context.getString(R.string.debug_report_failed, e.getMessage());
+            android.widget.Toast.makeText(context, errMsg,
                     android.widget.Toast.LENGTH_LONG).show();
         } finally {
             if (writer != null) {

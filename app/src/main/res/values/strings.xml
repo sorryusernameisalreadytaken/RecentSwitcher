@@ -12,7 +12,8 @@
     <!-- Button labels on the main screen -->
     <string name="show_recent_apps_button">Recent apps</string>
     <string name="open_last_app_button">Last app</string>
-    <string name="list_actions_button">List actions</string>
+    <!-- Button label to open the system recents (overview) menu -->
+    <string name="list_actions_button">Open system recents menu</string>
     <string name="manage_excluded_button">Manage excluded apps</string>
     <string name="collect_debug_button">Collect debug report</string>
     <string name="show_live_events_button">Live events</string>
@@ -40,4 +41,13 @@
 
     <!-- Title of the accessibility settings screen (not currently used) -->
     <string name="accessibility_settings_title">Accessibility settings</string>
+
+    <!-- Descriptive texts for list screens -->
+    <string name="recent_apps_description">Select an app to launch it. Long press to exclude or include.</string>
+    <string name="excluded_apps_description">Tap an app to include it again.</string>
+    <string name="live_events_description">This list displays all recent usage events (last 5 minutes).</string>
+
+    <!-- Debug report messages -->
+    <string name="debug_report_saved">Debug report saved: %1$s</string>
+    <string name="debug_report_failed">Failed to write debug report: %1$s</string>
 </resources>

@@ -18,9 +18,37 @@ import java.util.Set;
  * or cannot be launched, a short toast message is shown instead.
  */
 public class LastAppActivity extends Activity {
+    /**
+     * Checks whether usage access permission has been granted. We query
+     * UsageEvents for a short time window to infer permission status. This
+     * mirrors the logic used in RecentAppsActivity.
+     *
+     * @return true if usage events can be queried, false otherwise
+     */
+    private boolean hasUsageAccess() {
+        try {
+            android.app.usage.UsageStatsManager usm =
+                    (android.app.usage.UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+            long now = System.currentTimeMillis();
+            android.app.usage.UsageEvents events = usm.queryEvents(now - 1000 * 60 * 60, now);
+            return events != null && events.hasNextEvent();
+        } catch (Exception e) {
+            return false;
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Ensure usage access is granted before attempting to determine the last app.
+        // If not granted, prompt the user to enable usage access like the recents list does.
+        if (!hasUsageAccess()) {
+            Toast.makeText(this, getString(R.string.grant_usage_access), Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+            return;
+        }
         // Compute the target package using variant 3 logic: scan recent usage
         // events, skip the most recent package (which may refresh in the
         // background) and pick the next candidate. Fallback to the previously

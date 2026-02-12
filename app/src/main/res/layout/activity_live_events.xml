@@ -16,7 +16,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Diese Liste zeigt alle letzten Nutzungsereignisse (5 Minuten)."
+        android:text="@string/live_events_description"
         android:textSize="14sp"
         android:paddingBottom="8dp" />
 

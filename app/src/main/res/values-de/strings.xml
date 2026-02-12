@@ -9,9 +9,10 @@
     <string name="app_name">RecentAppSwitcher</string>
 
     <!-- Button labels on the main screen -->
-    <string name="show_recent_apps_button">Letzte Apps</string>
-    <string name="open_last_app_button">Letzte App</string>
-    <string name="list_actions_button">List Actions</string>
+    <string name="show_recent_apps_button">Alle geöffneten Apps</string>
+    <string name="open_last_app_button">Letzte App öffnen</string>
+    <!-- German translation of the button that opens the system recents menu -->
+    <string name="list_actions_button">System‑Recents‑Menü öffnen</string>
     <string name="manage_excluded_button">Ausgeschlossene Apps verwalten</string>
     <string name="collect_debug_button">Debug‑Bericht erstellen</string>
     <string name="show_live_events_button">Live‑Events</string>
@@ -39,4 +40,13 @@
 
     <!-- Title of the accessibility settings screen (not currently used) -->
     <string name="accessibility_settings_title">Bedienungshilfe‑Einstellungen</string>
+
+    <!-- Descriptive texts for list screens (German translations) -->
+    <string name="recent_apps_description">Wähle eine App zum Starten. Langer Druck, um sie auszuschließen oder wieder aufzunehmen.</string>
+    <string name="excluded_apps_description">Tippe auf eine App, um sie wieder aufzunehmen.</string>
+    <string name="live_events_description">Diese Liste zeigt alle letzten Nutzungsereignisse (5 Minuten).</string>
+
+    <!-- Debug report messages (German translations) -->
+    <string name="debug_report_saved">Debug‑Bericht gespeichert: %1$s</string>
+    <string name="debug_report_failed">Fehler beim Schreiben des Debug‑Berichts: %1$s</string>
 </resources>

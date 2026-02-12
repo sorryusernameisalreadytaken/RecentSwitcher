@@ -10,6 +10,8 @@ import android.graphics.drawable.Drawable;
 import androidx.core.content.ContextCompat;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.net.Uri;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,6 +44,12 @@ public class RecentAppsActivity extends AppCompatActivity {
      */
     private final List<AppEntry> recentApps = new ArrayList<>();
 
+    /**
+     * Adapter for the recents list. Stored as a field so that it can be
+     * refreshed in onResume() once usage access is granted.
+     */
+    private RecentAppsAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,18 +66,19 @@ public class RecentAppsActivity extends AppCompatActivity {
         btnCloseOthers.setOnClickListener(v ->
                 Toast.makeText(this, getString(R.string.close_others_stub), Toast.LENGTH_SHORT).show());
 
-        // If usage access is not granted, prompt the user and bail. We do not
-        // combine this activity with the accessibility service; the usage
-        // permission is required to populate the recents list.
-        if (!hasUsageAccess()) {
+        // If usage access is not granted, prompt the user to enable it. We still
+        // continue and set up the adapter so that the list can be populated
+        // once permission is granted. Without permission the list will remain empty.
+        boolean accessGranted = hasUsageAccess();
+        if (!accessGranted) {
             requestUsageAccess();
-            return;
         }
 
-        // Load the recent apps and attach a custom adapter that shows the
-        // icon, label and package name. Long-press toggles exclusion.
-        loadRecents();
-        final RecentAppsAdapter adapter = new RecentAppsAdapter(this, recentApps);
+        // Populate the list if we already have access; otherwise it stays empty
+        if (accessGranted) {
+            loadRecents();
+        }
+        adapter = new RecentAppsAdapter(this, recentApps);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener((parent, view, position, id) -> {
             AppEntry entry = recentApps.get(position);
@@ -133,6 +142,27 @@ public class RecentAppsActivity extends AppCompatActivity {
             // Restore scroll position
             listView.setSelectionFromTop(index, top);
             return true;
+        });
+
+        // Allow DPAD-LEFT to open the system settings screen for the selected app.
+        listView.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                int pos = listView.getSelectedItemPosition();
+                if (pos != android.widget.AdapterView.INVALID_POSITION && pos < recentApps.size()) {
+                    AppEntry appEntry = recentApps.get(pos);
+                    // Build intent to show app details settings for this package
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.parse("package:" + appEntry.packageName));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    try {
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        Toast.makeText(this, appEntry.packageName + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
+                    }
+                    return true;
+                }
+            }
+            return false;
         });
     }
 
@@ -202,6 +232,19 @@ public class RecentAppsActivity extends AppCompatActivity {
                 recentApps.add(new AppEntry(pkg, label, icon));
             } catch (PackageManager.NameNotFoundException e) {
                 // skip unknown packages
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // After returning from the usage access settings, the recents list may still be empty.
+        // If usage access has been granted and no apps are loaded yet, refresh the list.
+        if (recentApps.isEmpty() && hasUsageAccess()) {
+            loadRecents();
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
             }
         }
     }
