@@ -4,7 +4,7 @@
     night mode the primary text colour should be light for good contrast.
 -->
 <resources>
-    <!-- Use a light text colour on dark backgrounds. -->
-    <color name="recent_app_text_color">@android:color/primary_text_light</color>
-    <color name="recent_app_text_color_excluded">@android:color/holo_red_light</color>
+    <!-- Use a light text colour on dark backgrounds. Provide explicit white for maximum contrast. -->
+    <color name="recent_app_text_color">#FFFFFF</color>
+    <color name="recent_app_text_color_excluded">#FF4444</color>
 </resources>

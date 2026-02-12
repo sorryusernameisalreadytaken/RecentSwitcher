@@ -1,41 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Default (English) string resources for the RecentAppSwitcher project.
+    These strings provide user‑visible labels and messages throughout the app.
+    A German translation is provided in values‑de/strings.xml and will be
+    automatically selected when the device language is set to German.
+-->
 <resources>
-    <!-- Display name of the app -->
+    <!-- Application name shown in the launcher and system UI -->
     <string name="app_name">RecentAppSwitcher</string>
-    <string name="open_recents_button">Letzte Apps öffnen</string>
-    <string name="enable_service_button">Dienst aktivieren</string>
-    <!-- Status messages shown on the main screen. We no longer trigger the
-         system recents UI via accessibility; these messages simply
-         indicate whether the accessibility service is enabled. -->
-    <string name="service_not_enabled">Der Bedienungshilfe‑Dienst ist nicht aktiv. Du kannst ihn in den Einstellungen einschalten, falls er für andere Funktionen benötigt wird.</string>
-    <string name="service_enabled">Der Bedienungshilfe‑Dienst ist aktiv.</string>
-    <string name="accessibility_settings_title">Einstellungen für Bedienungshilfen</string>
 
-    <!-- Strings for the recent apps screen and usage access -->
+    <!-- Button labels on the main screen -->
+    <string name="show_recent_apps_button">Recent apps</string>
+    <string name="open_last_app_button">Last app</string>
+    <string name="list_actions_button">List actions</string>
+    <string name="manage_excluded_button">Manage excluded apps</string>
+    <string name="collect_debug_button">Collect debug report</string>
+    <string name="show_live_events_button">Live events</string>
+    <string name="enable_service_button">Enable service</string>
+
+    <!-- Status messages for the accessibility service -->
+    <string name="service_not_enabled">The accessibility service is not active. You can enable it in the settings if it is needed for other functions.</string>
+    <string name="service_enabled">The accessibility service is active.</string>
+    <!-- Note indicating that the accessibility service is not currently used by this app -->
+    <string name="service_note_not_used">Note: This app does not currently make use of the accessibility service.</string>
+
+    <!-- Messages and prompts on the recents screen -->
     <string name="close_all_stub">Close All (stub)</string>
     <string name="close_others_stub">Close Others (stub)</string>
-    <string name="grant_usage_access">Grant usage access to show recent apps</string>
-    <string name="show_recent_apps_button">Recent Apps</string>
+    <string name="grant_usage_access">Grant usage access to show recent apps.</string>
 
-    <!-- Button texts for new actions -->
-    <string name="open_last_app_button">Letzte App</string>
-    <!-- Label for invoking the system recents overlay via accessibility -->
-    <string name="list_actions_button">List Actions</string>
-    <string name="manage_excluded_button">Ausgeschlossene Apps verwalten</string>
+    <!-- Strings used when including/excluding apps -->
+    <string name="no_excluded_apps">No excluded apps found.</string>
+    <string name="app_excluded">%1$s has been excluded.</string>
+    <string name="app_included">%1$s has been re‑enabled.</string>
+    <string name="no_last_app">No previous app found.</string>
 
-    <!-- Message when there are no excluded apps to manage -->
-    <string name="no_excluded_apps">Keine ausgeschlossenen Apps gefunden</string>
+    <!-- Content description for app icons in lists -->
+    <string name="app_icon_desc">App icon</string>
 
-    <!-- Messages for excluded/included apps and fallback when no last app exists -->
-    <string name="app_excluded">%1$s wurde ausgeschlossen</string>
-    <string name="app_included">%1$s wurde wieder hinzugefügt</string>
-    <string name="no_last_app">Keine vorherige App gefunden</string>
-    <!-- Content description for icons in the recent apps list -->
-    <string name="app_icon_desc">App-Symbol</string>
-
-    <!-- Button to collect a debug report of usage events and stats -->
-    <string name="collect_debug_button">Debug-Bericht erstellen</string>
-
-    <!-- Button text for live events screen -->
-    <string name="show_live_events_button">Live-Events</string>
+    <!-- Title of the accessibility settings screen (not currently used) -->
+    <string name="accessibility_settings_title">Accessibility settings</string>
 </resources>

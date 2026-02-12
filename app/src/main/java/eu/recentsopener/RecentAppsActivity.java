@@ -49,7 +49,8 @@ public class RecentAppsActivity extends AppCompatActivity {
 
         Button btnCloseAll = findViewById(R.id.btn_close_all);
         Button btnCloseOthers = findViewById(R.id.btn_close_others);
-        ListView listView = findViewById(R.id.listView);
+        // ListView is declared final so we can capture it inside the long‑click listener
+        final ListView listView = findViewById(R.id.listView);
 
         // The close buttons are stubs: inform users that closing other apps is not allowed
         btnCloseAll.setOnClickListener(v ->
@@ -111,16 +112,26 @@ public class RecentAppsActivity extends AppCompatActivity {
         });
         listView.setOnItemLongClickListener((parent, view, position, id) -> {
             AppEntry entry = recentApps.get(position);
-            boolean excluded = PrefsHelper.isExcluded(this, entry.packageName);
-            if (excluded) {
-                PrefsHelper.removeExcludedApp(this, entry.packageName);
-                Toast.makeText(this, getString(R.string.app_included, entry.label), Toast.LENGTH_SHORT).show();
+            boolean currentlyExcluded = PrefsHelper.isExcluded(RecentAppsActivity.this, entry.packageName);
+            // Save the current scroll position so that we can restore it after updating the list
+            int index = listView.getFirstVisiblePosition();
+            View topView = listView.getChildAt(0);
+            int top = (topView == null) ? 0 : topView.getTop();
+            if (currentlyExcluded) {
+                // Remove from exclusion list and reinstate this app in the recents list
+                PrefsHelper.removeExcludedApp(RecentAppsActivity.this, entry.packageName);
+                Toast.makeText(RecentAppsActivity.this, getString(R.string.app_included, entry.label), Toast.LENGTH_SHORT).show();
+                // Rebuild the recents list to include the newly included app
+                loadRecents();
             } else {
-                PrefsHelper.addExcludedApp(this, entry.packageName);
-                Toast.makeText(this, getString(R.string.app_excluded, entry.label), Toast.LENGTH_SHORT).show();
+                // Add to exclusion list and remove from the displayed list
+                PrefsHelper.addExcludedApp(RecentAppsActivity.this, entry.packageName);
+                Toast.makeText(RecentAppsActivity.this, getString(R.string.app_excluded, entry.label), Toast.LENGTH_SHORT).show();
+                recentApps.remove(position);
             }
-            // Simply refresh the adapter; do not reload recents to preserve scroll position
             adapter.notifyDataSetChanged();
+            // Restore scroll position
+            listView.setSelectionFromTop(index, top);
             return true;
         });
     }
@@ -180,6 +191,10 @@ public class RecentAppsActivity extends AppCompatActivity {
         Collections.reverse(packagesInOrder);
         PackageManager pm = getPackageManager();
         for (String pkg : packagesInOrder) {
+            // Do not display excluded packages in the recents list
+            if (PrefsHelper.isExcluded(this, pkg)) {
+                continue;
+            }
             try {
                 ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
                 String label = pm.getApplicationLabel(appInfo).toString();

@@ -8,7 +8,8 @@
 -->
 <resources>
     <!-- Default text colour for recent app entries in light mode (dark text on light background). -->
-    <color name="recent_app_text_color">@android:color/primary_text_dark</color>
+    <!-- Explicitly specify black to ensure good contrast on very light backgrounds. -->
+    <color name="recent_app_text_color">#000000</color>
     <!-- Colour used for excluded apps; red draws attention regardless of theme. -->
-    <color name="recent_app_text_color_excluded">@android:color/holo_red_light</color>
+    <color name="recent_app_text_color_excluded">#FF4444</color>
 </resources>

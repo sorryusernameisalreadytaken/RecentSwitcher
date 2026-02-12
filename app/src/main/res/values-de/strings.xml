@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    German translations for the RecentAppSwitcher project. When the device
+    language is set to German (de), these strings will override the
+    defaults defined in values/strings.xml.
+-->
+<resources>
+    <!-- Application name -->
+    <string name="app_name">RecentAppSwitcher</string>
+
+    <!-- Button labels on the main screen -->
+    <string name="show_recent_apps_button">Letzte Apps</string>
+    <string name="open_last_app_button">Letzte App</string>
+    <string name="list_actions_button">List Actions</string>
+    <string name="manage_excluded_button">Ausgeschlossene Apps verwalten</string>
+    <string name="collect_debug_button">Debug‑Bericht erstellen</string>
+    <string name="show_live_events_button">Live‑Events</string>
+    <string name="enable_service_button">Dienst aktivieren</string>
+
+    <!-- Status messages for the accessibility service -->
+    <string name="service_not_enabled">Der Bedienungshilfe‑Dienst ist nicht aktiv. Du kannst ihn in den Einstellungen einschalten, falls er für andere Funktionen benötigt wird.</string>
+    <string name="service_enabled">Der Bedienungshilfe‑Dienst ist aktiv.</string>
+    <!-- Note indicating that the accessibility service is not currently used by this app -->
+    <string name="service_note_not_used">Hinweis: Der Bedienungshilfe‑Dienst wird von dieser App derzeit nicht genutzt.</string>
+
+    <!-- Messages and prompts on the recents screen -->
+    <string name="close_all_stub">Alle schließen (Stub)</string>
+    <string name="close_others_stub">Andere schließen (Stub)</string>
+    <string name="grant_usage_access">Erlaube Zugriff auf Nutzungsdaten, um die letzten Apps anzuzeigen.</string>
+
+    <!-- Strings used when including/excluding apps -->
+    <string name="no_excluded_apps">Keine ausgeschlossenen Apps gefunden.</string>
+    <string name="app_excluded">%1$s wurde ausgeschlossen.</string>
+    <string name="app_included">%1$s wurde wieder hinzugefügt.</string>
+    <string name="no_last_app">Keine vorherige App gefunden.</string>
+
+    <!-- Content description for app icons in lists -->
+    <string name="app_icon_desc">App‑Symbol</string>
+
+    <!-- Title of the accessibility settings screen (not currently used) -->
+    <string name="accessibility_settings_title">Bedienungshilfe‑Einstellungen</string>
+</resources>

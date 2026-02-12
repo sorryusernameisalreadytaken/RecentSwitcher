@@ -94,17 +94,14 @@ public class MainActivity extends AppCompatActivity {
      * The other buttons remain visible regardless of service state.
      */
     private void updateUi() {
-        // Always hide the open recents button since we no longer trigger
-        // the system overview. Still show a status message about the
-        // accessibility service and provide an enable button if it is not
-        // active. The other buttons remain visible regardless of service state.
+        // Determine whether the accessibility service is currently enabled. We
+        // update the status message accordingly and always append a note that
+        // the service is not utilised by this app. When the service is not
+        // enabled we also show a button to jump to the accessibility settings.
         boolean serviceEnabled = RecentsAccessibilityService.isServiceEnabled();
-        if (serviceEnabled) {
-            tvStatus.setText(R.string.service_enabled);
-            btnEnableService.setVisibility(View.GONE);
-        } else {
-            tvStatus.setText(R.string.service_not_enabled);
-            btnEnableService.setVisibility(View.VISIBLE);
-        }
+        String status = getString(serviceEnabled ? R.string.service_enabled : R.string.service_not_enabled);
+        String note = getString(R.string.service_note_not_used);
+        tvStatus.setText(status + "\n" + note);
+        btnEnableService.setVisibility(serviceEnabled ? View.GONE : View.VISIBLE);
     }
 }
