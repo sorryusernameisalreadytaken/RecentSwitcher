@@ -25,6 +25,23 @@ public final class PrefsHelper {
     private static final String KEY_PREVIOUS_PACKAGE = "previous_package";
     private static final String KEY_EXCLUDED_APPS = "excluded_apps";
 
+    /**
+     * List of packages that are excluded by default. These are primarily
+     * system or launcher apps on Android TV that should not appear in the
+     * recent list or be considered for last‑app switching. They remain
+     * removable by the user via the excluded apps manager.
+     */
+    private static final java.util.Set<String> DEFAULT_EXCLUDED;
+    static {
+        java.util.Set<String> defaults = new java.util.HashSet<>();
+        defaults.add("com.spocky.projengmenu");
+        defaults.add("com.google.android.apps.tv.launcherx");
+        defaults.add("com.google.android.packageinstaller");
+        defaults.add("com.google.android.apps.tv.dreamx");
+        defaults.add("com.google.android.chromecast.chromecastservice");
+        DEFAULT_EXCLUDED = java.util.Collections.unmodifiableSet(defaults);
+    }
+
     private PrefsHelper() {
         // no instances
     }
@@ -84,8 +101,14 @@ public final class PrefsHelper {
     public static Set<String> getExcludedApps(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         Set<String> excluded = prefs.getStringSet(KEY_EXCLUDED_APPS, null);
-        // Create a defensive copy so callers cannot modify the stored set
-        return excluded != null ? new HashSet<>(excluded) : new HashSet<>();
+        if (excluded == null) {
+            // Initialise with default excluded packages on first access
+            excluded = new HashSet<>(DEFAULT_EXCLUDED);
+            prefs.edit().putStringSet(KEY_EXCLUDED_APPS, excluded).apply();
+            return new HashSet<>(excluded);
+        }
+        // Defensive copy; do not modify the persisted set directly
+        return new HashSet<>(excluded);
     }
 
     /**

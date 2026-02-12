@@ -68,7 +68,7 @@ public class RecentAppsActivity extends AppCompatActivity {
         // Load the recent apps and attach a custom adapter that shows the
         // icon, label and package name. Long-press toggles exclusion.
         loadRecents();
-        RecentAppsAdapter adapter = new RecentAppsAdapter(this, recentApps);
+        final RecentAppsAdapter adapter = new RecentAppsAdapter(this, recentApps);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener((parent, view, position, id) -> {
             AppEntry entry = recentApps.get(position);
@@ -119,10 +119,8 @@ public class RecentAppsActivity extends AppCompatActivity {
                 PrefsHelper.addExcludedApp(this, entry.packageName);
                 Toast.makeText(this, getString(R.string.app_excluded, entry.label), Toast.LENGTH_SHORT).show();
             }
-            // Refresh list to update highlighting but keep order
-            loadRecents();
-            RecentAppsAdapter newAdapter = new RecentAppsAdapter(this, recentApps);
-            listView.setAdapter(newAdapter);
+            // Simply refresh the adapter; do not reload recents to preserve scroll position
+            adapter.notifyDataSetChanged();
             return true;
         });
     }
@@ -182,10 +180,6 @@ public class RecentAppsActivity extends AppCompatActivity {
         Collections.reverse(packagesInOrder);
         PackageManager pm = getPackageManager();
         for (String pkg : packagesInOrder) {
-            // Skip excluded packages entirely from the recents list
-            if (PrefsHelper.isExcluded(this, pkg)) {
-                continue;
-            }
             try {
                 ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
                 String label = pm.getApplicationLabel(appInfo).toString();

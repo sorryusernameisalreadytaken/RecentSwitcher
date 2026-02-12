@@ -6,6 +6,7 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,10 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnEnableService;
     private Button btnShowRecentApps;
     private Button btnOpenLastApp;
-    private Button btnOpenLastAppV2;
-    private Button btnOpenLastAppV3;
-    private Button btnOpenLastAppV4;
-    private Button btnOpenLastAppV5;
+    private Button btnListActions;
     private Button btnManageExcluded;
     private Button btnCollectDebug;
     private Button btnShowLiveEvents;
@@ -39,10 +37,7 @@ public class MainActivity extends AppCompatActivity {
         btnEnableService = findViewById(R.id.btn_enable_service);
         btnShowRecentApps = findViewById(R.id.btn_show_recent_apps);
         btnOpenLastApp = findViewById(R.id.btn_open_last_app);
-        btnOpenLastAppV2 = findViewById(R.id.btn_open_last_app_v2);
-        btnOpenLastAppV3 = findViewById(R.id.btn_open_last_app_v3);
-        btnOpenLastAppV4 = findViewById(R.id.btn_open_last_app_v4);
-        btnOpenLastAppV5 = findViewById(R.id.btn_open_last_app_v5);
+        btnListActions = findViewById(R.id.btn_list_actions);
         btnManageExcluded = findViewById(R.id.btn_manage_excluded);
         btnCollectDebug = findViewById(R.id.btn_collect_debug);
         btnShowLiveEvents = findViewById(R.id.btn_show_live_events);
@@ -55,18 +50,17 @@ public class MainActivity extends AppCompatActivity {
         btnOpenLastApp.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, LastAppActivity.class)));
 
-        // Launch variant 2 of the last‑app switcher
-        btnOpenLastAppV2.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, LastAppVariant2Activity.class)));
-        // Launch variant 3 of the last‑app switcher
-        btnOpenLastAppV3.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, LastAppVariant3Activity.class)));
-        // Launch variant 4 of the last‑app switcher
-        btnOpenLastAppV4.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, LastAppVariant4Activity.class)));
-        // Launch variant 5 of the last‑app switcher
-        btnOpenLastAppV5.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, LastAppVariant5Activity.class)));
+
+        // Trigger the system recents panel via the accessibility service. This replicates
+        // the original "List Actions" behaviour where a global recents overlay is shown.
+        btnListActions.setOnClickListener(v -> {
+            if (RecentsAccessibilityService.isServiceEnabled()) {
+                RecentsAccessibilityService.showRecents();
+            } else {
+                // Inform the user that the accessibility service must be enabled first
+                Toast.makeText(MainActivity.this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         // Launch activity to manage excluded apps
         btnManageExcluded.setOnClickListener(v ->

@@ -111,23 +111,7 @@
             android:name="eu.recentsopener.LiveEventsActivity"
             android:exported="true" />
 
-        <!-- Additional activities implementing alternative last‑app heuristics.  -->
-        <activity
-            android:name="eu.recentsopener.LastAppVariant2Activity"
-            android:exported="true"
-            android:theme="@android:style/Theme.NoDisplay" />
-        <activity
-            android:name="eu.recentsopener.LastAppVariant3Activity"
-            android:exported="true"
-            android:theme="@android:style/Theme.NoDisplay" />
-        <activity
-            android:name="eu.recentsopener.LastAppVariant4Activity"
-            android:exported="true"
-            android:theme="@android:style/Theme.NoDisplay" />
-        <activity
-            android:name="eu.recentsopener.LastAppVariant5Activity"
-            android:exported="true"
-            android:theme="@android:style/Theme.NoDisplay" />
+        <!-- The alternative last‑app variant activities have been removed. Variant 3 logic is now part of LastAppActivity. -->
 
     </application>
 

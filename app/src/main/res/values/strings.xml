@@ -19,13 +19,8 @@
 
     <!-- Button texts for new actions -->
     <string name="open_last_app_button">Letzte App</string>
-    <!-- Labels for the different last‑app variants. These buttons allow
-         experimenting with multiple heuristics to determine the previous
-         application on Android TV. -->
-    <string name="open_last_app_v2_button">Letzte App Variante 2</string>
-    <string name="open_last_app_v3_button">Letzte App Variante 3</string>
-    <string name="open_last_app_v4_button">Letzte App Variante 4</string>
-    <string name="open_last_app_v5_button">Letzte App Variante 5</string>
+    <!-- Label for invoking the system recents overlay via accessibility -->
+    <string name="list_actions_button">List Actions</string>
     <string name="manage_excluded_button">Ausgeschlossene Apps verwalten</string>
 
     <!-- Message when there are no excluded apps to manage -->
