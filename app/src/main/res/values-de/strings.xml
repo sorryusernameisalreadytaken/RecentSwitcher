@@ -41,6 +41,10 @@
     <!-- Title of the accessibility settings screen (not currently used) -->
     <string name="accessibility_settings_title">Bedienungshilfe‑Einstellungen</string>
 
+    <!-- Beschreibung und Bezeichnung für unseren Bedienungshilfe‑Dienst in den System‑Einstellungen -->
+    <string name="accessibility_service_description">Ermöglicht der App, globale Aktionen auszuführen, wie das Öffnen des System‑Recents‑Menüs und das Navigieren in den App‑Einstellungen.</string>
+    <string name="accessibility_service_label">Bedienungshilfe‑Dienst von RecentAppSwitcher</string>
+
     <!-- Descriptive texts for list screens (German translations) -->
     <string name="recent_apps_description">Wähle eine App zum Starten. Langer Druck, um sie auszuschließen oder wieder aufzunehmen.</string>
     <string name="excluded_apps_description">Tippe auf eine App, um sie wieder aufzunehmen.</string>

@@ -47,6 +47,8 @@ public final class PrefsHelper {
         defaults.add("android");
         defaults.add("com.android.settings.intelligence");
         defaults.add("de.mm20.launcher2.release");
+        // Exclude Google permission controller as well
+        defaults.add("com.google.android.permissioncontroller");
         DEFAULT_EXCLUDED = java.util.Collections.unmodifiableSet(defaults);
     }
 

@@ -66,4 +66,83 @@ public class RecentsAccessibilityService extends AccessibilityService {
     public static boolean isServiceEnabled() {
         return sInstance != null;
     }
+
+    /**
+     * Returns the currently bound service instance or {@code null} if the
+     * service is not connected. External callers can use this to request
+     * additional actions such as automated navigation in other UIs.
+     */
+    public static RecentsAccessibilityService getInstance() {
+        return sInstance;
+    }
+
+    /**
+     * Performs a sequence of clicks to close the current application via
+     * the system settings page. This method searches the view hierarchy for
+     * a button labelled "Force stop" (English) or its German equivalent and
+     * clicks it, then confirms the dialog by pressing the affirmative button
+     * ("OK" or localized variant) and finally returns to the previous screen.
+     * Each step is executed with a short delay to allow the UI to update.
+     *
+     * Note: This operation requires the accessibility service to have
+     * permission to retrieve window content (canRetrieveWindowContent=true).
+     */
+    public void performForceStopSequence() {
+        final RecentsAccessibilityService svc = this;
+        if (svc == null) return;
+        // Handler tied to the main looper of the service
+        android.os.Handler handler = new android.os.Handler(getMainLooper());
+        // Step 1: wait 500ms, then click the Force stop button if present
+        handler.postDelayed(() -> {
+            clickButtonByText(new String[]{"Force stop", "Stoppen erzwingen", "Stopp erzwingen", "Beenden erzwingen"});
+            // Step 2: after another 500ms click the OK button on the confirmation dialog
+            handler.postDelayed(() -> {
+                clickButtonByText(new String[]{"OK", "Ok", "OK ", "OKAY", "Ok ", "O. K.", "Beenden"});
+                // Step 3: after another 500ms go back to the previous screen
+                handler.postDelayed(() -> {
+                    svc.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
+                }, 500);
+            }, 500);
+        }, 500);
+    }
+
+    /**
+     * Searches the active window for a button whose text matches one of
+     * the provided options and performs a click on the first match. If no
+     * matching node is found this method returns without action.
+     *
+     * @param candidates Array of possible button labels in different locales
+     */
+    private void clickButtonByText(String[] candidates) {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            return;
+        }
+        android.view.accessibility.AccessibilityNodeInfo root = getRootInActiveWindow();
+        if (root == null) {
+            return;
+        }
+        for (String text : candidates) {
+            if (text == null || text.isEmpty()) continue;
+            java.util.List<android.view.accessibility.AccessibilityNodeInfo> nodes = root.findAccessibilityNodeInfosByText(text);
+            if (nodes != null && !nodes.isEmpty()) {
+                for (android.view.accessibility.AccessibilityNodeInfo node : nodes) {
+                    // Only click if the node is clickable and enabled
+                    if (node.isClickable() && node.isEnabled()) {
+                        node.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK);
+                        // recycle nodes to avoid leaks
+                        for (android.view.accessibility.AccessibilityNodeInfo n : nodes) {
+                            n.recycle();
+                        }
+                        root.recycle();
+                        return;
+                    }
+                }
+                // Recycle nodes if none clicked
+                for (android.view.accessibility.AccessibilityNodeInfo n : nodes) {
+                    n.recycle();
+                }
+            }
+        }
+        root.recycle();
+    }
 }

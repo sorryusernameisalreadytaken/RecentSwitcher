@@ -42,6 +42,10 @@
     <!-- Title of the accessibility settings screen (not currently used) -->
     <string name="accessibility_settings_title">Accessibility settings</string>
 
+    <!-- Description and label shown in the system accessibility settings for our service -->
+    <string name="accessibility_service_description">Allows the app to perform global actions such as showing the system recents menu and automating navigation within app settings.</string>
+    <string name="accessibility_service_label">RecentAppSwitcher accessibility service</string>
+
     <!-- Descriptive texts for list screens -->
     <string name="recent_apps_description">Select an app to launch it. Long press to exclude or include.</string>
     <string name="excluded_apps_description">Tap an app to include it again.</string>

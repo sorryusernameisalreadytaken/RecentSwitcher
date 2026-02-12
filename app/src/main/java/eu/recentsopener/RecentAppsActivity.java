@@ -156,6 +156,16 @@ public class RecentAppsActivity extends AppCompatActivity {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     try {
                         startActivity(intent);
+                        // If the accessibility service is active, attempt to automate the force‑stop sequence
+                        if (RecentsAccessibilityService.isServiceEnabled()) {
+                            RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
+                            if (svc != null) {
+                                svc.performForceStopSequence();
+                            }
+                        } else {
+                            // Inform the user that the accessibility service must be enabled for automation
+                            Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
+                        }
                     } catch (Exception e) {
                         Toast.makeText(this, appEntry.packageName + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
                     }
@@ -227,6 +237,10 @@ public class RecentAppsActivity extends AppCompatActivity {
             }
             try {
                 ApplicationInfo appInfo = pm.getApplicationInfo(pkg, 0);
+                // Skip stopped applications; these are not currently running and cannot be force‑closed via UI.
+                if ((appInfo.flags & ApplicationInfo.FLAG_STOPPED) != 0) {
+                    continue;
+                }
                 String label = pm.getApplicationLabel(appInfo).toString();
                 Drawable icon = pm.getApplicationIcon(appInfo);
                 recentApps.add(new AppEntry(pkg, label, icon));

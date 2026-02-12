@@ -46,9 +46,28 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentApps.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, RecentAppsActivity.class)));
 
-        // Show the last app without requiring accessibility service
-        btnOpenLastApp.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, LastAppActivity.class)));
+        // Show the last app. Require usage access permission similarly to the recents list.
+        btnOpenLastApp.setOnClickListener(v -> {
+            // Determine if usage access is granted by querying UsageEvents
+            boolean accessGranted;
+            try {
+                android.app.usage.UsageStatsManager usm = (android.app.usage.UsageStatsManager) getSystemService(android.content.Context.USAGE_STATS_SERVICE);
+                long now = System.currentTimeMillis();
+                android.app.usage.UsageEvents events = usm.queryEvents(now - 1000 * 60 * 60, now);
+                accessGranted = events != null && events.hasNextEvent();
+            } catch (Exception e) {
+                accessGranted = false;
+            }
+            if (!accessGranted) {
+                // Show a toast and open the usage access settings similar to RecentsActivity
+                Toast.makeText(MainActivity.this, getString(R.string.grant_usage_access), Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            } else {
+                startActivity(new Intent(MainActivity.this, LastAppActivity.class));
+            }
+        });
 
 
         // Trigger the system recents panel via the accessibility service. This replicates
