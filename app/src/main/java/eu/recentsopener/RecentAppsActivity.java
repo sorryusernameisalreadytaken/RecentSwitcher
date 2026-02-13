@@ -124,7 +124,11 @@ public class RecentAppsActivity extends AppCompatActivity {
      * Variant 4 makes the row focusable and the gear not focusable while
      * maintaining after‑descendants focus order. The default is 1.
      */
-    private int variantIndex = 1;
+    /**
+     * Variant index for selecting the recents list layout.  This project now
+     * always uses variant 3, so the initial value is 3.
+     */
+    private int variantIndex = 3;
 
     // Duplicate fields (refresh interval, handler, runnable and listView) removed. These are defined earlier in the class.
 
@@ -168,8 +172,9 @@ public class RecentAppsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recent_apps);
 
-        // Read the requested variant index passed via the intent. Default to 1 if not provided.
-        variantIndex = getIntent().getIntExtra("variant", 1);
+        // Ignore any requested variant index passed via the intent.  Always
+        // use variant 3 for the recents list.
+        variantIndex = 3;
 
         // Initialise the handler used for periodic list refreshes on the main thread. Without
         // instantiation the handler would remain null and schedule/removal calls would crash.
@@ -192,58 +197,10 @@ public class RecentAppsActivity extends AppCompatActivity {
         // BEFORE_DESCENDANTS with row focusable and gear not focusable. Variants 4 and 8
         // use AFTER_DESCENDANTS with row focusable and gear not focusable. Default to
         // variant1 behaviour if index is out of range.
-        switch (variantIndex) {
-            // Variants that use BEFORE_DESCENDANTS focus order
-            case 2:
-            case 3:
-            case 6:
-            case 7:
-            case 9:
-            case 11:
-            case 13:
-            // New before-descendants variants
-            case 15:
-            case 17:
-            case 19:
-            case 21:
-            case 23:
-            case 25:
-            case 27:
-            case 29:
-            case 31:
-            case 32:
-            // Variants 33–40: assign appropriate focus behaviour
-            case 33:
-            case 35:
-            case 36:
-            case 37:
-            case 39:
-            case 40:
-                listView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
-                break;
-            // Variants that use AFTER_DESCENDANTS focus order
-            case 4:
-            case 8:
-            case 5:
-            case 1:
-            case 10:
-            case 12:
-            case 14:
-            // New after-descendants variants
-            case 16:
-            case 18:
-            case 20:
-            case 22:
-            case 24:
-            case 26:
-            case 28:
-            case 30:
-            case 34:
-            case 38:
-            default:
-                listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
-                break;
-        }
+        // Always use BEFORE_DESCENDANTS focus ordering.  The recents list will
+        // prioritise child views for focus so that DPAD navigation stays on
+        // the app row rather than the gear button by default.
+        listView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
 
         // Close all apps via accessibility automation. Only visible/working when the
         // accessibility service is enabled. We exclude our own app and any
@@ -369,11 +326,12 @@ public class RecentAppsActivity extends AppCompatActivity {
         });
 
 
-        // Allow DPAD-LEFT to open the system settings screen for the selected app.
-        // Intercept DPAD‑LEFT and DPAD‑RIGHT presses on list items. DPAD‑RIGHT moves focus to the
-        // gear button on the current row so that the user can press enter to open settings. DPAD‑LEFT
-        // opens the system settings for the selected app and optionally triggers the force‑stop
-        // automation if the accessibility service is enabled.
+        // Intercept DPAD‑LEFT and DPAD‑RIGHT presses on list items.  Both keys now open the
+        // system application details screen for the selected app.  If the accessibility
+        // service is enabled, a force‑stop sequence will be attempted after opening the
+        // settings page.  This replaces the previous behaviour where DPAD‑RIGHT moved focus
+        // to the gear button.  Navigation with DPAD‑UP/DOWN remains handled by the default
+        // ListView behaviour.
         listView.setOnKeyListener((v, keyCode, event) -> {
             if (event.getAction() != KeyEvent.ACTION_DOWN) {
                 return false;
@@ -382,37 +340,28 @@ public class RecentAppsActivity extends AppCompatActivity {
             if (pos == android.widget.AdapterView.INVALID_POSITION) {
                 return false;
             }
-            // DPAD‑RIGHT: focus the gear button within the current row
-            if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                View row = listView.getChildAt(pos - listView.getFirstVisiblePosition());
-                if (row != null) {
-                    android.widget.ImageButton gear = row.findViewById(R.id.settings_button);
-                    if (gear != null) {
-                        gear.requestFocus();
-                        return true;
-                    }
-                }
-                return false;
-            }
-            // DPAD‑LEFT: open app settings and attempt force‑stop if applicable
-            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+            // Both DPAD‑LEFT and DPAD‑RIGHT open the app settings page for the selected app.
+            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                 if (pos < recentApps.size()) {
                     AppEntry appEntry = recentApps.get(pos);
+                    // Construct intent to open the application details settings
                     Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                     intent.setData(Uri.parse("package:" + appEntry.packageName));
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     try {
                         startActivity(intent);
-                boolean isSettings = appEntry.packageName.startsWith("com.android.tv.settings") ||
-                        appEntry.packageName.startsWith("com.google.android.tv.settings") ||
-                        appEntry.packageName.startsWith("com.android.settings") ||
-                        // Some devices or ROMs use misspelled identifiers. Skip auto close for these as well.
-                        appEntry.packageName.startsWith("com.andrpid.tv.settings") ||
-                        appEntry.packageName.startsWith("com.andrpid.settings");
+                        // Determine if this package is a system settings app; skip auto close for those
+                        boolean isSettings = appEntry.packageName.startsWith("com.android.tv.settings") ||
+                                appEntry.packageName.startsWith("com.google.android.tv.settings") ||
+                                appEntry.packageName.startsWith("com.android.settings") ||
+                                // Some devices or ROMs use misspelled identifiers. Skip auto close for these as well.
+                                appEntry.packageName.startsWith("com.andrpid.tv.settings") ||
+                                appEntry.packageName.startsWith("com.andrpid.settings");
                         if (!isSettings) {
                             if (RecentsAccessibilityService.isServiceEnabled()) {
                                 RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
                                 if (svc != null) {
+                                    // Trigger the automated force stop sequence via accessibility
                                     svc.performForceStopSequence();
                                 }
                             } else {
@@ -728,53 +677,11 @@ public class RecentAppsActivity extends AppCompatActivity {
         // classic behaviours described in the activity documentation. Variants 5–8 are
         // similar but provide alternate focus orders and combinations of row/gear
         // focusability. See the corresponding XML files under res/layout.
+        // Only one layout is used (variant 3).  The array is kept for
+        // compatibility with the existing indexing but contains a single
+        // entry so that layoutIndex is always 0.
         private final int[] ITEM_LAYOUTS = new int[] {
-                R.layout.item_recent_app_v1,
-                R.layout.item_recent_app_v2,
-                R.layout.item_recent_app_v3,
-                R.layout.item_recent_app_v4,
-                R.layout.item_recent_app_v5,
-                R.layout.item_recent_app_v6,
-                R.layout.item_recent_app_v7,
-                R.layout.item_recent_app_v8,
-                // Newly added variants (v9–v12) that extend v2/v3 behaviour
-                R.layout.item_recent_app_v9,
-                R.layout.item_recent_app_v10,
-                R.layout.item_recent_app_v11,
-                R.layout.item_recent_app_v12,
-                // Table‑like variants (v13–v14) with separate columns for app details and action
-                R.layout.item_recent_app_v13,
-                R.layout.item_recent_app_v14,
-                // New experimental variants (v15–v22) exploring nextFocus properties and DPAD navigation
-                R.layout.item_recent_app_v15,
-                R.layout.item_recent_app_v16,
-                R.layout.item_recent_app_v17,
-                R.layout.item_recent_app_v18,
-                R.layout.item_recent_app_v19,
-                R.layout.item_recent_app_v20,
-                R.layout.item_recent_app_v21,
-                R.layout.item_recent_app_v22,
-                // Extended variants (v23–v32) built upon the table‑style layouts
-                R.layout.item_recent_app_v23,
-                R.layout.item_recent_app_v24,
-                R.layout.item_recent_app_v25,
-                R.layout.item_recent_app_v26,
-                R.layout.item_recent_app_v27,
-                R.layout.item_recent_app_v28,
-                R.layout.item_recent_app_v29,
-                R.layout.item_recent_app_v30,
-                R.layout.item_recent_app_v31,
-                R.layout.item_recent_app_v32,
-                // Newly added variants (v33–v40) based on v3, v6 and v8 with
-                // explicit focus anchors and navigation rules
-                R.layout.item_recent_app_v33,
-                R.layout.item_recent_app_v34,
-                R.layout.item_recent_app_v35,
-                R.layout.item_recent_app_v36,
-                R.layout.item_recent_app_v37,
-                R.layout.item_recent_app_v38,
-                R.layout.item_recent_app_v39,
-                R.layout.item_recent_app_v40
+                R.layout.item_recent_app_v3
         };
 
         public RecentAppsAdapter(Context ctx, List<AppEntry> apps) {
@@ -795,11 +702,32 @@ public class RecentAppsActivity extends AppCompatActivity {
             ImageView iconView = view.findViewById(R.id.app_icon);
             TextView textView = view.findViewById(R.id.app_text);
             android.widget.ImageButton settingsButton = view.findViewById(R.id.settings_button);
+            // Retrieve arrow/close icons for conditional visibility based on accessibility service
+            ImageView leftArrow = view.findViewById(R.id.left_arrow);
+            ImageView leftClose = view.findViewById(R.id.left_close);
+            ImageView rightArrow = view.findViewById(R.id.right_arrow);
             if (entry != null) {
                 iconView.setImageDrawable(entry.icon);
                 // Build display text as "Label (package)"
                 String text = entry.label + " (" + entry.packageName + ")";
                 textView.setText(text);
+                // Show or hide the left icons based on whether the accessibility service is enabled.
+                // When the service is active we display both the arrow and close icons on the left
+                // to convey navigation cues. Otherwise these icons are hidden to avoid confusing
+                // users who cannot use the auto‑close functionality.
+                boolean serviceEnabled = RecentsAccessibilityService.isServiceEnabled();
+                int leftVis = serviceEnabled ? View.VISIBLE : View.GONE;
+                if (leftArrow != null) {
+                    leftArrow.setVisibility(leftVis);
+                }
+                if (leftClose != null) {
+                    leftClose.setVisibility(leftVis);
+                }
+                // The right arrow remains visible at all times since DPAD‑RIGHT will open
+                // the system settings for the current app.
+                if (rightArrow != null) {
+                    rightArrow.setVisibility(View.VISIBLE);
+                }
                 // Attach focus listeners for instrumentation. When the app cell or gear
                 // receives focus we log the package name, position and timestamp and
                 // update lastFocusedWasGear accordingly. This helps diagnose DPAD
@@ -835,23 +763,10 @@ public class RecentAppsActivity extends AppCompatActivity {
                 // Make gear focusable or not based on variant. For variants where the gear
                 // should not be focusable we disable its focusability here. In other cases
                 // we allow default focus so that DPAD‑RIGHT can move to it.
-                boolean gearFocusable;
-                switch (variant) {
-                    case 3:
-                    case 4:
-                    case 6:
-                    case 8:
-                    case 35:
-                    case 37:
-                    case 38:
-                        gearFocusable = false;
-                        break;
-                    default:
-                        gearFocusable = true;
-                        break;
-                }
-                settingsButton.setFocusable(gearFocusable);
-                settingsButton.setFocusableInTouchMode(gearFocusable);
+                // Variant 3 does not allow the gear to receive focus.  Always set it
+                // unfocusable so that DPAD‑right navigation is handled by code.
+                settingsButton.setFocusable(false);
+                settingsButton.setFocusableInTouchMode(false);
                 // If gear is visible, set click listener to open app settings
                 settingsButton.setOnClickListener(v -> {
                     Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);

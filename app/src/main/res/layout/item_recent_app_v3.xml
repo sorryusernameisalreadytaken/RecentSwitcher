@@ -9,6 +9,7 @@
     be navigated to by default.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/app_cell"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -17,11 +18,37 @@
     android:focusableInTouchMode="false"
     android:descendantFocusability="beforeDescendants">
 
+    <!-- Left arrow icon -->
+    <ImageView
+        android:id="@+id/left_arrow"
+        android:layout_width="32dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:padding="4dp"
+        android:src="@android:drawable/ic_media_previous"
+        android:contentDescription="@string/open_settings_description"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
+
+    <!-- Close icon -->
+    <ImageView
+        android:id="@+id/left_close"
+        android:layout_width="32dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:padding="4dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:contentDescription="@string/open_settings_description"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
+
+    <!-- App icon -->
     <ImageView
         android:id="@+id/app_icon"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_gravity="center_vertical"
+        android:layout_marginStart="4dp"
         android:contentDescription="@string/app_icon_desc" />
 
     <TextView
@@ -32,6 +59,19 @@
         android:layout_marginStart="12dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
+    <!-- Right arrow icon -->
+    <ImageView
+        android:id="@+id/right_arrow"
+        android:layout_width="32dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:padding="4dp"
+        android:src="@android:drawable/ic_media_next"
+        android:contentDescription="@string/open_settings_description"
+        android:focusable="false"
+        android:focusableInTouchMode="false" />
+
+    <!-- Gear button (settings) -->
     <ImageButton
         android:id="@+id/settings_button"
         android:layout_width="40dp"
