@@ -426,6 +426,7 @@ public class MainActivity extends AppCompatActivity {
      * @param variant which automation strategy to use (1–4)
      */
     private void closeSpecificApps(int variant) {
+        // Ensure the accessibility service is connected
         if (!RecentsAccessibilityService.isServiceEnabled()) {
             Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
             return;
@@ -435,42 +436,37 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
             return;
         }
-        android.os.Handler handler = new android.os.Handler(getMainLooper());
-        // Configure delays based on variant
-        long baseDelay;
-        long forceDelay;
-        boolean performBack;
+        // Determine per‑variant timing and back navigation behaviour.  Variant 1 uses the
+        // shortest interval and no BACK presses.  Higher variants increment the base
+        // interval to allow more time for each settings screen to appear and add extra
+        // BACK presses to return to our app.
+        long baseIntervalMs;
         int backCount;
         switch (variant) {
             case 2:
-                baseDelay = 2500L;
-                forceDelay = 800L;
-                performBack = true;
+                baseIntervalMs = 4000L;
                 backCount = 1;
                 break;
             case 3:
-                baseDelay = 3000L;
-                forceDelay = 800L;
-                performBack = true;
+                baseIntervalMs = 5000L;
                 backCount = 2;
                 break;
             case 4:
-                baseDelay = 3500L;
-                forceDelay = 800L;
-                performBack = true;
+                baseIntervalMs = 6000L;
                 backCount = 3;
                 break;
             case 1:
             default:
-                baseDelay = 2000L;
-                forceDelay = 800L;
-                performBack = false;
+                baseIntervalMs = 3000L;
                 backCount = 0;
                 break;
         }
-        int idx = 0;
+        // Delay between launching the settings page and triggering the force stop sequence.
+        final long openDelayMs = 1500L;
+        android.os.Handler handler = new android.os.Handler(getMainLooper());
+        int index = 0;
         for (String pkg : SPECIFIC_CLOSE_PACKAGES) {
-            // Skip our own package and system settings packages (including some misspelled variants)
+            // Skip closing our own app or system settings apps
             if (pkg.equals(getPackageName()) ||
                     pkg.startsWith("com.android.tv.settings") ||
                     pkg.startsWith("com.google.android.tv.settings") ||
@@ -480,33 +476,32 @@ public class MainActivity extends AppCompatActivity {
                 continue;
             }
             final String targetPkg = pkg;
-            long delay = idx * baseDelay;
+            long startDelay = index * baseIntervalMs;
             handler.postDelayed(() -> {
-                // Open the application details settings for this package
+                // Step 1: launch the app details settings for the target package
                 Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                 intent.setData(Uri.parse("package:" + targetPkg));
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 try {
                     startActivity(intent);
-                    // After a small delay, trigger the force stop automation
-                    handler.postDelayed(() -> {
-                        RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
-                        if (service != null) {
-                            service.performForceStopSequence();
-                            if (performBack) {
-                                // Post additional back actions if requested
-                                for (int i = 0; i < backCount; i++) {
-                                    int finalI = i;
-                                    handler.postDelayed(() -> service.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK), finalI * 400L);
-                                }
-                            }
-                        }
-                    }, forceDelay);
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, targetPkg + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-            }, delay);
-            idx++;
+                // Step 2: after a short delay, perform the force stop sequence
+                handler.postDelayed(() -> {
+                    RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
+                    if (service != null) {
+                        service.performForceStopSequence();
+                        // Optionally press BACK multiple times to return to our app
+                        for (int i = 0; i < backCount; i++) {
+                            final int idxLocal = i;
+                            handler.postDelayed(() -> service.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK), idxLocal * 500L);
+                        }
+                    }
+                }, openDelayMs);
+            }, startDelay);
+            index++;
         }
     }
 }
