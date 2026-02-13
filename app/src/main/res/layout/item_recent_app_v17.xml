@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Variant 17 of the recent app list item. Based on variant 6, this
+    layout keeps the row itself non‑focusable but makes the gear
+    focusable. It uses BEFORE_DESCENDANTS focus order and provides
+    nextFocus attributes so that DPAD‑RIGHT can move to the gear, DPAD‑LEFT
+    returns to the row and DPAD‑DOWN skips to the next app’s details. Use
+    this variant to test focusing the gear directly while keeping the row
+    itself unfocusable.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
+    android:descendantFocusability="beforeDescendants"
+    android:nextFocusRight="@id/settings_button"
+    android:nextFocusDown="@id/app_text">
+
+    <!-- Left column containing the icon and label -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/app_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/app_icon_desc" />
+
+        <TextView
+            android:id="@+id/app_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+    </LinearLayout>
+
+    <!-- Right column containing the settings gear -->
+    <ImageButton
+        android:id="@+id/settings_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@string/open_settings_description"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:padding="8dp"
+        android:src="@android:drawable/ic_menu_manage"
+        android:nextFocusLeft="@id/app_text"
+        android:nextFocusDown="@id/app_text"
+        android:nextFocusUp="@id/app_text" />
+
+</LinearLayout>

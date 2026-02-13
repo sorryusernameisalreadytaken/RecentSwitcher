@@ -153,6 +153,59 @@
         android:text="@string/show_recent_apps_variant14_button"
         android:padding="12dp" />
 
+    <!-- Experimental table-style variants (V15–V22). These eight buttons launch new
+         list layouts that combine different focusability and focus-order
+         configurations to achieve a predictable DPAD navigation similar to a
+         two-column table. -->
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant15"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant15_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant16"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant16_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant17"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant17_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant18"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant18_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant19"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant19_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant20"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant20_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant21"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant21_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant22"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant22_button"
+        android:padding="12dp" />
+
     <!-- Button to immediately switch back to the last app -->
     <Button
         android:id="@+id/btn_open_last_app"

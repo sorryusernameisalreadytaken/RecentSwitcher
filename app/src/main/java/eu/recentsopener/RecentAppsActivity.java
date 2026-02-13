@@ -174,6 +174,11 @@ public class RecentAppsActivity extends AppCompatActivity {
             case 9:
             case 11:
             case 13:
+            // New before-descendants variants
+            case 15:
+            case 17:
+            case 19:
+            case 21:
                 listView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
                 break;
             // Variants that use AFTER_DESCENDANTS focus order
@@ -184,6 +189,11 @@ public class RecentAppsActivity extends AppCompatActivity {
             case 10:
             case 12:
             case 14:
+            // New after-descendants variants
+            case 16:
+            case 18:
+            case 20:
+            case 22:
             default:
                 listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
                 break;
@@ -674,7 +684,16 @@ public class RecentAppsActivity extends AppCompatActivity {
                 R.layout.item_recent_app_v12,
                 // Table‑like variants (v13–v14) with separate columns for app details and action
                 R.layout.item_recent_app_v13,
-                R.layout.item_recent_app_v14
+                R.layout.item_recent_app_v14,
+                // New experimental variants (v15–v22) exploring nextFocus properties and DPAD navigation
+                R.layout.item_recent_app_v15,
+                R.layout.item_recent_app_v16,
+                R.layout.item_recent_app_v17,
+                R.layout.item_recent_app_v18,
+                R.layout.item_recent_app_v19,
+                R.layout.item_recent_app_v20,
+                R.layout.item_recent_app_v21,
+                R.layout.item_recent_app_v22
         };
 
         public RecentAppsAdapter(Context ctx, List<AppEntry> apps) {

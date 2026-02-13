@@ -50,6 +50,16 @@ public class MainActivity extends AppCompatActivity {
     private Button btnShowRecentAppsVariant13;
     private Button btnShowRecentAppsVariant14;
 
+    // Experimental variants (v15–v22)
+    private Button btnShowRecentAppsVariant15;
+    private Button btnShowRecentAppsVariant16;
+    private Button btnShowRecentAppsVariant17;
+    private Button btnShowRecentAppsVariant18;
+    private Button btnShowRecentAppsVariant19;
+    private Button btnShowRecentAppsVariant20;
+    private Button btnShowRecentAppsVariant21;
+    private Button btnShowRecentAppsVariant22;
+
     // Buttons for closing a fixed set of packages using different strategies
     private Button btnCloseSpecificAppsVariant1;
     private Button btnCloseSpecificAppsVariant2;
@@ -98,6 +108,16 @@ public class MainActivity extends AppCompatActivity {
         // Initialise buttons for table‑style recents list variants v13–v14
         btnShowRecentAppsVariant13 = findViewById(R.id.btn_show_recent_apps_variant13);
         btnShowRecentAppsVariant14 = findViewById(R.id.btn_show_recent_apps_variant14);
+
+        // Initialise buttons for experimental recents list variants v15–v22
+        btnShowRecentAppsVariant15 = findViewById(R.id.btn_show_recent_apps_variant15);
+        btnShowRecentAppsVariant16 = findViewById(R.id.btn_show_recent_apps_variant16);
+        btnShowRecentAppsVariant17 = findViewById(R.id.btn_show_recent_apps_variant17);
+        btnShowRecentAppsVariant18 = findViewById(R.id.btn_show_recent_apps_variant18);
+        btnShowRecentAppsVariant19 = findViewById(R.id.btn_show_recent_apps_variant19);
+        btnShowRecentAppsVariant20 = findViewById(R.id.btn_show_recent_apps_variant20);
+        btnShowRecentAppsVariant21 = findViewById(R.id.btn_show_recent_apps_variant21);
+        btnShowRecentAppsVariant22 = findViewById(R.id.btn_show_recent_apps_variant22);
         // Buttons for specific test closers
         btnCloseSpecificAppsVariant1 = findViewById(R.id.btn_close_specific_apps_variant1);
         btnCloseSpecificAppsVariant2 = findViewById(R.id.btn_close_specific_apps_variant2);
@@ -189,6 +209,48 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentAppsVariant14.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 14);
+            startActivity(intent);
+        });
+
+        // Launch experimental variants (v15–v22) of the recents list
+        btnShowRecentAppsVariant15.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra("variant", 15);
+            startActivity(intent);
+        });
+        btnShowRecentAppsVariant16.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra("variant", 16);
+            startActivity(intent);
+        });
+        btnShowRecentAppsVariant17.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra("variant", 17);
+            startActivity(intent);
+        });
+        btnShowRecentAppsVariant18.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra("variant", 18);
+            startActivity(intent);
+        });
+        btnShowRecentAppsVariant19.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra("variant", 19);
+            startActivity(intent);
+        });
+        btnShowRecentAppsVariant20.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra("variant", 20);
+            startActivity(intent);
+        });
+        btnShowRecentAppsVariant21.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra("variant", 21);
+            startActivity(intent);
+        });
+        btnShowRecentAppsVariant22.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra("variant", 22);
             startActivity(intent);
         });
 

@@ -53,6 +53,19 @@
     <string name="show_recent_apps_variant13_button">Recent apps (v13)</string>
     <string name="show_recent_apps_variant14_button">Recent apps (v14)</string>
 
+    <!-- Experimental table-style variants exploring DPAD navigation with nextFocus attributes. These
+         variants (v15–v22) combine different combinations of focusability (row vs gear) and
+         focus order (before vs after descendants). They aim to provide a predictable
+         navigation path reminiscent of a two-column table. -->
+    <string name="show_recent_apps_variant15_button">Recent apps (v15)</string>
+    <string name="show_recent_apps_variant16_button">Recent apps (v16)</string>
+    <string name="show_recent_apps_variant17_button">Recent apps (v17)</string>
+    <string name="show_recent_apps_variant18_button">Recent apps (v18)</string>
+    <string name="show_recent_apps_variant19_button">Recent apps (v19)</string>
+    <string name="show_recent_apps_variant20_button">Recent apps (v20)</string>
+    <string name="show_recent_apps_variant21_button">Recent apps (v21)</string>
+    <string name="show_recent_apps_variant22_button">Recent apps (v22)</string>
+
     <!-- Status messages for the accessibility service -->
     <string name="service_not_enabled">The accessibility service is not active. You can enable it in the settings if it is needed for other functions.</string>
     <string name="service_enabled">The accessibility service is active.</string>
