@@ -84,7 +84,9 @@ public class ExcludedAppsActivity extends AppCompatActivity {
             }
             return true;
         });
-        // Intercept DPAD‑LEFT and DPAD‑RIGHT to provide quick access to the app settings.
+        // Intercept DPAD‑LEFT and DPAD‑RIGHT to provide quick access to the app settings. Both
+        // directions open the application details page for the selected entry. Unlike the
+        // recents list, no auto force‑close is triggered here.
         listView.setOnKeyListener((v, keyCode, event) -> {
             if (event.getAction() != android.view.KeyEvent.ACTION_DOWN) {
                 return false;
@@ -93,20 +95,8 @@ public class ExcludedAppsActivity extends AppCompatActivity {
             if (pos == android.widget.AdapterView.INVALID_POSITION) {
                 return false;
             }
-            if (keyCode == android.view.KeyEvent.KEYCODE_DPAD_RIGHT) {
-                // Focus gear button for this row if present
-                android.view.View row = listView.getChildAt(pos - listView.getFirstVisiblePosition());
-                if (row != null) {
-                    android.widget.ImageButton gear = row.findViewById(R.id.settings_button);
-                    if (gear != null) {
-                        gear.requestFocus();
-                        return true;
-                    }
-                }
-                return false;
-            }
-            if (keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT) {
-                // Open settings for this app (no auto close)
+            if (keyCode == android.view.KeyEvent.KEYCODE_DPAD_LEFT ||
+                    keyCode == android.view.KeyEvent.KEYCODE_DPAD_RIGHT) {
                 if (pos < entries.size()) {
                     ExcludedEntry appEntry = entries.get(pos);
                     android.content.Intent intent = new android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
@@ -148,7 +138,8 @@ public class ExcludedAppsActivity extends AppCompatActivity {
         public android.view.View getView(int position, android.view.View convertView, android.view.ViewGroup parent) {
             android.view.View view = convertView;
             if (view == null) {
-                view = inflater.inflate(R.layout.item_recent_app, parent, false);
+                // Use the recent app item layout (variant 3). We hide extra action icons below.
+                view = inflater.inflate(R.layout.item_recent_app_v3, parent, false);
             }
             ExcludedEntry entry = getItem(position);
             android.widget.ImageView iconView = view.findViewById(R.id.app_icon);
@@ -172,6 +163,13 @@ public class ExcludedAppsActivity extends AppCompatActivity {
                     }
                 });
             }
+            // Hide the left and right action icons in the excluded list; only the gear remains.
+            android.view.View leftArrow = view.findViewById(R.id.left_arrow);
+            android.view.View leftClose = view.findViewById(R.id.left_close);
+            android.view.View rightArrow = view.findViewById(R.id.right_arrow);
+            if (leftArrow != null) leftArrow.setVisibility(android.view.View.GONE);
+            if (leftClose != null) leftClose.setVisibility(android.view.View.GONE);
+            if (rightArrow != null) rightArrow.setVisibility(android.view.View.GONE);
             if (entry != null) {
                 iconView.setImageDrawable(entry.icon);
                 // Display label and package name

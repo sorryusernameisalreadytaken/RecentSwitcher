@@ -79,7 +79,9 @@ public class LiveEventsActivity extends AppCompatActivity {
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = convertView;
                 if (view == null) {
-                    view = LayoutInflater.from(getContext()).inflate(R.layout.item_recent_app, parent, false);
+                    // Reuse the recent app list item layout (variant 3). This ensures consistent
+                    // spacing and styling across screens. We hide the action icons below.
+                    view = LayoutInflater.from(getContext()).inflate(R.layout.item_recent_app_v3, parent, false);
                 }
                 LiveEntry entry = getItem(position);
                 ImageView iconView = view.findViewById(R.id.app_icon);
@@ -91,6 +93,13 @@ public class LiveEventsActivity extends AppCompatActivity {
                 if (settingsButton != null) {
                     settingsButton.setVisibility(View.GONE);
                 }
+                // Also hide the left and right action icons in this diagnostic list
+                View leftArrow = view.findViewById(R.id.left_arrow);
+                View leftClose = view.findViewById(R.id.left_close);
+                View rightArrow = view.findViewById(R.id.right_arrow);
+                if (leftArrow != null) leftArrow.setVisibility(View.GONE);
+                if (leftClose != null) leftClose.setVisibility(View.GONE);
+                if (rightArrow != null) rightArrow.setVisibility(View.GONE);
                 if (entry != null) {
                     iconView.setImageDrawable(entry.icon);
                     // Build display string: Label (package) - event/time/source
