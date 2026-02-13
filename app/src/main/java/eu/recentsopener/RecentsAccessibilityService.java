@@ -23,10 +23,7 @@ public class RecentsAccessibilityService extends AccessibilityService {
      * force‑stop sequence. Adjust this value if the UI on your device needs
      * more or less time to update between focus changes and button presses.
      */
-    // Delay between each step of the force‑stop automation. Increased from 500ms to 1000ms
-    // to improve reliability on newer Android TV versions where dialogs and button states
-    // take longer to update.
-    private static final int FORCE_SEQUENCE_DELAY_MS = 1000;
+    private static final int FORCE_SEQUENCE_DELAY_MS = 500;
 
     @Override
     public void onCreate() {
@@ -133,20 +130,13 @@ public class RecentsAccessibilityService extends AccessibilityService {
         }
         try {
             // First try to find the force stop button by resource ID on common packages
-            // Possible resource IDs for the buttons we might need to click. These include
-            // both the Force stop button on the application details screen and the OK
-            // button on the confirmation dialog. On many Android devices the
-            // confirmation button uses the framework ID android:id/button1. We also
-            // include IDs found on Google TV/Android TV variants.
             String[] idCandidates = new String[]{
                     "com.android.settings:id/force_stop_button",
                     "com.android.settings:id/left_button",
                     "com.android.tv.settings:id/force_stop_button",
                     "com.google.android.tv.settings:id/force_stop_button",
-                    "android:id/button1",
-                    "com.android.settings:id/button1",
-                    "com.google.android.tv.settings:id/button1",
-                    "com.android.systemui:id/button1"
+                    // Android confirmation dialog positive button ID (OK button)
+                    "android:id/button1"
             };
             for (String viewId : idCandidates) {
                 try {

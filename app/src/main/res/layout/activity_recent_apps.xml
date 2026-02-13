@@ -23,9 +23,10 @@
         android:visibility="gone"
         android:paddingBottom="8dp" />
 
-    <!-- Additional test buttons for alternative bulk close implementations. These will only be
-         visible when the accessibility service is active so that the user can evaluate
-         different approaches to closing all apps. -->
+    <!-- Additional buttons for alternative bulk close implementations. These will only
+         be visible when the accessibility service is active. Each variant tries
+         a different strategy for navigating the settings UI and returning to
+         this activity after closing an app. -->
     <Button
         android:id="@+id/btn_close_all_variant2"
         android:layout_width="match_parent"
@@ -40,7 +41,6 @@
         android:text="@string/close_all_apps_variant3_button"
         android:visibility="gone"
         android:paddingBottom="8dp" />
-
     <Button
         android:id="@+id/btn_close_all_variant4"
         android:layout_width="match_parent"

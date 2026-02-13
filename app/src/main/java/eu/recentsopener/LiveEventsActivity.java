@@ -39,8 +39,11 @@ import java.util.Map;
  * Excluded apps are highlighted in red but cannot be removed here.
  */
 public class LiveEventsActivity extends AppCompatActivity {
-    /** Duration of history to display in milliseconds. Increased from 5 minutes to 60 minutes so
-     *  that more events are visible to the user (one hour). */
+    /**
+     * Duration of history to display in milliseconds. We show the last 60
+     * minutes of usage events to provide a longer overview than the default
+     * five minutes. Adjust this value if more or less history is desired.
+     */
     private static final long HISTORY_DURATION_MS = 1000L * 60 * 60;
 
     /** Data model representing one live entry. */
@@ -81,6 +84,13 @@ public class LiveEventsActivity extends AppCompatActivity {
                 LiveEntry entry = getItem(position);
                 ImageView iconView = view.findViewById(R.id.app_icon);
                 TextView textView = view.findViewById(R.id.app_text);
+                // Hide the gear icon in the live events list since we do not provide
+                // additional actions here. The gear button is present in the item
+                // layout but we set its visibility to GONE.
+                android.widget.ImageButton settingsButton = view.findViewById(R.id.settings_button);
+                if (settingsButton != null) {
+                    settingsButton.setVisibility(View.GONE);
+                }
                 if (entry != null) {
                     iconView.setImageDrawable(entry.icon);
                     // Build display string: Label (package) - event/time/source
@@ -96,19 +106,6 @@ public class LiveEventsActivity extends AppCompatActivity {
                         int colour = ContextCompat.getColor(getContext(), R.color.recent_app_text_color);
                         textView.setTextColor(colour);
                     }
-                    // Hide the settings gear in the live events list; there are no actions
-                    android.widget.ImageButton settingsButton = view.findViewById(R.id.settings_button);
-                    if (settingsButton != null) {
-                        settingsButton.setVisibility(android.view.View.GONE);
-                        // Ensure the settings button does not take focus in the live events list
-                        settingsButton.setFocusable(false);
-                        settingsButton.setFocusableInTouchMode(false);
-                    }
-                    // Ensure the root row itself does not steal focus so that long‑press
-                    // gestures (via DPAD‑center hold or touch) are registered properly.
-                    view.setFocusable(false);
-                    view.setFocusableInTouchMode(false);
-                    view.setLongClickable(true);
                 }
                 return view;
             }

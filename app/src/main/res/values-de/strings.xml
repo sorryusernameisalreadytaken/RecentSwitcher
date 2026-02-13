@@ -10,10 +10,6 @@
 
     <!-- Button labels on the main screen -->
     <string name="show_recent_apps_button">Alle geöffneten Apps</string>
-    <!-- Zusätzliche Schaltflächen für experimentelle Varianten der Liste letzter Apps -->
-    <string name="show_recent_apps_button_v2">Alle geöffneten Apps (Variante 2)</string>
-    <string name="show_recent_apps_button_v3">Alle geöffneten Apps (Variante 3)</string>
-    <string name="show_recent_apps_button_v4">Alle geöffneten Apps (Variante 4)</string>
     <string name="open_last_app_button">Letzte App öffnen</string>
     <!-- German translation of the button that opens the system recents menu -->
     <string name="list_actions_button">System-Recents-Menü öffnen</string>
@@ -21,6 +17,17 @@
     <string name="collect_debug_button">Debug‑Bericht erstellen</string>
     <string name="show_live_events_button">Live‑Events</string>
     <string name="enable_service_button">Dienst aktivieren</string>
+
+    <!-- Buttons for launching alternate recent apps list variants (German translations) -->
+    <string name="show_recent_apps_variant1_button">Alle geöffneten Apps (V1)</string>
+    <string name="show_recent_apps_variant2_button">Alle geöffneten Apps (V2)</string>
+    <string name="show_recent_apps_variant3_button">Alle geöffneten Apps (V3)</string>
+    <string name="show_recent_apps_variant4_button">Alle geöffneten Apps (V4)</string>
+    <!-- Zusätzliche Variationen (V5–V8) für die Liste der letzten Apps -->
+    <string name="show_recent_apps_variant5_button">Alle geöffneten Apps (V5)</string>
+    <string name="show_recent_apps_variant6_button">Alle geöffneten Apps (V6)</string>
+    <string name="show_recent_apps_variant7_button">Alle geöffneten Apps (V7)</string>
+    <string name="show_recent_apps_variant8_button">Alle geöffneten Apps (V8)</string>
 
     <!-- Status messages for the accessibility service -->
     <string name="service_not_enabled">Der Bedienungshilfe‑Dienst ist nicht aktiv. Du kannst ihn in den Einstellungen einschalten, falls er für andere Funktionen benötigt wird.</string>
@@ -32,11 +39,18 @@
     <!-- Buttons on the recents screen to close apps via the accessibility service -->
     <string name="close_all_apps_button">Alle Apps schließen</string>
     <string name="close_other_apps_button">Alle anderen Apps schließen</string>
-    <!-- Alternative Schaltflächen zum Testen unterschiedlicher Schließvarianten -->
-    <string name="close_all_apps_variant2_button">Alle Apps schließen (Variante 1)</string>
-    <string name="close_all_apps_variant3_button">Alle Apps schließen (Variante 2)</string>
-    <!-- Deutsche Bezeichnung für die dritte alternative Bulk‑Schließfunktion -->
-    <string name="close_all_apps_variant4_button">Alle Apps schließen (Variante 3)</string>
+    <!-- Alternative bulk close buttons for testing different force‑stop strategies (German translations) -->
+    <string name="close_all_apps_variant2_button">Alle Apps schließen (Var 1)</string>
+    <string name="close_all_apps_variant3_button">Alle Apps schließen (Var 2)</string>
+    <!-- New alternative variant for bulk closing apps. This variant reloads the recents list
+         after each close and defers closing system settings packages until the end. (German) -->
+    <string name="close_all_apps_variant4_button">Alle Apps schließen (Var 3)</string>
+
+    <!-- Schaltflächen zum gezielten Schließen bestimmter Test‑Apps -->
+    <string name="close_specific_apps_variant1_button">Bestimmte Apps schließen (V1)</string>
+    <string name="close_specific_apps_variant2_button">Bestimmte Apps schließen (V2)</string>
+    <string name="close_specific_apps_variant3_button">Bestimmte Apps schließen (V3)</string>
+    <string name="close_specific_apps_variant4_button">Bestimmte Apps schließen (V4)</string>
     <string name="grant_usage_access">Erlaube Zugriff auf Nutzungsdaten, um die letzten Apps anzuzeigen.</string>
 
     <!-- Strings used when including/excluding apps -->
@@ -57,7 +71,7 @@
 
     <!-- Descriptive texts for list screens (German translations) -->
     <string name="recent_apps_description">Wähle eine App zum Starten. Langer Druck, um sie auszuschließen oder wieder aufzunehmen.</string>
-    <string name="excluded_apps_description">Halte eine App gedrückt, um sie wieder aufzunehmen.</string>
+    <string name="excluded_apps_description">Tippe auf eine App, um sie wieder aufzunehmen.</string>
     <string name="live_events_description">Diese Liste zeigt alle letzten Nutzungsereignisse (60 Minuten).</string>
 
     <!-- Debug report messages (German translations) -->
@@ -66,9 +80,4 @@
 
     <!-- Beschreibung für das Zahnrad-Symbol in der Liste der letzten Apps -->
     <string name="open_settings_description">App-Einstellungen öffnen</string>
-
-    <!-- Hinweis, der angezeigt wird, wenn man auf eine ausgeschlossene App tippt. Er erklärt, dass ein langer Druck sie wieder einbezieht. -->
-    <string name="long_press_to_include">Halte OK gedrückt, um %1$s wieder aufzunehmen.</string>
-    <!-- Hinweis, der angezeigt wird, wenn man auf einen Live‑Eintrag tippt. Er erklärt, dass ein langer Druck ihn ausschließt. -->
-    <string name="long_press_to_exclude">Halte OK gedrückt, um %1$s auszuschließen.</string>
 </resources>

@@ -11,10 +11,6 @@
 
     <!-- Button labels on the main screen -->
     <string name="show_recent_apps_button">Recent apps</string>
-    <!-- Buttons for launching alternate recent app list variants -->
-    <string name="show_recent_apps_button_v2">Recent apps (variant 2)</string>
-    <string name="show_recent_apps_button_v3">Recent apps (variant 3)</string>
-    <string name="show_recent_apps_button_v4">Recent apps (variant 4)</string>
     <string name="open_last_app_button">Open last app</string>
     <!-- Button label to open the system recents (overview) menu -->
     <string name="list_actions_button">Open system recents menu</string>
@@ -22,6 +18,18 @@
     <string name="collect_debug_button">Collect debug report</string>
     <string name="show_live_events_button">Live events</string>
     <string name="enable_service_button">Enable service</string>
+
+    <!-- Buttons for launching alternate recent apps list variants -->
+    <string name="show_recent_apps_variant1_button">Recent apps (v1)</string>
+    <string name="show_recent_apps_variant2_button">Recent apps (v2)</string>
+    <string name="show_recent_apps_variant3_button">Recent apps (v3)</string>
+    <string name="show_recent_apps_variant4_button">Recent apps (v4)</string>
+    <!-- Buttons to launch additional variants (v5–v8) of the recents list for further
+         experimentation with focus behaviours. See documentation in MainActivity. -->
+    <string name="show_recent_apps_variant5_button">Recent apps (v5)</string>
+    <string name="show_recent_apps_variant6_button">Recent apps (v6)</string>
+    <string name="show_recent_apps_variant7_button">Recent apps (v7)</string>
+    <string name="show_recent_apps_variant8_button">Recent apps (v8)</string>
 
     <!-- Status messages for the accessibility service -->
     <string name="service_not_enabled">The accessibility service is not active. You can enable it in the settings if it is needed for other functions.</string>
@@ -36,8 +44,18 @@
     <!-- Alternative bulk close buttons for testing different force‑stop strategies -->
     <string name="close_all_apps_variant2_button">Close all apps (alt 1)</string>
     <string name="close_all_apps_variant3_button">Close all apps (alt 2)</string>
-    <!-- Label for the third alternative bulk close button. This variant reloads the recents list after each stop. -->
+    <!-- New alternative variant for bulk closing apps. This variant reloads the recents list
+         after each close and defers closing system settings packages until the end. -->
     <string name="close_all_apps_variant4_button">Close all apps (alt 3)</string>
+
+    <!-- Buttons for targeted closing of specific test apps. These buttons are added to the
+         main UI to allow experimentation with different bulk close strategies on a fixed
+         list of packages. Each variant number corresponds to a different force‑stop
+         strategy implemented in MainActivity. -->
+    <string name="close_specific_apps_variant1_button">Close specific apps (v1)</string>
+    <string name="close_specific_apps_variant2_button">Close specific apps (v2)</string>
+    <string name="close_specific_apps_variant3_button">Close specific apps (v3)</string>
+    <string name="close_specific_apps_variant4_button">Close specific apps (v4)</string>
     <string name="grant_usage_access">Grant usage access to show recent apps.</string>
 
     <!-- Strings used when including/excluding apps -->
@@ -58,7 +76,7 @@
 
     <!-- Descriptive texts for list screens -->
     <string name="recent_apps_description">Select an app to launch it. Long press to exclude or include.</string>
-    <string name="excluded_apps_description">Press and hold an app to include it again.</string>
+    <string name="excluded_apps_description">Tap an app to include it again.</string>
     <string name="live_events_description">This list displays all recent usage events (last 60 minutes).</string>
 
     <!-- Debug report messages -->
@@ -67,9 +85,4 @@
 
     <!-- Description for settings gear button in recent apps list -->
     <string name="open_settings_description">Open app settings</string>
-
-    <!-- Prompt shown when tapping an excluded app explaining that a long press will re-include it. -->
-    <string name="long_press_to_include">Hold OK to include %1$s again.</string>
-    <!-- Prompt shown when tapping a live event explaining that a long press will exclude it. -->
-    <string name="long_press_to_exclude">Hold OK to exclude %1$s.</string>
 </resources>

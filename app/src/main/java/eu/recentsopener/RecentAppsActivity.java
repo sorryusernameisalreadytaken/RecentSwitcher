@@ -56,10 +56,16 @@ public class RecentAppsActivity extends AppCompatActivity {
         public void run() {
             // Only refresh if usage access is granted; otherwise the list would be empty
             if (hasUsageAccess()) {
+                // Preserve current scroll position to reduce flicker when the list updates
+                int firstVisible = listView.getFirstVisiblePosition();
+                View topView = listView.getChildAt(0);
+                int top = (topView != null) ? topView.getTop() : 0;
                 loadRecents();
                 if (adapter != null) {
                     adapter.notifyDataSetChanged();
                 }
+                // Restore scroll position
+                listView.setSelectionFromTop(firstVisible, top);
             }
             // Schedule the next refresh if the handler still exists
             if (refreshHandler != null) {
@@ -80,6 +86,16 @@ public class RecentAppsActivity extends AppCompatActivity {
      */
     private ListView listView;
 
+    /**
+     * Index of the variant to use for the recents list. Variant 1 reproduces
+     * the original focus behaviour where the row itself is not focusable and
+     * the gear button can be focused. Variant 2 makes the row focusable
+     * before its children. Variant 3 disables focus on the gear entirely.
+     * Variant 4 makes the row focusable and the gear not focusable while
+     * maintaining after‑descendants focus order. The default is 1.
+     */
+    private int variantIndex = 1;
+
     // Duplicate fields (refresh interval, handler, runnable and listView) removed. These are defined earlier in the class.
 
     /**
@@ -88,71 +104,18 @@ public class RecentAppsActivity extends AppCompatActivity {
      */
     private RecentAppsAdapter adapter;
 
-    /**
-     * Indicates which layout/interaction variant should be used for the recents list. The
-     * default value (1) corresponds to the original behaviour with focus on the list row
-     * and a focusable gear. The variant can be supplied via an Intent extra (see
-     * MainActivity) to allow the user to test different focus behaviours. The accepted
-     * values are 1–4. If an unexpected value is provided it falls back to 1.
-     */
-    public static final String EXTRA_VARIANT = "eu.recentsopener.VARIANT";
-    private int variant = 1;
-
-    /**
-     * Configure the ListView focus behaviour based on the chosen variant. Variants are defined
-     * as follows:
-     *   1: Child views can take focus and focus is passed to descendants after the row. This
-     *      corresponds to the original behaviour where the gear is reachable via DPAD‑right but
-     *      the row itself remains selected by default.
-     *   2: Child views cannot take focus and focus is given to the row before its children.
-     *      This emphasises the row itself and requires the DPAD‑right handler to move focus to
-     *      the gear.
-     *   3: Child views cannot take focus and focus is given to the row before its children.
-     *      Similar to variant 2 but intended for testing where both row and gear are reachable
-     *      only through explicit key handling.
-     *   4: Child views can take focus and focus is passed to descendants after the row. This
-     *      variant mirrors variant 1 but allows further experimentation.
-     *
-     * @param lv      the ListView to configure
-     * @param variant the variant index (1–4)
-     */
-    private void configureListViewForVariant(android.widget.ListView lv, int variant) {
-        switch (variant) {
-            case 2:
-                lv.setItemsCanFocus(false);
-                lv.setDescendantFocusability(android.view.ViewGroup.FOCUS_BEFORE_DESCENDANTS);
-                break;
-            case 3:
-                lv.setItemsCanFocus(false);
-                lv.setDescendantFocusability(android.view.ViewGroup.FOCUS_BEFORE_DESCENDANTS);
-                break;
-            case 4:
-                lv.setItemsCanFocus(true);
-                lv.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
-                break;
-            case 1:
-            default:
-                lv.setItemsCanFocus(true);
-                lv.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
-                break;
-        }
-    }
+    // Additional bulk close buttons for experimental closing strategies
+    private Button btnCloseAllVariant2;
+    private Button btnCloseAllVariant3;
+    private Button btnCloseAllVariant4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recent_apps);
 
-        // Determine which UI variant has been requested via intent extra. If no extra is
-        // specified we default to variant 1 (classic behaviour). We clamp the value to
-        // the range [1,4] to avoid invalid variants. This value influences how the
-        // ListView and its rows handle focus, and which item layout is inflated by
-        // RecentAppsAdapter.
-        int requestedVariant = getIntent() != null ? getIntent().getIntExtra(EXTRA_VARIANT, 1) : 1;
-        if (requestedVariant < 1 || requestedVariant > 4) {
-            requestedVariant = 1;
-        }
-        this.variant = requestedVariant;
+        // Read the requested variant index passed via the intent. Default to 1 if not provided.
+        variantIndex = getIntent().getIntExtra("variant", 1);
 
         // Initialise the handler used for periodic list refreshes on the main thread. Without
         // instantiation the handler would remain null and schedule/removal calls would crash.
@@ -160,19 +123,40 @@ public class RecentAppsActivity extends AppCompatActivity {
 
         Button btnCloseAll = findViewById(R.id.btn_close_all);
         Button btnCloseOthers = findViewById(R.id.btn_close_others);
-        Button btnCloseAllV2 = findViewById(R.id.btn_close_all_variant2);
-        Button btnCloseAllV3 = findViewById(R.id.btn_close_all_variant3);
-        Button btnCloseAllV4 = findViewById(R.id.btn_close_all_variant4);
+        // Initialise optional variant buttons for bulk closing apps
+        btnCloseAllVariant2 = findViewById(R.id.btn_close_all_variant2);
+        btnCloseAllVariant3 = findViewById(R.id.btn_close_all_variant3);
+        btnCloseAllVariant4 = findViewById(R.id.btn_close_all_variant4);
+
         // Store listView as a field so refresh handler can access it
         listView = findViewById(R.id.listView);
-        // Allow child views (e.g. gear buttons) inside list items to take focus and be reachable via DPAD.
-        // By enabling descendant focusability the settings gear can be focused via DPAD‑right without
-        // preventing normal up/down navigation between list entries.
+        // Allow child views (e.g. gear buttons) inside list items to take focus
         listView.setItemsCanFocus(true);
-        // Use FOCUS_BEFORE_DESCENDANTS so that the list row receives initial focus before
-        // any focusable child (like the settings gear). This keeps DPAD‑center and DPAD‑left
-        // actions targeting the list entry by default. The gear remains reachable via DPAD‑right.
-        listView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
+        // Configure focus behaviour based on the selected variant. Variants 1 and 5 share
+        // classic after-descendants behaviour with gear focusable. Variants 2 and 6 use
+        // BEFORE_DESCENDANTS with row focusable and gear focusable. Variants 3 and 7 use
+        // BEFORE_DESCENDANTS with row focusable and gear not focusable. Variants 4 and 8
+        // use AFTER_DESCENDANTS with row focusable and gear not focusable. Default to
+        // variant1 behaviour if index is out of range.
+        switch (variantIndex) {
+            case 2:
+            case 6:
+                listView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
+                break;
+            case 3:
+            case 7:
+                listView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
+                break;
+            case 4:
+            case 8:
+                listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+                break;
+            case 1:
+            case 5:
+            default:
+                listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+                break;
+        }
 
         // Close all apps via accessibility automation. Only visible/working when the
         // accessibility service is enabled. We exclude our own app and any
@@ -194,60 +178,6 @@ public class RecentAppsActivity extends AppCompatActivity {
                 pkgs.add(pkg);
             }
             performBulkClose(pkgs);
-        });
-
-        // Alternative variant 1: force stop apps but ensure we press back after each to return
-        btnCloseAllV2.setOnClickListener(v -> {
-            if (!RecentsAccessibilityService.isServiceEnabled()) {
-                Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
-                return;
-            }
-            java.util.List<String> pkgs = new java.util.ArrayList<>();
-            for (AppEntry entry : recentApps) {
-                String pkg = entry.packageName;
-                if (pkg.equals(getPackageName())) continue;
-                if (PrefsHelper.isExcluded(this, pkg)) continue;
-                if (pkg.startsWith("com.android.tv.settings") || pkg.startsWith("com.google.android.tv.settings") || pkg.startsWith("com.android.settings")) continue;
-                pkgs.add(pkg);
-            }
-            performBulkCloseVariant2(pkgs);
-        });
-
-        // Alternative variant 2: force stop apps and perform extra back navigation after all
-        btnCloseAllV3.setOnClickListener(v -> {
-            if (!RecentsAccessibilityService.isServiceEnabled()) {
-                Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
-                return;
-            }
-            java.util.List<String> pkgs = new java.util.ArrayList<>();
-            for (AppEntry entry : recentApps) {
-                String pkg = entry.packageName;
-                if (pkg.equals(getPackageName())) continue;
-                if (PrefsHelper.isExcluded(this, pkg)) continue;
-                if (pkg.startsWith("com.android.tv.settings") || pkg.startsWith("com.google.android.tv.settings") || pkg.startsWith("com.android.settings")) continue;
-                pkgs.add(pkg);
-            }
-            performBulkCloseVariant3(pkgs);
-        });
-
-        // Alternative variant 3: sequentially close each app and refresh after each operation
-        btnCloseAllV4.setOnClickListener(v -> {
-            if (!RecentsAccessibilityService.isServiceEnabled()) {
-                Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
-                return;
-            }
-            java.util.List<String> pkgs = new java.util.ArrayList<>();
-            for (AppEntry entry : recentApps) {
-                String pkg = entry.packageName;
-                // Skip our own app
-                if (pkg.equals(getPackageName())) continue;
-                // Skip excluded apps
-                if (PrefsHelper.isExcluded(this, pkg)) continue;
-                // Skip system settings packages
-                if (pkg.startsWith("com.android.tv.settings") || pkg.startsWith("com.google.android.tv.settings") || pkg.startsWith("com.android.settings")) continue;
-                pkgs.add(pkg);
-            }
-            performBulkCloseVariant4(pkgs);
         });
 
         // Close all apps except the one that was in the foreground immediately before
@@ -285,13 +215,8 @@ public class RecentAppsActivity extends AppCompatActivity {
             PrefsHelper.getExcludedApps(this);
             loadRecents();
         }
-        adapter = new RecentAppsAdapter(this, recentApps, variant);
+        adapter = new RecentAppsAdapter(this, recentApps);
         listView.setAdapter(adapter);
-        // Override the default focus handling now that the adapter is set. Without this call the
-        // ListView may use the fallback behaviour defined earlier in onCreate(). Calling the
-        // helper here ensures the desired variant is applied after the adapter has been
-        // attached.
-        configureListViewForVariant(listView, variant);
         listView.setOnItemClickListener((parent, view, position, id) -> {
             AppEntry entry = recentApps.get(position);
             // Launch the selected app if it is not excluded
@@ -363,7 +288,6 @@ public class RecentAppsActivity extends AppCompatActivity {
         // opens the system settings for the selected app and optionally triggers the force‑stop
         // automation if the accessibility service is enabled.
         listView.setOnKeyListener((v, keyCode, event) -> {
-            // Only handle key down events. Up events should be allowed to bubble normally.
             if (event.getAction() != KeyEvent.ACTION_DOWN) {
                 return false;
             }
@@ -371,9 +295,7 @@ public class RecentAppsActivity extends AppCompatActivity {
             if (pos == android.widget.AdapterView.INVALID_POSITION) {
                 return false;
             }
-            // When navigating within the list, DPAD‑right should move focus to the gear on the
-            // current row. If no gear exists the event is ignored so that the system can
-            // determine the next focus.
+            // DPAD‑RIGHT: focus the gear button within the current row
             if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                 View row = listView.getChildAt(pos - listView.getFirstVisiblePosition());
                 if (row != null) {
@@ -385,9 +307,7 @@ public class RecentAppsActivity extends AppCompatActivity {
                 }
                 return false;
             }
-            // DPAD‑left on a list item should open the app settings and trigger a forced stop
-            // through the accessibility service. If the selected app is a system settings package
-            // we skip the force stop automation.
+            // DPAD‑LEFT: open app settings and attempt force‑stop if applicable
             if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 if (pos < recentApps.size()) {
                     AppEntry appEntry = recentApps.get(pos);
@@ -508,36 +428,19 @@ public class RecentAppsActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         }
-        // Set up views depending on whether the accessibility service is enabled. When enabled,
-        // both "Close all" and "Close other" buttons are visible. We also request initial focus
-        // on the "Close other apps" button so that a freshly opened activity begins there. If the
-        // service is disabled we hide the buttons and place focus on the first list item.
+        // Set initial selection to the first item if available and request focus so that the
+        // highlighted row is the first entry rather than retaining focus on a previously
+        // selected gear button. Without requestFocus the focus may remain on a nested child.
+        if (!recentApps.isEmpty()) {
+            listView.setSelection(0);
+            listView.requestFocus();
+        }
+        // Show or hide the close buttons based on accessibility service state
         android.widget.Button btnCloseAll = findViewById(R.id.btn_close_all);
         android.widget.Button btnCloseOthers = findViewById(R.id.btn_close_others);
-        android.widget.Button btnCloseAllV2 = findViewById(R.id.btn_close_all_variant2);
-        android.widget.Button btnCloseAllV3 = findViewById(R.id.btn_close_all_variant3);
-        android.widget.Button btnCloseAllV4 = findViewById(R.id.btn_close_all_variant4);
         boolean serviceEnabled = RecentsAccessibilityService.isServiceEnabled();
         btnCloseAll.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
         btnCloseOthers.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
-        btnCloseAllV2.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
-        btnCloseAllV3.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
-        btnCloseAllV4.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
-        // Determine initial focus: prefer the "Close other" button when visible, otherwise the list
-        if (serviceEnabled) {
-            // When the accessibility service is enabled we want to start from the "Close other"
-            // button. Pre-select the first list row so that up/down navigation from the button
-            // behaves consistently.
-            if (!recentApps.isEmpty()) {
-                listView.setSelection(0);
-            }
-            btnCloseOthers.requestFocus();
-        } else {
-            if (!recentApps.isEmpty()) {
-                listView.setSelection(0);
-                listView.requestFocus();
-            }
-        }
         // Start periodic refresh if access granted
         refreshHandler.removeCallbacks(refreshRunnable);
         if (access) {
@@ -573,9 +476,7 @@ public class RecentAppsActivity extends AppCompatActivity {
         android.os.Handler handler = new android.os.Handler(getMainLooper());
         // Delay between each close operation (ms). This allows the UI to load the settings screen
         // and for the force‑stop automation to execute. Adjust if your device is slower or faster.
-        // Delay between closing each app in the bulk close operation. Increased from 2000ms to
-        // 3000ms to allow slower devices more time to open settings and process force‑stop actions.
-        final long stepDelay = 3000L;
+        final long stepDelay = 2000L;
         for (int i = 0; i < packages.size(); i++) {
             final String pkg = packages.get(i);
             long delay = i * stepDelay;
@@ -614,191 +515,6 @@ public class RecentAppsActivity extends AppCompatActivity {
                 }
             }
         }, finalDelay);
-    }
-
-    /**
-     * Alternative variant for bulk closing apps. After triggering the force‑stop
-     * sequence on each app we explicitly send a global BACK action to ensure
-     * the settings screen is closed before moving to the next app. This may
-     * help on devices where the standard automation sometimes leaves the UI
-     * stuck in the app settings.
-     *
-     * @param packages list of packages to close
-     */
-    private void performBulkCloseVariant2(java.util.List<String> packages) {
-        if (packages == null || packages.isEmpty()) {
-            return;
-        }
-        RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
-        if (svc == null) {
-            Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        android.os.Handler handler = new android.os.Handler(getMainLooper());
-        final long stepDelay = 3000L;
-        for (int i = 0; i < packages.size(); i++) {
-            final String pkg = packages.get(i);
-            long delay = i * stepDelay;
-            handler.postDelayed(() -> {
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                intent.setData(Uri.parse("package:" + pkg));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                try {
-                    startActivity(intent);
-                    // After a short delay, perform the normal force stop automation
-                    handler.postDelayed(() -> {
-                        RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
-                        if (service != null) {
-                            service.performForceStopSequence();
-                            // After another delay send a BACK command to close the settings screen
-                            handler.postDelayed(() -> {
-                                RecentsAccessibilityService svc2 = RecentsAccessibilityService.getInstance();
-                                if (svc2 != null) {
-                                    svc2.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK);
-                                }
-                            }, 1000);
-                        }
-                    }, 500);
-                } catch (Exception e) {
-                    Toast.makeText(this, pkg + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
-                }
-            }, delay);
-        }
-        // Refresh list after operations
-        long finalDelay = packages.size() * stepDelay + 2000L;
-        handler.postDelayed(() -> {
-            loadRecents();
-            if (adapter != null) {
-                adapter.notifyDataSetChanged();
-                if (!recentApps.isEmpty()) {
-                    listView.setSelection(0);
-                    listView.requestFocus();
-                }
-            }
-        }, finalDelay);
-    }
-
-    /**
-     * Another alternative variant for bulk closing apps. This variant triggers
-     * the force stop sequence and then, once all apps have been processed, sends
-     * two BACK actions in quick succession. This may help return to the recents
-     * list if the previous approach leaves one screen behind.
-     *
-     * @param packages list of packages to close
-     */
-    private void performBulkCloseVariant3(java.util.List<String> packages) {
-        if (packages == null || packages.isEmpty()) {
-            return;
-        }
-        RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
-        if (svc == null) {
-            Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        android.os.Handler handler = new android.os.Handler(getMainLooper());
-        final long stepDelay = 3000L;
-        for (int i = 0; i < packages.size(); i++) {
-            final String pkg = packages.get(i);
-            long delay = i * stepDelay;
-            handler.postDelayed(() -> {
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                intent.setData(Uri.parse("package:" + pkg));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                try {
-                    startActivity(intent);
-                    handler.postDelayed(() -> {
-                        RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
-                        if (service != null) {
-                            service.performForceStopSequence();
-                        }
-                    }, 500);
-                } catch (Exception e) {
-                    Toast.makeText(this, pkg + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
-                }
-            }, delay);
-        }
-        long finalDelay = packages.size() * stepDelay + 2000L;
-        handler.postDelayed(() -> {
-            // Send two back actions to return to the recents list/activity
-            RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
-            if (service != null) {
-                service.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK);
-                handler.postDelayed(() -> {
-                    RecentsAccessibilityService svc2 = RecentsAccessibilityService.getInstance();
-                    if (svc2 != null) {
-                        svc2.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK);
-                    }
-                }, 500);
-            }
-            // Refresh list in case some apps were stopped
-            loadRecents();
-            if (adapter != null) {
-                adapter.notifyDataSetChanged();
-                if (!recentApps.isEmpty()) {
-                    listView.setSelection(0);
-                    listView.requestFocus();
-                }
-            }
-        }, finalDelay);
-    }
-
-    /**
-     * Variant 4 for bulk closing apps. This variant processes each app sequentially and refreshes
-     * the recents list after each stop operation. It attempts to return to the recents list by
-     * sending a BACK command after closing the app. This may improve stability when the settings
-     * UI remains in the foreground or when closing multiple apps in a row.
-     *
-     * @param packages list of package names to close
-     */
-    private void performBulkCloseVariant4(java.util.List<String> packages) {
-        if (packages == null || packages.isEmpty()) {
-            return;
-        }
-        RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
-        if (svc == null) {
-            Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        android.os.Handler handler = new android.os.Handler(getMainLooper());
-        // Delay between processing each app; adjust if your device is slow to open settings screens
-        final long stepDelay = 3000L;
-        for (int i = 0; i < packages.size(); i++) {
-            final String pkg = packages.get(i);
-            long delay = i * stepDelay;
-            handler.postDelayed(() -> {
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                intent.setData(Uri.parse("package:" + pkg));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                try {
-                    startActivity(intent);
-                    // After launching settings, perform force stop
-                    handler.postDelayed(() -> {
-                        RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
-                        if (service != null) {
-                            service.performForceStopSequence();
-                            // After the automation, navigate back and refresh list
-                            handler.postDelayed(() -> {
-                                RecentsAccessibilityService svc2 = RecentsAccessibilityService.getInstance();
-                                if (svc2 != null) {
-                                    svc2.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK);
-                                }
-                                // Reload recents list to reflect any closed apps
-                                loadRecents();
-                                if (adapter != null) {
-                                    adapter.notifyDataSetChanged();
-                                    if (!recentApps.isEmpty()) {
-                                        listView.setSelection(0);
-                                        listView.requestFocus();
-                                    }
-                                }
-                            }, 2000L);
-                        }
-                    }, 1000L);
-                } catch (Exception e) {
-                    Toast.makeText(this, pkg + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
-                }
-            }, delay);
-        }
     }
 
     /**
@@ -859,44 +575,40 @@ public class RecentAppsActivity extends AppCompatActivity {
      */
     private class RecentAppsAdapter extends ArrayAdapter<AppEntry> {
         private final LayoutInflater inflater;
-        private final int variant;
+        // Layout resources for each variant (1-indexed). Variants 1–4 correspond to the
+        // classic behaviours described in the activity documentation. Variants 5–8 are
+        // similar but provide alternate focus orders and combinations of row/gear
+        // focusability. See the corresponding XML files under res/layout.
+        private final int[] ITEM_LAYOUTS = new int[] {
+                R.layout.item_recent_app_v1,
+                R.layout.item_recent_app_v2,
+                R.layout.item_recent_app_v3,
+                R.layout.item_recent_app_v4,
+                R.layout.item_recent_app_v5,
+                R.layout.item_recent_app_v6,
+                R.layout.item_recent_app_v7,
+                R.layout.item_recent_app_v8
+        };
 
-        public RecentAppsAdapter(Context ctx, List<AppEntry> apps, int variant) {
+        public RecentAppsAdapter(Context ctx, List<AppEntry> apps) {
             super(ctx, 0, apps);
-            this.inflater = LayoutInflater.from(ctx);
-            this.variant = variant;
+            inflater = LayoutInflater.from(ctx);
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = convertView;
+            int variant = variantIndex;
+            // Clamp variant to available layouts
+            int layoutIndex = Math.max(1, Math.min(variant, ITEM_LAYOUTS.length)) - 1;
             if (view == null) {
-                // Choose a layout based on the variant. Four distinct item layouts exist to
-                // experiment with different focus behaviours. If an invalid variant is
-                // provided fall back to the default.
-                int layoutId;
-                switch (variant) {
-                    case 2:
-                        layoutId = R.layout.item_recent_app_v2;
-                        break;
-                    case 3:
-                        layoutId = R.layout.item_recent_app_v3;
-                        break;
-                    case 4:
-                        layoutId = R.layout.item_recent_app_v4;
-                        break;
-                    case 1:
-                    default:
-                        layoutId = R.layout.item_recent_app_v1;
-                        break;
-                }
-                view = inflater.inflate(layoutId, parent, false);
+                view = inflater.inflate(ITEM_LAYOUTS[layoutIndex], parent, false);
             }
             AppEntry entry = getItem(position);
             ImageView iconView = view.findViewById(R.id.app_icon);
             TextView textView = view.findViewById(R.id.app_text);
             android.widget.ImageButton settingsButton = view.findViewById(R.id.settings_button);
-                if (entry != null) {
+            if (entry != null) {
                 iconView.setImageDrawable(entry.icon);
                 // Build display text as "Label (package)"
                 String text = entry.label + " (" + entry.packageName + ")";
@@ -909,43 +621,57 @@ public class RecentAppsActivity extends AppCompatActivity {
                     int colour = ContextCompat.getColor(getContext(), R.color.recent_app_text_color);
                     textView.setTextColor(colour);
                 }
-                // Set click listener on the settings gear to open the application details settings
+                // Make gear focusable or not based on variant. For variants where the gear
+                // should not be focusable we disable its focusability here. In other cases
+                // we allow default focus so that DPAD‑RIGHT can move to it.
+                boolean gearFocusable;
+                switch (variant) {
+                    case 3:
+                    case 4:
+                    case 6:
+                    case 8:
+                        gearFocusable = false;
+                        break;
+                    default:
+                        gearFocusable = true;
+                        break;
+                }
+                settingsButton.setFocusable(gearFocusable);
+                settingsButton.setFocusableInTouchMode(gearFocusable);
+                // If gear is visible, set click listener to open app settings
                 settingsButton.setOnClickListener(v -> {
-                    // Build intent to show app details settings for this package
                     Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                     intent.setData(Uri.parse("package:" + entry.packageName));
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     try {
                         getContext().startActivity(intent);
                     } catch (Exception e) {
-                        android.widget.Toast.makeText(getContext(), entry.packageName + " cannot be opened in settings", android.widget.Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), entry.packageName + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
                     }
                 });
-                // When the gear is focused and the user presses DPAD‑left, DPAD‑up or DPAD‑down,
-                // move focus back to the surrounding ListView and restore the selected position.
-                settingsButton.setOnKeyListener((v, kCode, kEvent) -> {
-                    if (kEvent.getAction() != KeyEvent.ACTION_DOWN) {
-                        return false;
-                    }
-                    // When the gear has focus, intercept DPAD navigation. Up and down move
-                    // directly to the previous or next row in the list. Left returns focus to
-                    // this same row without triggering the force‑stop automation.
-                    if (kCode == KeyEvent.KEYCODE_DPAD_UP) {
-                        int target = position > 0 ? position - 1 : 0;
-                        RecentAppsActivity.this.listView.requestFocus();
-                        RecentAppsActivity.this.listView.setSelection(target);
+                // Add key listener to gear so that DPAD_UP/DOWN moves between rows and DPAD_LEFT
+                // returns focus to the row. DPAD_CENTER and DPAD_RIGHT fall through to default.
+                settingsButton.setOnKeyListener((v, keyCode, event) -> {
+                    if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                        int next = position + 1;
+                        if (next < recentApps.size()) {
+                            listView.setSelection(next);
+                            listView.requestFocus();
+                        }
                         return true;
                     }
-                    if (kCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-                        int max = RecentAppsActivity.this.listView.getAdapter() != null ? RecentAppsActivity.this.listView.getAdapter().getCount() - 1 : position;
-                        int target = position < max ? position + 1 : max;
-                        RecentAppsActivity.this.listView.requestFocus();
-                        RecentAppsActivity.this.listView.setSelection(target);
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                        int prev = position - 1;
+                        if (prev >= 0) {
+                            listView.setSelection(prev);
+                            listView.requestFocus();
+                        }
                         return true;
                     }
-                    if (kCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                        RecentAppsActivity.this.listView.requestFocus();
-                        RecentAppsActivity.this.listView.setSelection(position);
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                        // return focus to the list row
+                        listView.requestFocus();
                         return true;
                     }
                     return false;
