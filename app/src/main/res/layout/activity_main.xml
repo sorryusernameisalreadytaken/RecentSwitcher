@@ -138,6 +138,21 @@
         android:text="@string/show_recent_apps_variant12_button"
         android:padding="12dp" />
 
+    <!-- Table‑style variants (V13–V14). These layouts separate the app
+         details from the action button into distinct columns. -->
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant13"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant13_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant14"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant14_button"
+        android:padding="12dp" />
+
     <!-- Button to immediately switch back to the last app -->
     <Button
         android:id="@+id/btn_open_last_app"

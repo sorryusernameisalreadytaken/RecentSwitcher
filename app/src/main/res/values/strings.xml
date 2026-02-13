@@ -46,6 +46,13 @@
     <string name="show_recent_apps_variant11_button">Recent apps (v11)</string>
     <string name="show_recent_apps_variant12_button">Recent apps (v12)</string>
 
+    <!-- Table‑style variants. These variants use a split layout with the
+         application details in one column and the action button in a
+         separate column. Variant 13 uses BEFORE_DESCENDANTS focus order;
+         variant 14 uses AFTER_DESCENDANTS. -->
+    <string name="show_recent_apps_variant13_button">Recent apps (v13)</string>
+    <string name="show_recent_apps_variant14_button">Recent apps (v14)</string>
+
     <!-- Status messages for the accessibility service -->
     <string name="service_not_enabled">The accessibility service is not active. You can enable it in the settings if it is needed for other functions.</string>
     <string name="service_enabled">The accessibility service is active.</string>

@@ -46,6 +46,13 @@
     <string name="show_recent_apps_variant11_button">Alle geöffneten Apps (V11)</string>
     <string name="show_recent_apps_variant12_button">Alle geöffneten Apps (V12)</string>
 
+    <!-- Tabellenartige Varianten (V13–V14). Diese Varianten trennen die
+         App‑Informationen und die Aktion in zwei Spalten. Variante 13
+         verwendet BEFORE_DESCENDANTS als Fokusreihenfolge; Variante 14
+         verwendet AFTER_DESCENDANTS. -->
+    <string name="show_recent_apps_variant13_button">Alle geöffneten Apps (V13)</string>
+    <string name="show_recent_apps_variant14_button">Alle geöffneten Apps (V14)</string>
+
     <!-- Status messages for the accessibility service -->
     <string name="service_not_enabled">Der Bedienungshilfe‑Dienst ist nicht aktiv. Du kannst ihn in den Einstellungen einschalten, falls er für andere Funktionen benötigt wird.</string>
     <string name="service_enabled">Der Bedienungshilfe‑Dienst ist aktiv.</string>

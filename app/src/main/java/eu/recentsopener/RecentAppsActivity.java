@@ -56,16 +56,34 @@ public class RecentAppsActivity extends AppCompatActivity {
         public void run() {
             // Only refresh if usage access is granted; otherwise the list would be empty
             if (hasUsageAccess()) {
-                // Preserve current scroll position to reduce flicker when the list updates
-                int firstVisible = listView.getFirstVisiblePosition();
-                View topView = listView.getChildAt(0);
-                int top = (topView != null) ? topView.getTop() : 0;
-                loadRecents();
-                if (adapter != null) {
+            // Capture the package name of the currently selected item (if any). We use this
+            // to restore selection after the list refreshes without forcing the scroll to
+            // jump back to the first item. Using the package name rather than the index
+            // allows the selection to remain on the same entry even if the ordering changes.
+            int selectedPosition = listView.getSelectedItemPosition();
+            String selectedPackage = null;
+            if (selectedPosition >= 0 && selectedPosition < recentApps.size()) {
+                selectedPackage = recentApps.get(selectedPosition).packageName;
+            }
+                // Reload recents and determine if anything changed
+                boolean changed = loadRecentsInternal();
+                // Notify the adapter only when data actually changed
+                if (changed && adapter != null) {
                     adapter.notifyDataSetChanged();
                 }
-                // Restore scroll position
-                listView.setSelectionFromTop(firstVisible, top);
+                // Restore focus/selection on the previously selected package if it still exists
+                if (selectedPackage != null) {
+                    int index = -1;
+                    for (int i = 0; i < recentApps.size(); i++) {
+                        if (selectedPackage.equals(recentApps.get(i).packageName)) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    if (index >= 0) {
+                        listView.setSelection(index);
+                    }
+                }
             }
             // Schedule the next refresh if the handler still exists
             if (refreshHandler != null) {
@@ -155,6 +173,7 @@ public class RecentAppsActivity extends AppCompatActivity {
             case 7:
             case 9:
             case 11:
+            case 13:
                 listView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
                 break;
             // Variants that use AFTER_DESCENDANTS focus order
@@ -164,6 +183,7 @@ public class RecentAppsActivity extends AppCompatActivity {
             case 1:
             case 10:
             case 12:
+            case 14:
             default:
                 listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
                 break;
@@ -381,7 +401,16 @@ public class RecentAppsActivity extends AppCompatActivity {
      * reversed so that the most recently used app appears first. Excluded
      * apps remain in the list and are highlighted by the adapter.
      */
-    private void loadRecents() {
+    /**
+     * Reloads the list of recent apps and returns whether the underlying data
+     * actually changed. If the ordering or content of the packages remains
+     * unchanged, no modifications are made to {@link #recentApps} and the
+     * method returns false. This allows callers to suppress unnecessary
+     * notifications to the adapter and thereby reduces flicker.
+     *
+     * @return true if the recents list was updated, false otherwise
+     */
+    private boolean loadRecentsInternal() {
         // Ensure excluded apps are initialised on every load. This prevents freshly installed
         // instances from showing excluded packages before the default list has been persisted.
         PrefsHelper.getExcludedApps(this);
@@ -432,9 +461,8 @@ public class RecentAppsActivity extends AppCompatActivity {
                 // skip unknown packages
             }
         }
-        // If the order of package names has not changed, avoid clearing and repopulating
-        // the list. This preserves focus and reduces flicker when the user hovers
-        // through the list. Only update the list if there is a difference.
+        // Determine whether the ordering of package names has changed. If not, we can avoid
+        // updating recentApps and preserve the existing list and focus.
         boolean changed = false;
         if (newPackageOrder.size() != previousPackageOrder.size()) {
             changed = true;
@@ -452,6 +480,16 @@ public class RecentAppsActivity extends AppCompatActivity {
             recentApps.clear();
             recentApps.addAll(newEntries);
         }
+        return changed;
+    }
+
+    /**
+     * Backwards‑compatible wrapper that reloads the recents list without
+     * returning a value. Existing callers that do not care about whether
+     * the data changed can continue to use this method.
+     */
+    private void loadRecents() {
+        loadRecentsInternal();
     }
 
     @Override
@@ -466,11 +504,14 @@ public class RecentAppsActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         }
-        // Set initial selection to the first item if available and request focus so that the
-        // highlighted row is the first entry rather than retaining focus on a previously
-        // selected gear button. Without requestFocus the focus may remain on a nested child.
+        // Set initial selection to the first item only if no item is currently selected.
+        // This prevents the list from jumping back to the top when returning from other
+        // activities (e.g. app settings). We still request focus on the list to ensure
+        // DPAD navigation remains on the list rather than on nested child views.
         if (!recentApps.isEmpty()) {
-            listView.setSelection(0);
+            if (listView.getSelectedItemPosition() == android.widget.AdapterView.INVALID_POSITION) {
+                listView.setSelection(0);
+            }
             listView.requestFocus();
         }
         // Show or hide the close buttons based on accessibility service state
@@ -630,7 +671,10 @@ public class RecentAppsActivity extends AppCompatActivity {
                 R.layout.item_recent_app_v9,
                 R.layout.item_recent_app_v10,
                 R.layout.item_recent_app_v11,
-                R.layout.item_recent_app_v12
+                R.layout.item_recent_app_v12,
+                // Table‑like variants (v13–v14) with separate columns for app details and action
+                R.layout.item_recent_app_v13,
+                R.layout.item_recent_app_v14
         };
 
         public RecentAppsAdapter(Context ctx, List<AppEntry> apps) {
