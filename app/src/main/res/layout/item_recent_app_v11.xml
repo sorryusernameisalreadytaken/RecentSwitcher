@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Variant 11 of the recent app list item. In this layout the list row
+    itself is not focusable but the settings gear remains focusable. The
+    descendant focusability is BEFORE_DESCENDANTS, causing focus to land
+    on the row container before any child views, though the row will not
+    hold focus. Navigation to the gear via DPAD‑RIGHT is handled in code;
+    the DPAD‑DOWN handler then moves focus back to the next row. This
+    variant allows testing behaviour where the row cannot take focus
+    automatically but the gear can still be selected.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
+    android:descendantFocusability="beforeDescendants">
+
+    <ImageView
+        android:id="@+id/app_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:contentDescription="@string/app_icon_desc" />
+
+    <TextView
+        android:id="@+id/app_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+    <ImageButton
+        android:id="@+id/settings_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@string/open_settings_description"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:padding="4dp"
+        android:src="@android:drawable/ic_menu_manage" />
+
+</LinearLayout>

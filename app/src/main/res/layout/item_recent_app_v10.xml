@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Variant 10 of the recent app list item. This variant keeps both the row
+    and the settings gear focusable but uses AFTER_DESCENDANTS focus
+    ordering. This means that when navigating with the DPAD the focus will
+    move to child views first (e.g. the gear) before returning to the row.
+    It allows experimenting with an alternative focus chain relative to
+    variant 9 while maintaining the ability to reach the gear via DPAD‑RIGHT
+    and to move back to the row via DPAD‑LEFT. The DPAD‑DOWN logic is
+    implemented in code to jump to the next row.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:descendantFocusability="afterDescendants">
+
+    <ImageView
+        android:id="@+id/app_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:contentDescription="@string/app_icon_desc" />
+
+    <TextView
+        android:id="@+id/app_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+    <ImageButton
+        android:id="@+id/settings_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@string/open_settings_description"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:padding="4dp"
+        android:src="@android:drawable/ic_menu_manage" />
+
+</LinearLayout>
