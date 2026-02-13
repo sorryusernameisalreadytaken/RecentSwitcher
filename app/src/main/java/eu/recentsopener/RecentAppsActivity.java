@@ -106,13 +106,13 @@ public class RecentAppsActivity extends AppCompatActivity {
         // Store listView as a field so refresh handler can access it
         listView = findViewById(R.id.listView);
         // Allow child views (e.g. gear buttons) inside list items to take focus and be reachable via DPAD.
-        // By enabling descendant focusability the settings gear can be focused via DPAD‑right without
-        // preventing normal up/down navigation between list entries.
+        // We rely on the row itself being focusable (see item_recent_app.xml) so that the list entry
+        // receives initial focus before any nested children. Setting descendant focusability to
+        // AFTER_DESCENDANTS allows the list view to delegate focus handling to its items without
+        // prioritising the child buttons over the row itself. This combination ensures the gear
+        // does not automatically take focus when the list is navigated.
         listView.setItemsCanFocus(true);
-        // Use FOCUS_BEFORE_DESCENDANTS so that the list row receives initial focus before
-        // any focusable child (like the settings gear). This keeps DPAD‑center and DPAD‑left
-        // actions targeting the list entry by default. The gear remains reachable via DPAD‑right.
-        listView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
+        listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
 
         // Close all apps via accessibility automation. Only visible/working when the
         // accessibility service is enabled. We exclude our own app and any
@@ -509,7 +509,9 @@ public class RecentAppsActivity extends AppCompatActivity {
         // and for the force‑stop automation to execute. Adjust if your device is slower or faster.
         // Delay between closing each app in the bulk close operation. Increased from 2000ms to
         // 3000ms to allow slower devices more time to open settings and process force‑stop actions.
-        final long stepDelay = 3000L;
+        // Increase delay between each close operation to 4000 ms. Android TV 14 may take
+        // several seconds to load the app settings screen and present the force‑stop dialog.
+        final long stepDelay = 4000L;
         for (int i = 0; i < packages.size(); i++) {
             final String pkg = packages.get(i);
             long delay = i * stepDelay;
@@ -569,7 +571,8 @@ public class RecentAppsActivity extends AppCompatActivity {
             return;
         }
         android.os.Handler handler = new android.os.Handler(getMainLooper());
-        final long stepDelay = 3000L;
+        // Increase delay for variant 2 to 4000 ms to allow UI transitions on Android TV 14.
+        final long stepDelay = 4000L;
         for (int i = 0; i < packages.size(); i++) {
             final String pkg = packages.get(i);
             long delay = i * stepDelay;
@@ -630,7 +633,8 @@ public class RecentAppsActivity extends AppCompatActivity {
             return;
         }
         android.os.Handler handler = new android.os.Handler(getMainLooper());
-        final long stepDelay = 3000L;
+        // Increase delay for variant 3 to 4000 ms as well.
+        final long stepDelay = 4000L;
         for (int i = 0; i < packages.size(); i++) {
             final String pkg = packages.get(i);
             long delay = i * stepDelay;
@@ -709,7 +713,8 @@ public class RecentAppsActivity extends AppCompatActivity {
         queue.addAll(deferred);
         android.os.Handler handler = new android.os.Handler(getMainLooper());
         // Use a delay similar to other variants to allow UI to settle between operations.
-        final long stepDelay = 3000L;
+        // Increase delay for variant 4 to 4000 ms to match other variants.
+        final long stepDelay = 4000L;
         for (int i = 0; i < queue.size(); i++) {
             final String pkg = queue.get(i);
             long delay = i * stepDelay;

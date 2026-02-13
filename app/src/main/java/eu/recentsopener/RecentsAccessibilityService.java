@@ -23,10 +23,11 @@ public class RecentsAccessibilityService extends AccessibilityService {
      * force‑stop sequence. Adjust this value if the UI on your device needs
      * more or less time to update between focus changes and button presses.
      */
-    // Delay between each step of the force‑stop automation. Increased from 500ms to 1000ms
-    // to improve reliability on newer Android TV versions where dialogs and button states
-    // take longer to update.
-    private static final int FORCE_SEQUENCE_DELAY_MS = 1000;
+    // Delay between each step of the force‑stop automation. Increased further to 2000ms to
+    // improve reliability on newer Android TV versions (e.g. TV OS 14) where dialogs and
+    // button states can take multiple seconds to become interactable. Adjust this value
+    // if actions are still being missed on your device.
+    private static final int FORCE_SEQUENCE_DELAY_MS = 2000;
 
     @Override
     public void onCreate() {
@@ -104,10 +105,22 @@ public class RecentsAccessibilityService extends AccessibilityService {
         android.os.Handler handler = new android.os.Handler(getMainLooper());
         // Step 1: wait 500ms, then click the Force stop button if present
         handler.postDelayed(() -> {
-            clickButtonByText(new String[]{"Force stop", "Stoppen erzwingen", "Stopp erzwingen", "Beenden erzwingen"});
+            // Attempt to locate the force‑stop button by matching possible labels in English
+            // and German. Additional fallbacks like "Stop", "Stoppen", "Anhalten" and "Schließen"
+            // have been added to support new UI variants on Android TV 14 where the button text
+            // may differ.
+            clickButtonByText(new String[]{
+                    "Force stop", "Stoppen erzwingen", "Stopp erzwingen", "Beenden erzwingen",
+                    "Force Stop", "Stop", "Stoppen", "Anhalten", "Schließen", "Beenden"
+            });
             // Step 2: after another delay click the OK button on the confirmation dialog
             handler.postDelayed(() -> {
-                clickButtonByText(new String[]{"OK", "Ok", "OK ", "OKAY", "Ok ", "O. K.", "Beenden"});
+                // Click the confirmation button. Possible labels include OK/Ok as well as
+                // German equivalents like "Ja", "Bestätigen" or alternate capitalization.
+                clickButtonByText(new String[]{
+                        "OK", "Ok", "OK ", "OKAY", "Ok ", "O. K.", "Beenden",
+                        "Ja", "JA", "Bestätigen", "Confirm", "OKAY "
+                });
                 // Step 3: after another delay go back to the previous screen
                 handler.postDelayed(() -> {
                     svc.performGlobalAction(AccessibilityService.GLOBAL_ACTION_BACK);
