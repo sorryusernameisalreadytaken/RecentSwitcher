@@ -10,6 +10,10 @@
 
     <!-- Button labels on the main screen -->
     <string name="show_recent_apps_button">Alle geöffneten Apps</string>
+    <!-- Zusätzliche Schaltflächen für experimentelle Varianten der Liste letzter Apps -->
+    <string name="show_recent_apps_button_v2">Alle geöffneten Apps (Variante 2)</string>
+    <string name="show_recent_apps_button_v3">Alle geöffneten Apps (Variante 3)</string>
+    <string name="show_recent_apps_button_v4">Alle geöffneten Apps (Variante 4)</string>
     <string name="open_last_app_button">Letzte App öffnen</string>
     <!-- German translation of the button that opens the system recents menu -->
     <string name="list_actions_button">System-Recents-Menü öffnen</string>
@@ -31,9 +35,7 @@
     <!-- Alternative Schaltflächen zum Testen unterschiedlicher Schließvarianten -->
     <string name="close_all_apps_variant2_button">Alle Apps schließen (Variante 1)</string>
     <string name="close_all_apps_variant3_button">Alle Apps schließen (Variante 2)</string>
-    <!-- Neue Variante zum Schließen aller Apps. Diese Variante lädt die Liste der zuletzt
-         geöffneten Apps nach jedem Schließen neu und bearbeitet System-Einstellungen erst
-         zum Schluss. -->
+    <!-- Deutsche Bezeichnung für die dritte alternative Bulk‑Schließfunktion -->
     <string name="close_all_apps_variant4_button">Alle Apps schließen (Variante 3)</string>
     <string name="grant_usage_access">Erlaube Zugriff auf Nutzungsdaten, um die letzten Apps anzuzeigen.</string>
 
@@ -56,7 +58,6 @@
     <!-- Descriptive texts for list screens (German translations) -->
     <string name="recent_apps_description">Wähle eine App zum Starten. Langer Druck, um sie auszuschließen oder wieder aufzunehmen.</string>
     <string name="excluded_apps_description">Halte eine App gedrückt, um sie wieder aufzunehmen.</string>
-    <!-- Aktualisierte Beschreibung: die Anzeige reicht jetzt bis zu 60 Minuten in die Vergangenheit -->
     <string name="live_events_description">Diese Liste zeigt alle letzten Nutzungsereignisse (60 Minuten).</string>
 
     <!-- Debug report messages (German translations) -->
@@ -68,4 +69,6 @@
 
     <!-- Hinweis, der angezeigt wird, wenn man auf eine ausgeschlossene App tippt. Er erklärt, dass ein langer Druck sie wieder einbezieht. -->
     <string name="long_press_to_include">Halte OK gedrückt, um %1$s wieder aufzunehmen.</string>
+    <!-- Hinweis, der angezeigt wird, wenn man auf einen Live‑Eintrag tippt. Er erklärt, dass ein langer Druck ihn ausschließt. -->
+    <string name="long_press_to_exclude">Halte OK gedrückt, um %1$s auszuschließen.</string>
 </resources>

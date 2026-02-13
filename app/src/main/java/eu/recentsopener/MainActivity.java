@@ -27,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
     private Button btnManageExcluded;
     private Button btnCollectDebug;
     private Button btnShowLiveEvents;
+    private Button btnShowRecentAppsV2;
+    private Button btnShowRecentAppsV3;
+    private Button btnShowRecentAppsV4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,15 +39,39 @@ public class MainActivity extends AppCompatActivity {
         tvStatus = findViewById(R.id.tv_status);
         btnEnableService = findViewById(R.id.btn_enable_service);
         btnShowRecentApps = findViewById(R.id.btn_show_recent_apps);
+        btnShowRecentAppsV2 = findViewById(R.id.btn_show_recent_apps_v2);
+        btnShowRecentAppsV3 = findViewById(R.id.btn_show_recent_apps_v3);
+        btnShowRecentAppsV4 = findViewById(R.id.btn_show_recent_apps_v4);
         btnOpenLastApp = findViewById(R.id.btn_open_last_app);
         btnListActions = findViewById(R.id.btn_list_actions);
         btnManageExcluded = findViewById(R.id.btn_manage_excluded);
         btnCollectDebug = findViewById(R.id.btn_collect_debug);
         btnShowLiveEvents = findViewById(R.id.btn_show_live_events);
 
-        // Show the list of recent apps via UsageStats API
-        btnShowRecentApps.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, RecentAppsActivity.class)));
+        // Show the list of recent apps via UsageStats API (variant 1)
+        btnShowRecentApps.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra(RecentAppsActivity.EXTRA_VARIANT, 1);
+            startActivity(intent);
+        });
+        // Launch variant 2 of the recents list
+        btnShowRecentAppsV2.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra(RecentAppsActivity.EXTRA_VARIANT, 2);
+            startActivity(intent);
+        });
+        // Launch variant 3 of the recents list
+        btnShowRecentAppsV3.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra(RecentAppsActivity.EXTRA_VARIANT, 3);
+            startActivity(intent);
+        });
+        // Launch variant 4 of the recents list
+        btnShowRecentAppsV4.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra(RecentAppsActivity.EXTRA_VARIANT, 4);
+            startActivity(intent);
+        });
 
         // Show the last app. Require usage access permission similarly to the recents list.
         btnOpenLastApp.setOnClickListener(v -> {

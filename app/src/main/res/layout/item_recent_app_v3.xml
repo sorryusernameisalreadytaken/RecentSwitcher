@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Variant 3 of the recent app list item. The root row is not focusable
+    and descendant focusability is BEFORE_DESCENDANTS. Unlike variant 2 the
+    settings gear is not focusable, meaning that navigation focuses solely on
+    the row. The DPAD‑right handler in RecentAppsActivity can still
+    explicitly request focus for the gear but it will not receive focus
+    automatically. Use this variant to test behaviour where the gear cannot
+    be navigated to by default.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="8dp"
     android:focusable="false"
-    android:descendantFocusability="afterDescendants">
+    android:focusableInTouchMode="false"
+    android:descendantFocusability="beforeDescendants">
 
     <ImageView
         android:id="@+id/app_icon"
@@ -22,9 +32,6 @@
         android:layout_marginStart="12dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
-    <!-- Settings (gear) button allowing the user to open the app's system settings directly.
-         It is focusable so that users can navigate to it via DPAD‑right and activate it
-         without triggering the force‑stop automation. -->
     <ImageButton
         android:id="@+id/settings_button"
         android:layout_width="40dp"
@@ -32,8 +39,8 @@
         android:layout_gravity="center_vertical"
         android:background="?attr/selectableItemBackground"
         android:contentDescription="@string/open_settings_description"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
         android:padding="4dp"
         android:src="@android:drawable/ic_menu_manage" />
 

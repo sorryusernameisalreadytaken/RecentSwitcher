@@ -11,6 +11,10 @@
 
     <!-- Button labels on the main screen -->
     <string name="show_recent_apps_button">Recent apps</string>
+    <!-- Buttons for launching alternate recent app list variants -->
+    <string name="show_recent_apps_button_v2">Recent apps (variant 2)</string>
+    <string name="show_recent_apps_button_v3">Recent apps (variant 3)</string>
+    <string name="show_recent_apps_button_v4">Recent apps (variant 4)</string>
     <string name="open_last_app_button">Open last app</string>
     <!-- Button label to open the system recents (overview) menu -->
     <string name="list_actions_button">Open system recents menu</string>
@@ -32,8 +36,7 @@
     <!-- Alternative bulk close buttons for testing different force‑stop strategies -->
     <string name="close_all_apps_variant2_button">Close all apps (alt 1)</string>
     <string name="close_all_apps_variant3_button">Close all apps (alt 2)</string>
-    <!-- New alternative variant for bulk closing apps. This variant reloads the recents list
-         after each close and defers closing system settings packages until the end. -->
+    <!-- Label for the third alternative bulk close button. This variant reloads the recents list after each stop. -->
     <string name="close_all_apps_variant4_button">Close all apps (alt 3)</string>
     <string name="grant_usage_access">Grant usage access to show recent apps.</string>
 
@@ -56,7 +59,6 @@
     <!-- Descriptive texts for list screens -->
     <string name="recent_apps_description">Select an app to launch it. Long press to exclude or include.</string>
     <string name="excluded_apps_description">Press and hold an app to include it again.</string>
-    <!-- Updated description reflecting the increased history window from five minutes to one hour -->
     <string name="live_events_description">This list displays all recent usage events (last 60 minutes).</string>
 
     <!-- Debug report messages -->
@@ -68,4 +70,6 @@
 
     <!-- Prompt shown when tapping an excluded app explaining that a long press will re-include it. -->
     <string name="long_press_to_include">Hold OK to include %1$s again.</string>
+    <!-- Prompt shown when tapping a live event explaining that a long press will exclude it. -->
+    <string name="long_press_to_exclude">Hold OK to exclude %1$s.</string>
 </resources>

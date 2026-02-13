@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Variant 4 of the recent app list item. The root row is focusable and
+    descendant focusability is AFTER_DESCENDANTS, mirroring variant 1 but
+    with the settings gear not focusable. This ensures the row receives
+    focus first and the gear cannot be navigated to automatically. Use this
+    variant to test whether a non-focusable gear improves navigation clarity.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="8dp"
-    android:focusable="false"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:descendantFocusability="afterDescendants">
 
     <ImageView
@@ -22,9 +30,6 @@
         android:layout_marginStart="12dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
-    <!-- Settings (gear) button allowing the user to open the app's system settings directly.
-         It is focusable so that users can navigate to it via DPAD‑right and activate it
-         without triggering the force‑stop automation. -->
     <ImageButton
         android:id="@+id/settings_button"
         android:layout_width="40dp"
@@ -32,8 +37,8 @@
         android:layout_gravity="center_vertical"
         android:background="?attr/selectableItemBackground"
         android:contentDescription="@string/open_settings_description"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
         android:padding="4dp"
         android:src="@android:drawable/ic_menu_manage" />
 

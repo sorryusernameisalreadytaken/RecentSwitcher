@@ -36,13 +36,11 @@ public class ExcludedAppsActivity extends AppCompatActivity {
 
         // Obtain and store a reference to the ListView. We enable child focusability so that
         // the settings gear can receive focus via DPAD‑right without disrupting the default
-        // up/down navigation between rows. The list row layout has been made focusable (see
-        // item_recent_app.xml), so we want the list itself to delegate focus to its rows before
-        // prioritising nested children. Using FOCUS_AFTER_DESCENDANTS here avoids the gear
-        // automatically taking focus when the list is navigated.
+        // up/down navigation between rows.
         listView = findViewById(R.id.excluded_list);
         listView.setItemsCanFocus(true);
-        listView.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
+        // Ensure the list row is the initial focus and the gear is only reachable via DPAD‑right
+        listView.setDescendantFocusability(android.view.ViewGroup.FOCUS_BEFORE_DESCENDANTS);
 
         Set<String> excluded = PrefsHelper.getExcludedApps(this);
         if (excluded.isEmpty()) {

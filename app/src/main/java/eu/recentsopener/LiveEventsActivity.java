@@ -21,6 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -99,33 +100,37 @@ public class LiveEventsActivity extends AppCompatActivity {
                     android.widget.ImageButton settingsButton = view.findViewById(R.id.settings_button);
                     if (settingsButton != null) {
                         settingsButton.setVisibility(android.view.View.GONE);
+                        // Ensure the settings button does not take focus in the live events list
+                        settingsButton.setFocusable(false);
+                        settingsButton.setFocusableInTouchMode(false);
                     }
+                    // Ensure the root row itself does not steal focus so that long‑press
+                    // gestures (via DPAD‑center hold or touch) are registered properly.
+                    view.setFocusable(false);
+                    view.setFocusableInTouchMode(false);
+                    view.setLongClickable(true);
                 }
                 return view;
             }
         };
         listView.setAdapter(adapter);
-
-        // Allow long‑press on an item to exclude that app from the recents list. This is
-        // analogous to the behaviour in the recent apps list: the user can hold the OK
-        // button (or perform a long touch) to add the app to the exclusion list. Excluded
-        // apps remain visible here but will be highlighted and omitted from other lists.
+        // When the user taps a live entry we show a hint explaining that a long press will
+        // exclude the app from the recents list. This avoids accidental exclusions when
+        // navigating with the DPAD or remote.
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            LiveEntry entry = entries.get(position);
+            Toast.makeText(LiveEventsActivity.this,
+                    getString(R.string.long_press_to_exclude, entry.label), Toast.LENGTH_SHORT).show();
+        });
+        // Long press on a live entry adds it to the excluded list and removes it from this
+        // diagnostic view. We also show a confirmation toast.
         listView.setOnItemLongClickListener((parent, view, position, id) -> {
             LiveEntry entry = entries.get(position);
-            if (entry != null) {
-                // Add to exclusion list only if not already excluded
-                boolean alreadyExcluded = PrefsHelper.isExcluded(LiveEventsActivity.this, entry.packageName);
-                if (!alreadyExcluded) {
-                    PrefsHelper.addExcludedApp(LiveEventsActivity.this, entry.packageName);
-                    android.widget.Toast.makeText(LiveEventsActivity.this, getString(R.string.app_excluded, entry.label), android.widget.Toast.LENGTH_SHORT).show();
-                    // refresh UI to highlight the entry
-                    adapter.notifyDataSetChanged();
-                } else {
-                    // If already excluded we do nothing special here; a long press on the recents screen
-                    // is used for re‑including.
-                    android.widget.Toast.makeText(LiveEventsActivity.this, getString(R.string.app_excluded, entry.label), android.widget.Toast.LENGTH_SHORT).show();
-                }
-            }
+            PrefsHelper.addExcludedApp(LiveEventsActivity.this, entry.packageName);
+            Toast.makeText(LiveEventsActivity.this,
+                    getString(R.string.app_excluded, entry.label), Toast.LENGTH_SHORT).show();
+            entries.remove(position);
+            adapter.notifyDataSetChanged();
             return true;
         });
 
