@@ -38,8 +38,9 @@ import java.util.Map;
  * Excluded apps are highlighted in red but cannot be removed here.
  */
 public class LiveEventsActivity extends AppCompatActivity {
-    /** Duration of history to display in milliseconds (5 minutes). */
-    private static final long HISTORY_DURATION_MS = 1000L * 60 * 5;
+    /** Duration of history to display in milliseconds. Increased from 5 minutes to 60 minutes so
+     *  that more events are visible to the user (one hour). */
+    private static final long HISTORY_DURATION_MS = 1000L * 60 * 60;
 
     /** Data model representing one live entry. */
     private static class LiveEntry {
@@ -93,6 +94,11 @@ public class LiveEventsActivity extends AppCompatActivity {
                     } else {
                         int colour = ContextCompat.getColor(getContext(), R.color.recent_app_text_color);
                         textView.setTextColor(colour);
+                    }
+                    // Hide the settings gear in the live events list; there are no actions
+                    android.widget.ImageButton settingsButton = view.findViewById(R.id.settings_button);
+                    if (settingsButton != null) {
+                        settingsButton.setVisibility(android.view.View.GONE);
                     }
                 }
                 return view;

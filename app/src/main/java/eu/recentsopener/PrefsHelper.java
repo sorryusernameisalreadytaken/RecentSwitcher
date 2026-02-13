@@ -49,6 +49,9 @@ public final class PrefsHelper {
         defaults.add("de.mm20.launcher2.release");
         // Exclude Google permission controller as well
         defaults.add("com.google.android.permissioncontroller");
+        // Exclude popular key mapping utilities by default
+        defaults.add("io.github.sds100.keymapper");
+        defaults.add("io.github.sds100.keymapper.inputmethod.leanback");
         DEFAULT_EXCLUDED = java.util.Collections.unmodifiableSet(defaults);
     }
 

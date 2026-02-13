@@ -29,6 +29,9 @@
     <!-- Buttons on the recents screen to close apps via the accessibility service -->
     <string name="close_all_apps_button">Close all apps</string>
     <string name="close_other_apps_button">Close other apps</string>
+    <!-- Alternative bulk close buttons for testing different force‑stop strategies -->
+    <string name="close_all_apps_variant2_button">Close all apps (alt 1)</string>
+    <string name="close_all_apps_variant3_button">Close all apps (alt 2)</string>
     <string name="grant_usage_access">Grant usage access to show recent apps.</string>
 
     <!-- Strings used when including/excluding apps -->

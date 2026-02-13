@@ -28,6 +28,9 @@
     <!-- Buttons on the recents screen to close apps via the accessibility service -->
     <string name="close_all_apps_button">Alle Apps schließen</string>
     <string name="close_other_apps_button">Alle anderen Apps schließen</string>
+    <!-- Alternative Schaltflächen zum Testen unterschiedlicher Schließvarianten -->
+    <string name="close_all_apps_variant2_button">Alle Apps schließen (Variante 1)</string>
+    <string name="close_all_apps_variant3_button">Alle Apps schließen (Variante 2)</string>
     <string name="grant_usage_access">Erlaube Zugriff auf Nutzungsdaten, um die letzten Apps anzuzeigen.</string>
 
     <!-- Strings used when including/excluding apps -->

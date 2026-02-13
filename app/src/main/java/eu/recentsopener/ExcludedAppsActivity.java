@@ -39,7 +39,8 @@ public class ExcludedAppsActivity extends AppCompatActivity {
         // up/down navigation between rows.
         listView = findViewById(R.id.excluded_list);
         listView.setItemsCanFocus(true);
-        listView.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
+        // Ensure the list row is the initial focus and the gear is only reachable via DPAD‑right
+        listView.setDescendantFocusability(android.view.ViewGroup.FOCUS_BEFORE_DESCENDANTS);
 
         Set<String> excluded = PrefsHelper.getExcludedApps(this);
         if (excluded.isEmpty()) {
