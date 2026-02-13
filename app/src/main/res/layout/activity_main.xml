@@ -7,12 +7,25 @@
     screen. When the service is not enabled the user can tap
     "Dienst aktivieren" to jump to the accessibility settings.
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center"
+<!--
+    Wrap the main content in a ScrollView so that all buttons remain
+    accessible on devices with limited vertical screen space (e.g. Android
+    TV). Without a scrollable container the long list of buttons may
+    extend beyond the visible area and cannot be reached via DPAD
+    navigation. The ScrollView scrolls automatically when focus moves
+    beyond the visible region.
+-->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/tv_status"
@@ -192,4 +205,6 @@
         android:text="@string/close_specific_apps_variant4_button"
         android:padding="12dp" />
 
-</LinearLayout>
+    </LinearLayout>
+
+</ScrollView>
