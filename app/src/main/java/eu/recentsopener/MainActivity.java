@@ -72,18 +72,6 @@ public class MainActivity extends AppCompatActivity {
     private Button btnShowRecentAppsVariant31;
     private Button btnShowRecentAppsVariant32;
 
-    // Additional experimental variants (v23–v32)
-    private Button btnShowRecentAppsVariant23;
-    private Button btnShowRecentAppsVariant24;
-    private Button btnShowRecentAppsVariant25;
-    private Button btnShowRecentAppsVariant26;
-    private Button btnShowRecentAppsVariant27;
-    private Button btnShowRecentAppsVariant28;
-    private Button btnShowRecentAppsVariant29;
-    private Button btnShowRecentAppsVariant30;
-    private Button btnShowRecentAppsVariant31;
-    private Button btnShowRecentAppsVariant32;
-
     // Buttons for closing a fixed set of packages using different strategies
     private Button btnCloseSpecificAppsVariant1;
     private Button btnCloseSpecificAppsVariant2;
@@ -155,17 +143,6 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentAppsVariant31 = findViewById(R.id.btn_show_recent_apps_variant31);
         btnShowRecentAppsVariant32 = findViewById(R.id.btn_show_recent_apps_variant32);
 
-        // Initialise buttons for experimental variants V23–V32
-        btnShowRecentAppsVariant23 = findViewById(R.id.btn_show_recent_apps_variant23);
-        btnShowRecentAppsVariant24 = findViewById(R.id.btn_show_recent_apps_variant24);
-        btnShowRecentAppsVariant25 = findViewById(R.id.btn_show_recent_apps_variant25);
-        btnShowRecentAppsVariant26 = findViewById(R.id.btn_show_recent_apps_variant26);
-        btnShowRecentAppsVariant27 = findViewById(R.id.btn_show_recent_apps_variant27);
-        btnShowRecentAppsVariant28 = findViewById(R.id.btn_show_recent_apps_variant28);
-        btnShowRecentAppsVariant29 = findViewById(R.id.btn_show_recent_apps_variant29);
-        btnShowRecentAppsVariant30 = findViewById(R.id.btn_show_recent_apps_variant30);
-        btnShowRecentAppsVariant31 = findViewById(R.id.btn_show_recent_apps_variant31);
-        btnShowRecentAppsVariant32 = findViewById(R.id.btn_show_recent_apps_variant32);
         // Buttons for specific test closers
         btnCloseSpecificAppsVariant1 = findViewById(R.id.btn_close_specific_apps_variant1);
         btnCloseSpecificAppsVariant2 = findViewById(R.id.btn_close_specific_apps_variant2);
@@ -354,57 +331,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Launch experimental variants (v23–v32) of the recents list
-        btnShowRecentAppsVariant23.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
-            intent.putExtra("variant", 23);
-            startActivity(intent);
-        });
-        btnShowRecentAppsVariant24.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
-            intent.putExtra("variant", 24);
-            startActivity(intent);
-        });
-        btnShowRecentAppsVariant25.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
-            intent.putExtra("variant", 25);
-            startActivity(intent);
-        });
-        btnShowRecentAppsVariant26.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
-            intent.putExtra("variant", 26);
-            startActivity(intent);
-        });
-        btnShowRecentAppsVariant27.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
-            intent.putExtra("variant", 27);
-            startActivity(intent);
-        });
-        btnShowRecentAppsVariant28.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
-            intent.putExtra("variant", 28);
-            startActivity(intent);
-        });
-        btnShowRecentAppsVariant29.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
-            intent.putExtra("variant", 29);
-            startActivity(intent);
-        });
-        btnShowRecentAppsVariant30.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
-            intent.putExtra("variant", 30);
-            startActivity(intent);
-        });
-        btnShowRecentAppsVariant31.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
-            intent.putExtra("variant", 31);
-            startActivity(intent);
-        });
-        btnShowRecentAppsVariant32.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
-            intent.putExtra("variant", 32);
-            startActivity(intent);
-        });
 
         // Click listeners for closing specific packages using different strategies
         btnCloseSpecificAppsVariant1.setOnClickListener(v -> closeSpecificApps(1));

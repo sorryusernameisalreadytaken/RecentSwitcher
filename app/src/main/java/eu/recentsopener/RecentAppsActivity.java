@@ -155,12 +155,6 @@ public class RecentAppsActivity extends AppCompatActivity {
     private final java.util.List<String> previousPackageOrder = new java.util.ArrayList<>();
 
     /**
-     * Records whether the last focused view was the gear button. This is used
-     * for logging focus transitions and debugging DPAD navigation.
-     */
-    private boolean lastFocusedWasGear = false;
-
-    /**
      * Records the package name of the last focused app row or gear. This is
      * updated whenever a focus change occurs and is logged on refresh.
      */
