@@ -117,6 +117,12 @@ public class RecentAppsActivity extends AppCompatActivity {
     private ListView listView;
 
     /**
+     * Description text shown above the recents list. This will be updated
+     * dynamically based on whether the accessibility service is active.
+     */
+    private android.widget.TextView tvDescription;
+
+    /**
      * Index of the variant to use for the recents list. Variant 1 reproduces
      * the original focus behaviour where the row itself is not focusable and
      * the gear button can be focused. Variant 2 makes the row focusable
@@ -182,6 +188,9 @@ public class RecentAppsActivity extends AppCompatActivity {
 
         Button btnCloseAll = findViewById(R.id.btn_close_all);
         Button btnCloseOthers = findViewById(R.id.btn_close_others);
+
+        // Capture the description TextView so we can update its text dynamically
+        tvDescription = findViewById(R.id.tv_description);
         // Initialise optional variant buttons for bulk closing apps
         btnCloseAllVariant2 = findViewById(R.id.btn_close_all_variant2);
         btnCloseAllVariant3 = findViewById(R.id.btn_close_all_variant3);
@@ -340,36 +349,49 @@ public class RecentAppsActivity extends AppCompatActivity {
             if (pos == android.widget.AdapterView.INVALID_POSITION) {
                 return false;
             }
-            // Both DPAD‑LEFT and DPAD‑RIGHT open the app settings page for the selected app.
-            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+            // Handle DPAD‑RIGHT: always open settings without auto‑close
+            if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                 if (pos < recentApps.size()) {
                     AppEntry appEntry = recentApps.get(pos);
-                    // Construct intent to open the application details settings
                     Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                     intent.setData(Uri.parse("package:" + appEntry.packageName));
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     try {
                         startActivity(intent);
-                        // Determine if this package is a system settings app; skip auto close for those
-                        boolean isSettings = appEntry.packageName.startsWith("com.android.tv.settings") ||
+                    } catch (Exception e) {
+                        Toast.makeText(RecentAppsActivity.this, appEntry.packageName + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
+                    }
+                    return true;
+                }
+            }
+            // Handle DPAD‑LEFT: only active when accessibility service is enabled.  When active,
+            // open settings and then trigger the force stop automation on the selected app.
+            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                if (!RecentsAccessibilityService.isServiceEnabled()) {
+                    // Not handled: allow default navigation
+                    return false;
+                }
+                if (pos < recentApps.size()) {
+                    AppEntry appEntry = recentApps.get(pos);
+                    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent.setData(Uri.parse("package:" + appEntry.packageName));
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    try {
+                        startActivity(intent);
+                        // Skip auto close for settings packages
+                        boolean isSettingsPkg = appEntry.packageName.startsWith("com.android.tv.settings") ||
                                 appEntry.packageName.startsWith("com.google.android.tv.settings") ||
                                 appEntry.packageName.startsWith("com.android.settings") ||
-                                // Some devices or ROMs use misspelled identifiers. Skip auto close for these as well.
                                 appEntry.packageName.startsWith("com.andrpid.tv.settings") ||
                                 appEntry.packageName.startsWith("com.andrpid.settings");
-                        if (!isSettings) {
-                            if (RecentsAccessibilityService.isServiceEnabled()) {
-                                RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
-                                if (svc != null) {
-                                    // Trigger the automated force stop sequence via accessibility
-                                    svc.performForceStopSequence();
-                                }
-                            } else {
-                                Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
+                        if (!isSettingsPkg) {
+                            RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
+                            if (svc != null) {
+                                svc.performForceStopSequence();
                             }
                         }
                     } catch (Exception e) {
-                        Toast.makeText(this, appEntry.packageName + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RecentAppsActivity.this, appEntry.packageName + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
                     }
                     return true;
                 }
@@ -523,22 +545,35 @@ public class RecentAppsActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         }
-        // Set initial selection to the first item only if no item is currently selected.
-        // This prevents the list from jumping back to the top when returning from other
-        // activities (e.g. app settings). We still request focus on the list to ensure
-        // DPAD navigation remains on the list rather than on nested child views.
-        if (!recentApps.isEmpty()) {
-            if (listView.getSelectedItemPosition() == android.widget.AdapterView.INVALID_POSITION) {
-                listView.setSelection(0);
-            }
-            listView.requestFocus();
-        }
-        // Show or hide the close buttons based on accessibility service state
+        // Show or hide the bulk close buttons based on accessibility service state and
+        // set the description text accordingly. When the service is enabled we also
+        // set the initial focus to the "Close other apps" button. When the service
+        // is disabled the focus remains on the list so users can navigate the
+        // recents entries.
         android.widget.Button btnCloseAll = findViewById(R.id.btn_close_all);
         android.widget.Button btnCloseOthers = findViewById(R.id.btn_close_others);
         boolean serviceEnabled = RecentsAccessibilityService.isServiceEnabled();
+        // Update the description text depending on service state
+        if (tvDescription != null) {
+            tvDescription.setText(serviceEnabled ? R.string.recent_apps_description_with_service : R.string.recent_apps_description_without_service);
+        }
+        // Show/hide the buttons
         btnCloseAll.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
         btnCloseOthers.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
+        if (serviceEnabled) {
+            // When service is active, default focus to the close others button
+            if (btnCloseOthers.getVisibility() == android.view.View.VISIBLE) {
+                btnCloseOthers.requestFocus();
+            }
+        } else {
+            // Without service, ensure the list has a selection and focus
+            if (!recentApps.isEmpty()) {
+                if (listView.getSelectedItemPosition() == android.widget.AdapterView.INVALID_POSITION) {
+                    listView.setSelection(0);
+                }
+                listView.requestFocus();
+            }
+        }
         // Start periodic refresh if access granted
         refreshHandler.removeCallbacks(refreshRunnable);
         if (access) {

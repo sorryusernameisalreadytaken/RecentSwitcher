@@ -131,6 +131,10 @@
 
     <!-- Descriptive texts for list screens -->
     <string name="recent_apps_description">Select an app to launch it. Long press to exclude or include.</string>
+
+    <!-- Dynamic descriptions for recents list depending on accessibility service state -->
+    <string name="recent_apps_description_with_service">Select an app and press DPAD CENTER to launch it. Press DPAD RIGHT to open its settings. Press DPAD LEFT to close the app. Long press to include or exclude the app.</string>
+    <string name="recent_apps_description_without_service">Select an app and press DPAD CENTER to launch it. Press DPAD RIGHT to open its settings. Long press to include or exclude the app.</string>
     <string name="excluded_apps_description">Tap an app to include it again.</string>
     <string name="live_events_description">This list displays all recent usage events (last 60 minutes).</string>
 

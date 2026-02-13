@@ -129,6 +129,10 @@
 
     <!-- Descriptive texts for list screens (German translations) -->
     <string name="recent_apps_description">Wähle eine App zum Starten. Langer Druck, um sie auszuschließen oder wieder aufzunehmen.</string>
+
+    <!-- Dynamische Beschreibungen für die Liste der letzten Apps, abhängig vom Status des Accessibility‑Dienstes -->
+    <string name="recent_apps_description_with_service">Wähle eine App und drücke die DPAD‑Mitte, um sie zu starten. DPAD‑Rechts öffnet die App‑Einstellungen. DPAD‑Links schließt die App. Langer Druck schließt oder nimmt sie wieder auf.</string>
+    <string name="recent_apps_description_without_service">Wähle eine App und drücke die DPAD‑Mitte, um sie zu starten. DPAD‑Rechts öffnet die App‑Einstellungen. Langer Druck schließt oder nimmt sie wieder auf.</string>
     <string name="excluded_apps_description">Tippe auf eine App, um sie wieder aufzunehmen.</string>
     <string name="live_events_description">Diese Liste zeigt alle letzten Nutzungsereignisse (60 Minuten).</string>
 
