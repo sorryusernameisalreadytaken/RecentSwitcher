@@ -29,6 +29,23 @@
     <string name="show_recent_apps_variant7_button">Alle geöffneten Apps (V7)</string>
     <string name="show_recent_apps_variant8_button">Alle geöffneten Apps (V8)</string>
 
+    <!-- Zusätzliche Varianten (V9–V12) für die Liste der zuletzt verwendeten Apps.
+         Diese Versionen erweitern Varianten 2 und 3 um unterschiedliche
+         Fokusreihenfolgen und Fokusierbarkeit der Zeile. Variante 9 nutzt
+         den Fokusreihenfolgenmodus BEFORE_DESCENDANTS mit fokussierbarer
+         Zeile und Zahnrad. Variante 10 nutzt AFTER_DESCENDANTS mit
+         fokussierbarer Zeile und Zahnrad. Variante 11 macht die Zeile
+         nicht fokussierbar, lässt aber das Zahnrad fokussierbar und
+         verwendet BEFORE_DESCENDANTS. Variante 12 behält die Zeile als
+         nicht fokussierbar bei, lässt das Zahnrad fokussierbar und nutzt
+         AFTER_DESCENDANTS. Alle vier erlauben es, mit DPAD‑RIGHT zum
+         Zahnrad zu gelangen und mit DPAD‑DOWN von dort zur nächsten
+         App‑Zeile zu wechseln. -->
+    <string name="show_recent_apps_variant9_button">Alle geöffneten Apps (V9)</string>
+    <string name="show_recent_apps_variant10_button">Alle geöffneten Apps (V10)</string>
+    <string name="show_recent_apps_variant11_button">Alle geöffneten Apps (V11)</string>
+    <string name="show_recent_apps_variant12_button">Alle geöffneten Apps (V12)</string>
+
     <!-- Status messages for the accessibility service -->
     <string name="service_not_enabled">Der Bedienungshilfe‑Dienst ist nicht aktiv. Du kannst ihn in den Einstellungen einschalten, falls er für andere Funktionen benötigt wird.</string>
     <string name="service_enabled">Der Bedienungshilfe‑Dienst ist aktiv.</string>

@@ -40,6 +40,12 @@ public class MainActivity extends AppCompatActivity {
     private Button btnShowRecentAppsVariant7;
     private Button btnShowRecentAppsVariant8;
 
+    // Further variant buttons for recents list (v9–v12)
+    private Button btnShowRecentAppsVariant9;
+    private Button btnShowRecentAppsVariant10;
+    private Button btnShowRecentAppsVariant11;
+    private Button btnShowRecentAppsVariant12;
+
     // Buttons for closing a fixed set of packages using different strategies
     private Button btnCloseSpecificAppsVariant1;
     private Button btnCloseSpecificAppsVariant2;
@@ -78,6 +84,12 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentAppsVariant6 = findViewById(R.id.btn_show_recent_apps_variant6);
         btnShowRecentAppsVariant7 = findViewById(R.id.btn_show_recent_apps_variant7);
         btnShowRecentAppsVariant8 = findViewById(R.id.btn_show_recent_apps_variant8);
+
+        // Initialise buttons for recents list variants v9–v12
+        btnShowRecentAppsVariant9 = findViewById(R.id.btn_show_recent_apps_variant9);
+        btnShowRecentAppsVariant10 = findViewById(R.id.btn_show_recent_apps_variant10);
+        btnShowRecentAppsVariant11 = findViewById(R.id.btn_show_recent_apps_variant11);
+        btnShowRecentAppsVariant12 = findViewById(R.id.btn_show_recent_apps_variant12);
         // Buttons for specific test closers
         btnCloseSpecificAppsVariant1 = findViewById(R.id.btn_close_specific_apps_variant1);
         btnCloseSpecificAppsVariant2 = findViewById(R.id.btn_close_specific_apps_variant2);
@@ -135,6 +147,28 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentAppsVariant8.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 8);
+            startActivity(intent);
+        });
+
+        // Launch variants 9–12 of the recents list
+        btnShowRecentAppsVariant9.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra("variant", 9);
+            startActivity(intent);
+        });
+        btnShowRecentAppsVariant10.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra("variant", 10);
+            startActivity(intent);
+        });
+        btnShowRecentAppsVariant11.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra("variant", 11);
+            startActivity(intent);
+        });
+        btnShowRecentAppsVariant12.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
+            intent.putExtra("variant", 12);
             startActivity(intent);
         });
 
@@ -276,8 +310,13 @@ public class MainActivity extends AppCompatActivity {
         }
         int idx = 0;
         for (String pkg : SPECIFIC_CLOSE_PACKAGES) {
-            // Skip our own package and system settings packages
-            if (pkg.equals(getPackageName()) || pkg.startsWith("com.android.tv.settings") || pkg.startsWith("com.google.android.tv.settings") || pkg.startsWith("com.android.settings")) {
+            // Skip our own package and system settings packages (including some misspelled variants)
+            if (pkg.equals(getPackageName()) ||
+                    pkg.startsWith("com.android.tv.settings") ||
+                    pkg.startsWith("com.google.android.tv.settings") ||
+                    pkg.startsWith("com.android.settings") ||
+                    pkg.startsWith("com.andrpid.tv.settings") ||
+                    pkg.startsWith("com.andrpid.settings")) {
                 continue;
             }
             final String targetPkg = pkg;

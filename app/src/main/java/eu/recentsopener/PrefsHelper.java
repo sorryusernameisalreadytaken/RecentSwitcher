@@ -57,6 +57,9 @@ public final class PrefsHelper {
         defaults.add("com.android.settings");
         defaults.add("io.github.sds100.keymapper");
         defaults.add("io.github.sds100.keymapper.inputmethod.leanback");
+        // Some ROMs or misspelled package identifiers for system settings. Exclude these as well
+        defaults.add("com.andrpid.tv.settings");
+        defaults.add("com.andrpid.settings");
         DEFAULT_EXCLUDED = java.util.Collections.unmodifiableSet(defaults);
     }
 

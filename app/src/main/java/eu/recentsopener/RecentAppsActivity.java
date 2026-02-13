@@ -109,6 +109,15 @@ public class RecentAppsActivity extends AppCompatActivity {
     private Button btnCloseAllVariant3;
     private Button btnCloseAllVariant4;
 
+    /**
+     * Maintains the list of package names from the previous load of recent apps. This
+     * is used to detect whether the recents list has actually changed and to
+     * suppress unnecessary UI updates. Avoiding repeated notifyDataSetChanged()
+     * calls when the underlying data has not changed reduces flicker in the
+     * list, as the focus highlight is preserved between refreshes.
+     */
+    private final java.util.List<String> previousPackageOrder = new java.util.ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -139,20 +148,22 @@ public class RecentAppsActivity extends AppCompatActivity {
         // use AFTER_DESCENDANTS with row focusable and gear not focusable. Default to
         // variant1 behaviour if index is out of range.
         switch (variantIndex) {
+            // Variants that use BEFORE_DESCENDANTS focus order
             case 2:
-            case 6:
-                listView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
-                break;
             case 3:
+            case 6:
             case 7:
+            case 9:
+            case 11:
                 listView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
                 break;
+            // Variants that use AFTER_DESCENDANTS focus order
             case 4:
             case 8:
-                listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
-                break;
-            case 1:
             case 5:
+            case 1:
+            case 10:
+            case 12:
             default:
                 listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
                 break;
@@ -316,9 +327,12 @@ public class RecentAppsActivity extends AppCompatActivity {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     try {
                         startActivity(intent);
-                        boolean isSettings = appEntry.packageName.startsWith("com.android.tv.settings") ||
-                                appEntry.packageName.startsWith("com.google.android.tv.settings") ||
-                                appEntry.packageName.startsWith("com.android.settings");
+                boolean isSettings = appEntry.packageName.startsWith("com.android.tv.settings") ||
+                        appEntry.packageName.startsWith("com.google.android.tv.settings") ||
+                        appEntry.packageName.startsWith("com.android.settings") ||
+                        // Some devices or ROMs use misspelled identifiers. Skip auto close for these as well.
+                        appEntry.packageName.startsWith("com.andrpid.tv.settings") ||
+                        appEntry.packageName.startsWith("com.andrpid.settings");
                         if (!isSettings) {
                             if (RecentsAccessibilityService.isServiceEnabled()) {
                                 RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
@@ -371,13 +385,12 @@ public class RecentAppsActivity extends AppCompatActivity {
         // Ensure excluded apps are initialised on every load. This prevents freshly installed
         // instances from showing excluded packages before the default list has been persisted.
         PrefsHelper.getExcludedApps(this);
-        recentApps.clear();
         long end = System.currentTimeMillis();
         long begin = end - 1000L * 60 * 60 * 24; // last 24 hours
         UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
         UsageEvents events = usm.queryEvents(begin, end);
-        Set<String> seen = new HashSet<>();
-        List<String> packagesInOrder = new ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        java.util.List<String> packagesInOrder = new java.util.ArrayList<>();
         UsageEvents.Event event = new UsageEvents.Event();
         while (events.hasNextEvent()) {
             events.getNextEvent(event);
@@ -394,8 +407,12 @@ public class RecentAppsActivity extends AppCompatActivity {
                 }
             }
         }
-        Collections.reverse(packagesInOrder);
+        java.util.Collections.reverse(packagesInOrder);
         PackageManager pm = getPackageManager();
+        // Build a new list of AppEntry objects without mutating recentApps yet. This allows
+        // comparison with the existing list to detect whether anything has actually changed.
+        java.util.List<AppEntry> newEntries = new java.util.ArrayList<>();
+        java.util.List<String> newPackageOrder = new java.util.ArrayList<>();
         for (String pkg : packagesInOrder) {
             // Do not display excluded packages in the recents list
             if (PrefsHelper.isExcluded(this, pkg)) {
@@ -409,10 +426,31 @@ public class RecentAppsActivity extends AppCompatActivity {
                 }
                 String label = pm.getApplicationLabel(appInfo).toString();
                 Drawable icon = pm.getApplicationIcon(appInfo);
-                recentApps.add(new AppEntry(pkg, label, icon));
+                newEntries.add(new AppEntry(pkg, label, icon));
+                newPackageOrder.add(pkg);
             } catch (PackageManager.NameNotFoundException e) {
                 // skip unknown packages
             }
+        }
+        // If the order of package names has not changed, avoid clearing and repopulating
+        // the list. This preserves focus and reduces flicker when the user hovers
+        // through the list. Only update the list if there is a difference.
+        boolean changed = false;
+        if (newPackageOrder.size() != previousPackageOrder.size()) {
+            changed = true;
+        } else {
+            for (int i = 0; i < newPackageOrder.size(); i++) {
+                if (!newPackageOrder.get(i).equals(previousPackageOrder.get(i))) {
+                    changed = true;
+                    break;
+                }
+            }
+        }
+        if (changed) {
+            previousPackageOrder.clear();
+            previousPackageOrder.addAll(newPackageOrder);
+            recentApps.clear();
+            recentApps.addAll(newEntries);
         }
     }
 
@@ -587,7 +625,12 @@ public class RecentAppsActivity extends AppCompatActivity {
                 R.layout.item_recent_app_v5,
                 R.layout.item_recent_app_v6,
                 R.layout.item_recent_app_v7,
-                R.layout.item_recent_app_v8
+                R.layout.item_recent_app_v8,
+                // Newly added variants (v9–v12) that extend v2/v3 behaviour
+                R.layout.item_recent_app_v9,
+                R.layout.item_recent_app_v10,
+                R.layout.item_recent_app_v11,
+                R.layout.item_recent_app_v12
         };
 
         public RecentAppsAdapter(Context ctx, List<AppEntry> apps) {

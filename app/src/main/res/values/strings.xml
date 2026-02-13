@@ -31,6 +31,21 @@
     <string name="show_recent_apps_variant7_button">Recent apps (v7)</string>
     <string name="show_recent_apps_variant8_button">Recent apps (v8)</string>
 
+    <!-- Buttons to launch additional recents list variants (v9–v12). These
+         variants build upon variants 2 and 3 but modify focus ordering and
+         row focusability to further refine DPAD navigation. Variant 9 uses
+         BEFORE_DESCENDANTS focus order with both the row and gear
+         focusable. Variant 10 uses AFTER_DESCENDANTS focus order with row
+         and gear focusable. Variant 11 makes the row non‑focusable while
+         keeping the gear focusable and uses BEFORE_DESCENDANTS. Variant 12
+         keeps the row non‑focusable and uses AFTER_DESCENDANTS. All four
+         allow DPAD‑RIGHT to reach the gear and DPAD‑DOWN from the gear
+         moves to the next app’s row. -->
+    <string name="show_recent_apps_variant9_button">Recent apps (v9)</string>
+    <string name="show_recent_apps_variant10_button">Recent apps (v10)</string>
+    <string name="show_recent_apps_variant11_button">Recent apps (v11)</string>
+    <string name="show_recent_apps_variant12_button">Recent apps (v12)</string>
+
     <!-- Status messages for the accessibility service -->
     <string name="service_not_enabled">The accessibility service is not active. You can enable it in the settings if it is needed for other functions.</string>
     <string name="service_enabled">The accessibility service is active.</string>

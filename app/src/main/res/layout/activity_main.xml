@@ -97,6 +97,34 @@
         android:text="@string/show_recent_apps_variant8_button"
         android:padding="12dp" />
 
+    <!-- Buttons for recents list variants V9–V12. These allow further
+         experimentation with focus behaviour as described in the string
+         resources. See MainActivity for the handling logic. -->
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant9"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant9_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant10"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant10_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant11"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant11_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_show_recent_apps_variant12"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/show_recent_apps_variant12_button"
+        android:padding="12dp" />
+
     <!-- Button to immediately switch back to the last app -->
     <Button
         android:id="@+id/btn_open_last_app"
