@@ -106,6 +106,29 @@ public class LiveEventsActivity extends AppCompatActivity {
         };
         listView.setAdapter(adapter);
 
+        // Allow long‑press on an item to exclude that app from the recents list. This is
+        // analogous to the behaviour in the recent apps list: the user can hold the OK
+        // button (or perform a long touch) to add the app to the exclusion list. Excluded
+        // apps remain visible here but will be highlighted and omitted from other lists.
+        listView.setOnItemLongClickListener((parent, view, position, id) -> {
+            LiveEntry entry = entries.get(position);
+            if (entry != null) {
+                // Add to exclusion list only if not already excluded
+                boolean alreadyExcluded = PrefsHelper.isExcluded(LiveEventsActivity.this, entry.packageName);
+                if (!alreadyExcluded) {
+                    PrefsHelper.addExcludedApp(LiveEventsActivity.this, entry.packageName);
+                    android.widget.Toast.makeText(LiveEventsActivity.this, getString(R.string.app_excluded, entry.label), android.widget.Toast.LENGTH_SHORT).show();
+                    // refresh UI to highlight the entry
+                    adapter.notifyDataSetChanged();
+                } else {
+                    // If already excluded we do nothing special here; a long press on the recents screen
+                    // is used for re‑including.
+                    android.widget.Toast.makeText(LiveEventsActivity.this, getString(R.string.app_excluded, entry.label), android.widget.Toast.LENGTH_SHORT).show();
+                }
+            }
+            return true;
+        });
+
         handler = new Handler(Looper.getMainLooper());
     }
 

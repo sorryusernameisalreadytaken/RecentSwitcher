@@ -41,6 +41,18 @@
         android:visibility="gone"
         android:paddingBottom="8dp" />
 
+    <!-- Additional variant for bulk closing apps. Variant 3 (index 4) uses a different strategy
+         of reloading the recent apps list after each force‑stop and prioritising system
+         settings apps to be closed last. This button is only visible when the accessibility
+         service is active. -->
+    <Button
+        android:id="@+id/btn_close_all_variant4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/close_all_apps_variant4_button"
+        android:visibility="gone"
+        android:paddingBottom="8dp" />
+
     <!-- Explanation for the recents list -->
     <TextView
         android:layout_width="match_parent"

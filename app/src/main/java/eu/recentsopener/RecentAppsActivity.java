@@ -101,6 +101,8 @@ public class RecentAppsActivity extends AppCompatActivity {
         Button btnCloseOthers = findViewById(R.id.btn_close_others);
         Button btnCloseAllV2 = findViewById(R.id.btn_close_all_variant2);
         Button btnCloseAllV3 = findViewById(R.id.btn_close_all_variant3);
+        // Additional variant button for experimental bulk closing strategy
+        Button btnCloseAllV4 = findViewById(R.id.btn_close_all_variant4);
         // Store listView as a field so refresh handler can access it
         listView = findViewById(R.id.listView);
         // Allow child views (e.g. gear buttons) inside list items to take focus and be reachable via DPAD.
@@ -166,6 +168,25 @@ public class RecentAppsActivity extends AppCompatActivity {
                 pkgs.add(pkg);
             }
             performBulkCloseVariant3(pkgs);
+        });
+
+        // Variant 3 (index 4): experimental close strategy which reloads the recents list after
+        // each app is closed and defers closing system settings packages until the end. This
+        // allows the activity to recapture focus on the first entry after each stop and avoids
+        // leaving the system settings app at the top of the stack.
+        btnCloseAllV4.setOnClickListener(v -> {
+            if (!RecentsAccessibilityService.isServiceEnabled()) {
+                Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            java.util.List<String> pkgs = new java.util.ArrayList<>();
+            for (AppEntry entry : recentApps) {
+                String pkg = entry.packageName;
+                if (pkg.equals(getPackageName())) continue;
+                if (PrefsHelper.isExcluded(this, pkg)) continue;
+                pkgs.add(pkg);
+            }
+            performBulkCloseVariant4(pkgs);
         });
 
         // Close all apps except the one that was in the foreground immediately before
@@ -429,11 +450,13 @@ public class RecentAppsActivity extends AppCompatActivity {
         android.widget.Button btnCloseOthers = findViewById(R.id.btn_close_others);
         android.widget.Button btnCloseAllV2 = findViewById(R.id.btn_close_all_variant2);
         android.widget.Button btnCloseAllV3 = findViewById(R.id.btn_close_all_variant3);
+        android.widget.Button btnCloseAllV4 = findViewById(R.id.btn_close_all_variant4);
         boolean serviceEnabled = RecentsAccessibilityService.isServiceEnabled();
         btnCloseAll.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
         btnCloseOthers.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
         btnCloseAllV2.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
         btnCloseAllV3.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
+        btnCloseAllV4.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
         // Determine initial focus: prefer the "Close other" button when visible, otherwise the list
         if (serviceEnabled) {
             // When the accessibility service is enabled we want to start from the "Close other"
@@ -642,6 +665,90 @@ public class RecentAppsActivity extends AppCompatActivity {
                 }, 500);
             }
             // Refresh list in case some apps were stopped
+            loadRecents();
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
+                if (!recentApps.isEmpty()) {
+                    listView.setSelection(0);
+                    listView.requestFocus();
+                }
+            }
+        }, finalDelay);
+    }
+
+    /**
+     * Experimental variant for bulk closing apps. This variant reloads the recents list after
+     * each individual app closure and defers closing any system settings packages until all
+     * other apps have been processed. A shadow copy of the list of packages to be closed is
+     * created at the time the action is triggered. After each force stop the accessibility
+     * service performs a global BACK action to return to this activity. The recents list is
+     * refreshed so that subsequent closes act on the up-to-date set of running apps.
+     *
+     * @param packages list of package names to close
+     */
+    private void performBulkCloseVariant4(java.util.List<String> packages) {
+        if (packages == null || packages.isEmpty()) {
+            return;
+        }
+        RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
+        if (svc == null) {
+            Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // Make a shallow copy and reorder so that system settings packages are processed last.
+        java.util.List<String> queue = new java.util.ArrayList<>(packages);
+        java.util.List<String> deferred = new java.util.ArrayList<>();
+        java.util.Iterator<String> it = queue.iterator();
+        while (it.hasNext()) {
+            String pkg = it.next();
+            if (pkg.startsWith("com.android.tv.settings") || pkg.startsWith("com.google.android.tv.settings") || pkg.startsWith("com.android.settings")) {
+                deferred.add(pkg);
+                it.remove();
+            }
+        }
+        queue.addAll(deferred);
+        android.os.Handler handler = new android.os.Handler(getMainLooper());
+        // Use a delay similar to other variants to allow UI to settle between operations.
+        final long stepDelay = 3000L;
+        for (int i = 0; i < queue.size(); i++) {
+            final String pkg = queue.get(i);
+            long delay = i * stepDelay;
+            handler.postDelayed(() -> {
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intent.setData(Uri.parse("package:" + pkg));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                try {
+                    startActivity(intent);
+                    // After a short delay, trigger the force stop sequence
+                    handler.postDelayed(() -> {
+                        RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
+                        if (service != null) {
+                            service.performForceStopSequence();
+                            // After another delay send BACK to return to this activity
+                            handler.postDelayed(() -> {
+                                RecentsAccessibilityService svc2 = RecentsAccessibilityService.getInstance();
+                                if (svc2 != null) {
+                                    svc2.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK);
+                                }
+                                // Immediately refresh the recents list to reflect any changes
+                                loadRecents();
+                                if (adapter != null) {
+                                    adapter.notifyDataSetChanged();
+                                    if (!recentApps.isEmpty()) {
+                                        listView.setSelection(0);
+                                    }
+                                }
+                            }, 1000);
+                        }
+                    }, 500);
+                } catch (Exception e) {
+                    Toast.makeText(this, pkg + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
+                }
+            }, delay);
+        }
+        // Final refresh after all packages have been processed
+        long finalDelay = queue.size() * stepDelay + 2000L;
+        handler.postDelayed(() -> {
             loadRecents();
             if (adapter != null) {
                 adapter.notifyDataSetChanged();

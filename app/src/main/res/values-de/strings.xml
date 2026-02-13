@@ -31,6 +31,10 @@
     <!-- Alternative Schaltflächen zum Testen unterschiedlicher Schließvarianten -->
     <string name="close_all_apps_variant2_button">Alle Apps schließen (Variante 1)</string>
     <string name="close_all_apps_variant3_button">Alle Apps schließen (Variante 2)</string>
+    <!-- Neue Variante zum Schließen aller Apps. Diese Variante lädt die Liste der zuletzt
+         geöffneten Apps nach jedem Schließen neu und bearbeitet System-Einstellungen erst
+         zum Schluss. -->
+    <string name="close_all_apps_variant4_button">Alle Apps schließen (Variante 3)</string>
     <string name="grant_usage_access">Erlaube Zugriff auf Nutzungsdaten, um die letzten Apps anzuzeigen.</string>
 
     <!-- Strings used when including/excluding apps -->
@@ -52,7 +56,8 @@
     <!-- Descriptive texts for list screens (German translations) -->
     <string name="recent_apps_description">Wähle eine App zum Starten. Langer Druck, um sie auszuschließen oder wieder aufzunehmen.</string>
     <string name="excluded_apps_description">Halte eine App gedrückt, um sie wieder aufzunehmen.</string>
-    <string name="live_events_description">Diese Liste zeigt alle letzten Nutzungsereignisse (5 Minuten).</string>
+    <!-- Aktualisierte Beschreibung: die Anzeige reicht jetzt bis zu 60 Minuten in die Vergangenheit -->
+    <string name="live_events_description">Diese Liste zeigt alle letzten Nutzungsereignisse (60 Minuten).</string>
 
     <!-- Debug report messages (German translations) -->
     <string name="debug_report_saved">Debug‑Bericht gespeichert: %1$s</string>
