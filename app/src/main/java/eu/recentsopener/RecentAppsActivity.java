@@ -212,6 +212,13 @@ public class RecentAppsActivity extends AppCompatActivity {
             case 29:
             case 31:
             case 32:
+            // Variants 33–40: assign appropriate focus behaviour
+            case 33:
+            case 35:
+            case 36:
+            case 37:
+            case 39:
+            case 40:
                 listView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
                 break;
             // Variants that use AFTER_DESCENDANTS focus order
@@ -231,6 +238,8 @@ public class RecentAppsActivity extends AppCompatActivity {
             case 26:
             case 28:
             case 30:
+            case 34:
+            case 38:
             default:
                 listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
                 break;
@@ -755,7 +764,17 @@ public class RecentAppsActivity extends AppCompatActivity {
                 R.layout.item_recent_app_v29,
                 R.layout.item_recent_app_v30,
                 R.layout.item_recent_app_v31,
-                R.layout.item_recent_app_v32
+                R.layout.item_recent_app_v32,
+                // Newly added variants (v33–v40) based on v3, v6 and v8 with
+                // explicit focus anchors and navigation rules
+                R.layout.item_recent_app_v33,
+                R.layout.item_recent_app_v34,
+                R.layout.item_recent_app_v35,
+                R.layout.item_recent_app_v36,
+                R.layout.item_recent_app_v37,
+                R.layout.item_recent_app_v38,
+                R.layout.item_recent_app_v39,
+                R.layout.item_recent_app_v40
         };
 
         public RecentAppsAdapter(Context ctx, List<AppEntry> apps) {
@@ -822,6 +841,9 @@ public class RecentAppsActivity extends AppCompatActivity {
                     case 4:
                     case 6:
                     case 8:
+                    case 35:
+                    case 37:
+                    case 38:
                         gearFocusable = false;
                         break;
                     default:

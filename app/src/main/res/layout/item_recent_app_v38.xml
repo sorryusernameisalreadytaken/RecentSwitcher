@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Variant 38: Row‑focusable with unfocusable gear (after‑descendants).
+
+    Similar to variant 37 but uses AFTER_DESCENDANTS focus ordering.  The
+    root row is focusable and DPAD‑RIGHT moves to the gear button.  The
+    gear remains unfocusable; navigation to it is performed through the
+    ListView key handler.  The gear defines `nextFocusLeft/Up/Down` back
+    to the row to prevent accidental focus on gears in other rows.  This
+    variant demonstrates how AFTER_DESCENDANTS ordering interacts with a
+    row‑centric focus model.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/row_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:descendantFocusability="afterDescendants"
+    android:nextFocusRight="@id/settings_button">
+
+    <LinearLayout
+        android:id="@+id/app_cell"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:focusable="false"
+        android:focusableInTouchMode="false">
+
+        <ImageView
+            android:id="@+id/app_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/app_icon_desc" />
+
+        <TextView
+            android:id="@+id/app_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/settings_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@string/open_settings_description"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:padding="4dp"
+        android:src="@android:drawable/ic_menu_manage"
+        android:nextFocusLeft="@id/row_root"
+        android:nextFocusUp="@id/row_root"
+        android:nextFocusDown="@id/row_root" />
+
+</LinearLayout>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Variant 33: Table‑style layout with explicit left focus anchor.
+
+    This variant mirrors the recommendations from the deep‑research report.  The
+    row itself is not focusable; instead, a dedicated left container
+    (`app_cell`) acts as the focus anchor.  DPAD‑RIGHT from this anchor
+    explicitly targets the gear button (`settings_button`).  The gear is
+    independently focusable so that it can receive focus when the user presses
+    DPAD‑RIGHT.  To avoid the gear propagating focus to the next row, its
+    `nextFocusUp/Down/Left` attributes all point back to `app_cell`.  This
+    ensures that DPAD‑UP or DPAD‑DOWN on the gear will be intercepted by the
+    ListView key handler rather than jumping to another gear.  DPAD‑LEFT from
+    the gear also returns focus to `app_cell`.  Descendant focusability is
+    BEFORE_DESCENDANTS so that focus always lands on the child views first.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
+    android:descendantFocusability="beforeDescendants">
+
+    <!-- Left container: focus anchor (icon + text).  Expands to fill
+         available width.  Explicitly focusable to receive DPAD focus. -->
+    <LinearLayout
+        android:id="@+id/app_cell"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:nextFocusRight="@id/settings_button">
+
+        <ImageView
+            android:id="@+id/app_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/app_icon_desc" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:id="@+id/app_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Settings gear: focusable.  Returns focus back to app_cell on UP/DOWN/LEFT. -->
+    <ImageButton
+        android:id="@+id/settings_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@string/open_settings_description"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:padding="4dp"
+        android:src="@android:drawable/ic_menu_manage"
+        android:nextFocusLeft="@id/app_cell"
+        android:nextFocusUp="@id/app_cell"
+        android:nextFocusDown="@id/app_cell" />
+
+</LinearLayout>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Variant 40: Comprehensive dual‑focus with after‑descendants ordering.
+
+    This variant combines ideas from earlier layouts.  The row itself is
+    focusable, but both the left container (`app_cell`) and the gear are
+    also focusable.  Focus ordering is AFTER_DESCENDANTS so that DPAD
+    navigation will move through the child views before returning to the
+    row.  The row routes DPAD‑RIGHT to the gear via `nextFocusRight`.
+    Both the left container and gear define reciprocal `nextFocus` rules
+    (gear → app_cell on UP/DOWN/LEFT, app_cell → gear on RIGHT) so that
+    horizontal navigation is deterministic.  Use this layout to test a
+    holistic focus strategy where the user can move between the row, the
+    left cell and the gear using DPAD across both axes.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/row_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:descendantFocusability="afterDescendants"
+    android:nextFocusRight="@id/settings_button">
+
+    <!-- Focusable left container -->
+    <LinearLayout
+        android:id="@+id/app_cell"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:nextFocusRight="@id/settings_button"
+        android:nextFocusLeft="@id/row_root">
+
+        <ImageView
+            android:id="@+id/app_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/app_icon_desc" />
+
+        <TextView
+            android:id="@+id/app_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+    </LinearLayout>
+
+    <!-- Focusable gear button -->
+    <ImageButton
+        android:id="@+id/settings_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@string/open_settings_description"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:padding="4dp"
+        android:src="@android:drawable/ic_menu_manage"
+        android:nextFocusLeft="@id/app_cell"
+        android:nextFocusUp="@id/app_cell"
+        android:nextFocusDown="@id/app_cell" />
+
+</LinearLayout>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Variant 39: Dual‑focus with larger gear and two‑line text.
+
+    This variant experiments with a layout where the left container displays
+    the app name and package on two separate lines and the gear button is
+    slightly larger (48dp).  Both the left container and the gear are
+    focusable.  DPAD‑RIGHT from the left container moves to the gear, and
+    DPAD‑LEFT/UP/DOWN from the gear returns to the left container.  The
+    row itself is not focusable, and descendant focusability is
+    BEFORE_DESCENDANTS to prioritise child views.  Use this variant to
+    evaluate whether increasing the gear size or splitting the text improves
+    DPAD navigation feel on Android TV.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
+    android:descendantFocusability="beforeDescendants">
+
+    <!-- Focusable left container with two lines of text -->
+    <LinearLayout
+        android:id="@+id/app_cell"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:nextFocusRight="@id/settings_button">
+
+        <ImageView
+            android:id="@+id/app_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/app_icon_desc" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
+
+            <!-- First line uses the id app_text expected by the adapter -->
+            <TextView
+                android:id="@+id/app_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+            <!-- Optional second line showing the package id.  The adapter does not populate this. -->
+            <TextView
+                android:id="@+id/app_pkg"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="?android:attr/textColorSecondary" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Larger gear: focusable; returns focus to app_cell -->
+    <ImageButton
+        android:id="@+id/settings_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@string/open_settings_description"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:padding="8dp"
+        android:src="@android:drawable/ic_menu_manage"
+        android:nextFocusLeft="@id/app_cell"
+        android:nextFocusUp="@id/app_cell"
+        android:nextFocusDown="@id/app_cell" />
+
+</LinearLayout>
