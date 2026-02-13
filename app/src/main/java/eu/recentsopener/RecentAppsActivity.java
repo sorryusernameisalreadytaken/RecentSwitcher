@@ -21,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -29,6 +30,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import android.util.Log;
 
 /**
  * RecentAppsActivity displays a list of recently used packages using the
@@ -56,15 +58,15 @@ public class RecentAppsActivity extends AppCompatActivity {
         public void run() {
             // Only refresh if usage access is granted; otherwise the list would be empty
             if (hasUsageAccess()) {
-            // Capture the package name of the currently selected item (if any). We use this
-            // to restore selection after the list refreshes without forcing the scroll to
-            // jump back to the first item. Using the package name rather than the index
-            // allows the selection to remain on the same entry even if the ordering changes.
-            int selectedPosition = listView.getSelectedItemPosition();
-            String selectedPackage = null;
-            if (selectedPosition >= 0 && selectedPosition < recentApps.size()) {
-                selectedPackage = recentApps.get(selectedPosition).packageName;
-            }
+                // Capture the package name of the currently selected item (if any) to restore
+                // selection after the list refreshes. Using the package name rather than the
+                // index allows the selection to remain on the same entry even if the ordering
+                // changes.
+                int selectedPosition = listView.getSelectedItemPosition();
+                String selectedPackage = null;
+                if (selectedPosition >= 0 && selectedPosition < recentApps.size()) {
+                    selectedPackage = recentApps.get(selectedPosition).packageName;
+                }
                 // Reload recents and determine if anything changed
                 boolean changed = loadRecentsInternal();
                 // Notify the adapter only when data actually changed
@@ -84,6 +86,16 @@ public class RecentAppsActivity extends AppCompatActivity {
                         listView.setSelection(index);
                     }
                 }
+                // Log the current focused package and whether the gear was focused during this
+                // refresh. This helps track navigation state over time.
+                String focusedPkg = null;
+                int selPos = listView.getSelectedItemPosition();
+                if (selPos >= 0 && selPos < recentApps.size()) {
+                    focusedPkg = recentApps.get(selPos).packageName;
+                }
+                android.util.Log.d("RecentAppsActivity",
+                        "Refresh: focusedPkg=" + focusedPkg + ", focusedWasGear=" + lastFocusedWasGear + 
+                        ", time=" + System.currentTimeMillis());
             }
             // Schedule the next refresh if the handler still exists
             if (refreshHandler != null) {
@@ -122,6 +134,12 @@ public class RecentAppsActivity extends AppCompatActivity {
      */
     private RecentAppsAdapter adapter;
 
+    /**
+     * Tracks whether the last focused view was the gear button. This flag
+     * is updated via onFocusChange listeners attached to each list item.
+     */
+    private boolean lastFocusedWasGear = false;
+
     // Additional bulk close buttons for experimental closing strategies
     private Button btnCloseAllVariant2;
     private Button btnCloseAllVariant3;
@@ -135,6 +153,21 @@ public class RecentAppsActivity extends AppCompatActivity {
      * list, as the focus highlight is preserved between refreshes.
      */
     private final java.util.List<String> previousPackageOrder = new java.util.ArrayList<>();
+
+    /**
+     * Records whether the last focused view was the gear button. This is used
+     * for logging focus transitions and debugging DPAD navigation.
+     */
+    private boolean lastFocusedWasGear = false;
+
+    /**
+     * Records the package name of the last focused app row or gear. This is
+     * updated whenever a focus change occurs and is logged on refresh.
+     */
+    private String lastFocusedPkg = null;
+
+    /** Tag used for logcat output. */
+    private static final String TAG = "RecentAppsActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,6 +212,12 @@ public class RecentAppsActivity extends AppCompatActivity {
             case 17:
             case 19:
             case 21:
+            case 23:
+            case 25:
+            case 27:
+            case 29:
+            case 31:
+            case 32:
                 listView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
                 break;
             // Variants that use AFTER_DESCENDANTS focus order
@@ -194,6 +233,10 @@ public class RecentAppsActivity extends AppCompatActivity {
             case 18:
             case 20:
             case 22:
+            case 24:
+            case 26:
+            case 28:
+            case 30:
             default:
                 listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
                 break;
@@ -484,6 +527,20 @@ public class RecentAppsActivity extends AppCompatActivity {
                 }
             }
         }
+        // Compute diff summary for logging purposes before mutating previousPackageOrder
+        java.util.Set<String> added = new java.util.HashSet<>(newPackageOrder);
+        added.removeAll(previousPackageOrder);
+        java.util.Set<String> removed = new java.util.HashSet<>(previousPackageOrder);
+        removed.removeAll(newPackageOrder);
+        java.util.Set<String> moved = new java.util.HashSet<>();
+        for (String pkg : newPackageOrder) {
+            int oldIndex = previousPackageOrder.indexOf(pkg);
+            int newIndex = newPackageOrder.indexOf(pkg);
+            if (oldIndex >= 0 && oldIndex != newIndex) {
+                moved.add(pkg);
+            }
+        }
+        android.util.Log.d("RecentAppsActivity", "Diff summary: added=" + added + ", removed=" + removed + ", moved=" + moved);
         if (changed) {
             previousPackageOrder.clear();
             previousPackageOrder.addAll(newPackageOrder);
@@ -693,7 +750,18 @@ public class RecentAppsActivity extends AppCompatActivity {
                 R.layout.item_recent_app_v19,
                 R.layout.item_recent_app_v20,
                 R.layout.item_recent_app_v21,
-                R.layout.item_recent_app_v22
+                R.layout.item_recent_app_v22,
+                // Extended variants (v23–v32) built upon the table‑style layouts
+                R.layout.item_recent_app_v23,
+                R.layout.item_recent_app_v24,
+                R.layout.item_recent_app_v25,
+                R.layout.item_recent_app_v26,
+                R.layout.item_recent_app_v27,
+                R.layout.item_recent_app_v28,
+                R.layout.item_recent_app_v29,
+                R.layout.item_recent_app_v30,
+                R.layout.item_recent_app_v31,
+                R.layout.item_recent_app_v32
         };
 
         public RecentAppsAdapter(Context ctx, List<AppEntry> apps) {
@@ -719,6 +787,30 @@ public class RecentAppsActivity extends AppCompatActivity {
                 // Build display text as "Label (package)"
                 String text = entry.label + " (" + entry.packageName + ")";
                 textView.setText(text);
+                // Attach focus listeners for instrumentation. When the app cell or gear
+                // receives focus we log the package name, position and timestamp and
+                // update lastFocusedWasGear accordingly. This helps diagnose DPAD
+                // navigation behaviour on Android TV.
+                final AppEntry currentEntry = entry;
+                View appCell = view.findViewById(R.id.app_cell);
+                if (appCell != null) {
+                    appCell.setOnFocusChangeListener((v, hasFocus) -> {
+                        if (hasFocus) {
+                            lastFocusedWasGear = false;
+                            android.util.Log.d("RecentAppsActivity",
+                                    "Focus app_cell pkg=" + currentEntry.packageName + " pos=" + position + " t=" + System.currentTimeMillis());
+                        }
+                    });
+                }
+                if (settingsButton != null) {
+                    settingsButton.setOnFocusChangeListener((v, hasFocus) -> {
+                        if (hasFocus) {
+                            lastFocusedWasGear = true;
+                            android.util.Log.d("RecentAppsActivity",
+                                    "Focus gear pkg=" + currentEntry.packageName + " pos=" + position + " t=" + System.currentTimeMillis());
+                        }
+                    });
+                }
                 // Highlight excluded packages in red or apply theme-aware colour
                 if (PrefsHelper.isExcluded(getContext(), entry.packageName)) {
                     int colour = ContextCompat.getColor(getContext(), R.color.recent_app_text_color_excluded);

@@ -66,6 +66,21 @@
     <string name="show_recent_apps_variant21_button">Recent apps (v21)</string>
     <string name="show_recent_apps_variant22_button">Recent apps (v22)</string>
 
+    <!-- Additional experimental variants (v23–v32) exploring focusability and focus order.
+         These variants expand upon the table‑style layouts and use a mixture
+         of before/after descendants focus order and focusable/non‑focusable
+         rows/gears. -->
+    <string name="show_recent_apps_variant23_button">Recent apps (v23)</string>
+    <string name="show_recent_apps_variant24_button">Recent apps (v24)</string>
+    <string name="show_recent_apps_variant25_button">Recent apps (v25)</string>
+    <string name="show_recent_apps_variant26_button">Recent apps (v26)</string>
+    <string name="show_recent_apps_variant27_button">Recent apps (v27)</string>
+    <string name="show_recent_apps_variant28_button">Recent apps (v28)</string>
+    <string name="show_recent_apps_variant29_button">Recent apps (v29)</string>
+    <string name="show_recent_apps_variant30_button">Recent apps (v30)</string>
+    <string name="show_recent_apps_variant31_button">Recent apps (v31)</string>
+    <string name="show_recent_apps_variant32_button">Recent apps (v32)</string>
+
     <!-- Status messages for the accessibility service -->
     <string name="service_not_enabled">The accessibility service is not active. You can enable it in the settings if it is needed for other functions.</string>
     <string name="service_enabled">The accessibility service is active.</string>

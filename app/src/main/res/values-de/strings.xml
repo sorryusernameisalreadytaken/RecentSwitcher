@@ -66,6 +66,22 @@
     <string name="show_recent_apps_variant21_button">Alle geöffneten Apps (V21)</string>
     <string name="show_recent_apps_variant22_button">Alle geöffneten Apps (V22)</string>
 
+    <!-- Zusätzliche experimentelle Varianten (V23–V32), die verschiedene
+         Kombinationen aus Fokusierbarkeit und Fokusreihenfolge verwenden.
+         Diese Varianten bauen auf den tabellarischen Layouts auf und
+         kombinieren before/after descendants mit fokussierbaren und
+         nicht fokussierbaren Zeilen bzw. Zahnrädern. -->
+    <string name="show_recent_apps_variant23_button">Alle geöffneten Apps (V23)</string>
+    <string name="show_recent_apps_variant24_button">Alle geöffneten Apps (V24)</string>
+    <string name="show_recent_apps_variant25_button">Alle geöffneten Apps (V25)</string>
+    <string name="show_recent_apps_variant26_button">Alle geöffneten Apps (V26)</string>
+    <string name="show_recent_apps_variant27_button">Alle geöffneten Apps (V27)</string>
+    <string name="show_recent_apps_variant28_button">Alle geöffneten Apps (V28)</string>
+    <string name="show_recent_apps_variant29_button">Alle geöffneten Apps (V29)</string>
+    <string name="show_recent_apps_variant30_button">Alle geöffneten Apps (V30)</string>
+    <string name="show_recent_apps_variant31_button">Alle geöffneten Apps (V31)</string>
+    <string name="show_recent_apps_variant32_button">Alle geöffneten Apps (V32)</string>
+
     <!-- Status messages for the accessibility service -->
     <string name="service_not_enabled">Der Bedienungshilfe‑Dienst ist nicht aktiv. Du kannst ihn in den Einstellungen einschalten, falls er für andere Funktionen benötigt wird.</string>
     <string name="service_enabled">Der Bedienungshilfe‑Dienst ist aktiv.</string>
