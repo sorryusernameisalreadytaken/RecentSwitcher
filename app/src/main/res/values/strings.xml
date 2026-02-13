@@ -49,7 +49,7 @@
 
     <!-- Descriptive texts for list screens -->
     <string name="recent_apps_description">Select an app to launch it. Long press to exclude or include.</string>
-    <string name="excluded_apps_description">Tap an app to include it again.</string>
+    <string name="excluded_apps_description">Press and hold an app to include it again.</string>
     <string name="live_events_description">This list displays all recent usage events (last 5 minutes).</string>
 
     <!-- Debug report messages -->
@@ -58,4 +58,7 @@
 
     <!-- Description for settings gear button in recent apps list -->
     <string name="open_settings_description">Open app settings</string>
+
+    <!-- Prompt shown when tapping an excluded app explaining that a long press will re-include it. -->
+    <string name="long_press_to_include">Hold OK to include %1$s again.</string>
 </resources>

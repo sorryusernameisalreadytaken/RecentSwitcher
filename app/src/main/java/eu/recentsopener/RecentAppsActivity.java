@@ -101,7 +101,9 @@ public class RecentAppsActivity extends AppCompatActivity {
         Button btnCloseOthers = findViewById(R.id.btn_close_others);
         // Store listView as a field so refresh handler can access it
         listView = findViewById(R.id.listView);
-        // Allow child views (e.g. gear buttons) inside list items to take focus and be reachable via DPAD
+        // Allow child views (e.g. gear buttons) inside list items to take focus and be reachable via DPAD.
+        // By enabling descendant focusability the settings gear can be focused via DPAD‑right without
+        // preventing normal up/down navigation between list entries.
         listView.setItemsCanFocus(true);
         listView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
 
@@ -235,6 +237,7 @@ public class RecentAppsActivity extends AppCompatActivity {
         // opens the system settings for the selected app and optionally triggers the force‑stop
         // automation if the accessibility service is enabled.
         listView.setOnKeyListener((v, keyCode, event) -> {
+            // Only handle key down events. Up events should be allowed to bubble normally.
             if (event.getAction() != KeyEvent.ACTION_DOWN) {
                 return false;
             }
@@ -242,7 +245,9 @@ public class RecentAppsActivity extends AppCompatActivity {
             if (pos == android.widget.AdapterView.INVALID_POSITION) {
                 return false;
             }
-            // DPAD‑RIGHT: focus the gear button within the current row
+            // When navigating within the list, DPAD‑right should move focus to the gear on the
+            // current row. If no gear exists the event is ignored so that the system can
+            // determine the next focus.
             if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                 View row = listView.getChildAt(pos - listView.getFirstVisiblePosition());
                 if (row != null) {
@@ -254,7 +259,9 @@ public class RecentAppsActivity extends AppCompatActivity {
                 }
                 return false;
             }
-            // DPAD‑LEFT: open app settings and attempt force‑stop if applicable
+            // DPAD‑left on a list item should open the app settings and trigger a forced stop
+            // through the accessibility service. If the selected app is a system settings package
+            // we skip the force stop automation.
             if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 if (pos < recentApps.size()) {
                     AppEntry appEntry = recentApps.get(pos);
@@ -375,19 +382,30 @@ public class RecentAppsActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         }
-        // Set initial selection to the first item if available and request focus so that the
-        // highlighted row is the first entry rather than retaining focus on a previously
-        // selected gear button. Without requestFocus the focus may remain on a nested child.
-        if (!recentApps.isEmpty()) {
-            listView.setSelection(0);
-            listView.requestFocus();
-        }
-        // Show or hide the close buttons based on accessibility service state
+        // Set up views depending on whether the accessibility service is enabled. When enabled,
+        // both "Close all" and "Close other" buttons are visible. We also request initial focus
+        // on the "Close other apps" button so that a freshly opened activity begins there. If the
+        // service is disabled we hide the buttons and place focus on the first list item.
         android.widget.Button btnCloseAll = findViewById(R.id.btn_close_all);
         android.widget.Button btnCloseOthers = findViewById(R.id.btn_close_others);
         boolean serviceEnabled = RecentsAccessibilityService.isServiceEnabled();
         btnCloseAll.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
         btnCloseOthers.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
+        // Determine initial focus: prefer the "Close other" button when visible, otherwise the list
+        if (serviceEnabled) {
+            // When the accessibility service is enabled we want to start from the "Close other"
+            // button. Pre-select the first list row so that up/down navigation from the button
+            // behaves consistently.
+            if (!recentApps.isEmpty()) {
+                listView.setSelection(0);
+            }
+            btnCloseOthers.requestFocus();
+        } else {
+            if (!recentApps.isEmpty()) {
+                listView.setSelection(0);
+                listView.requestFocus();
+            }
+        }
         // Start periodic refresh if access granted
         refreshHandler.removeCallbacks(refreshRunnable);
         if (access) {
@@ -423,7 +441,9 @@ public class RecentAppsActivity extends AppCompatActivity {
         android.os.Handler handler = new android.os.Handler(getMainLooper());
         // Delay between each close operation (ms). This allows the UI to load the settings screen
         // and for the force‑stop automation to execute. Adjust if your device is slower or faster.
-        final long stepDelay = 2000L;
+        // Delay between closing each app in the bulk close operation. Increased from 2000ms to
+        // 3000ms to allow slower devices more time to open settings and process force‑stop actions.
+        final long stepDelay = 3000L;
         for (int i = 0; i < packages.size(); i++) {
             final String pkg = packages.get(i);
             long delay = i * stepDelay;
@@ -561,6 +581,35 @@ public class RecentAppsActivity extends AppCompatActivity {
                     } catch (Exception e) {
                         android.widget.Toast.makeText(getContext(), entry.packageName + " cannot be opened in settings", android.widget.Toast.LENGTH_SHORT).show();
                     }
+                });
+                // When the gear is focused and the user presses DPAD‑left, DPAD‑up or DPAD‑down,
+                // move focus back to the surrounding ListView and restore the selected position.
+                settingsButton.setOnKeyListener((v, kCode, kEvent) -> {
+                    if (kEvent.getAction() != KeyEvent.ACTION_DOWN) {
+                        return false;
+                    }
+                    // When the gear has focus, intercept DPAD navigation. Up and down move
+                    // directly to the previous or next row in the list. Left returns focus to
+                    // this same row without triggering the force‑stop automation.
+                    if (kCode == KeyEvent.KEYCODE_DPAD_UP) {
+                        int target = position > 0 ? position - 1 : 0;
+                        RecentAppsActivity.this.listView.requestFocus();
+                        RecentAppsActivity.this.listView.setSelection(target);
+                        return true;
+                    }
+                    if (kCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                        int max = RecentAppsActivity.this.listView.getAdapter() != null ? RecentAppsActivity.this.listView.getAdapter().getCount() - 1 : position;
+                        int target = position < max ? position + 1 : max;
+                        RecentAppsActivity.this.listView.requestFocus();
+                        RecentAppsActivity.this.listView.setSelection(target);
+                        return true;
+                    }
+                    if (kCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+                        RecentAppsActivity.this.listView.requestFocus();
+                        RecentAppsActivity.this.listView.setSelection(position);
+                        return true;
+                    }
+                    return false;
                 });
             }
             return view;

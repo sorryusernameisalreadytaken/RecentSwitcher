@@ -23,7 +23,10 @@ public class RecentsAccessibilityService extends AccessibilityService {
      * force‑stop sequence. Adjust this value if the UI on your device needs
      * more or less time to update between focus changes and button presses.
      */
-    private static final int FORCE_SEQUENCE_DELAY_MS = 500;
+    // Delay between each step of the force‑stop automation. Increased from 500ms to 1000ms
+    // to improve reliability on newer Android TV versions where dialogs and button states
+    // take longer to update.
+    private static final int FORCE_SEQUENCE_DELAY_MS = 1000;
 
     @Override
     public void onCreate() {

@@ -48,7 +48,7 @@
 
     <!-- Descriptive texts for list screens (German translations) -->
     <string name="recent_apps_description">Wähle eine App zum Starten. Langer Druck, um sie auszuschließen oder wieder aufzunehmen.</string>
-    <string name="excluded_apps_description">Tippe auf eine App, um sie wieder aufzunehmen.</string>
+    <string name="excluded_apps_description">Halte eine App gedrückt, um sie wieder aufzunehmen.</string>
     <string name="live_events_description">Diese Liste zeigt alle letzten Nutzungsereignisse (5 Minuten).</string>
 
     <!-- Debug report messages (German translations) -->
@@ -57,4 +57,7 @@
 
     <!-- Beschreibung für das Zahnrad-Symbol in der Liste der letzten Apps -->
     <string name="open_settings_description">App-Einstellungen öffnen</string>
+
+    <!-- Hinweis, der angezeigt wird, wenn man auf eine ausgeschlossene App tippt. Er erklärt, dass ein langer Druck sie wieder einbezieht. -->
+    <string name="long_press_to_include">Halte OK gedrückt, um %1$s wieder aufzunehmen.</string>
 </resources>
