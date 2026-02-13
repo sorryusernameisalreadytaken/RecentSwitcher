@@ -62,6 +62,11 @@
     <!-- Content description for app icons in lists -->
     <string name="app_icon_desc">App‑Symbol</string>
 
+    <!-- Hinweis, der erscheint, wenn der Benutzer auf einen Live-Event-Eintrag tippt. Er weist darauf hin,
+         dass ein langer Druck die App aus der Liste der zuletzt verwendeten ausschließt. Der Platzhalter
+         %1$s wird durch den App-Namen ersetzt. -->
+    <string name="long_press_to_exclude">Langer Druck, um %1$s auszuschließen.</string>
+
     <!-- Title of the accessibility settings screen (not currently used) -->
     <string name="accessibility_settings_title">Bedienungshilfe‑Einstellungen</string>
 

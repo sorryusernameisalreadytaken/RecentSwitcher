@@ -67,6 +67,11 @@
     <!-- Content description for app icons in lists -->
     <string name="app_icon_desc">App icon</string>
 
+    <!-- Prompt shown when the user taps a live events entry. It hints that a long
+         press will exclude the app from the recents list. The placeholder %1$s
+         will be replaced with the app label. -->
+    <string name="long_press_to_exclude">Long press to exclude %1$s from recents.</string>
+
     <!-- Title of the accessibility settings screen (not currently used) -->
     <string name="accessibility_settings_title">Accessibility settings</string>
 
