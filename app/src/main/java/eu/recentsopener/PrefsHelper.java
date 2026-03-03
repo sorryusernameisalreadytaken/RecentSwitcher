@@ -58,8 +58,13 @@ public final class PrefsHelper {
         defaults.add("io.github.sds100.keymapper");
         defaults.add("io.github.sds100.keymapper.inputmethod.leanback");
         // Some ROMs or misspelled package identifiers for system settings. Exclude these as well
-        defaults.add("com.andrpid.tv.settings");
-        defaults.add("com.andrpid.settings");
+        // Remove legacy misspellings of the system settings package names. These were
+        // accidentally included in a previous release ("andrpid" instead of "android").
+        // Only the correct package identifiers (com.android.tv.settings and
+        // com.android.settings) are needed because the malformed identifiers are
+        // never installed on real devices. Leaving them in the default exclusion
+        // list makes it harder to reason about which packages are excluded and
+        // causes confusion when users inspect their preferences.
         DEFAULT_EXCLUDED = java.util.Collections.unmodifiableSet(defaults);
     }
 

@@ -96,34 +96,35 @@ Optional:
 With **Key Mapper**, RAS behaves like a real system feature.
 
 ---
+### 🔁 Last App (Alt‑Tab behaviour)
 
-### 🔁 Last App (Alt-Tab behavior)
+To map a physical button (or IR remote key) to the **"Switch to last app"** action using Key Mapper, create a custom intent with the following fields:
 
-**Custom Intent configuration:**
+| Field    | Value                                   |
+|---------|-----------------------------------------|
+| **Package** | `eu.recentsopener`                      |
+| **Action**  | `eu.ras.SHOW_LAST_APP`                  |
 
-- **Package:**  
-  `com.example.recentsopener`
-- **Action:**  
-  `com.example.recentsopener.SHOW_LAST_APP`
+The intent action `eu.ras.SHOW_LAST_APP` is defined in the app’s manifest and will immediately switch back to the last used application.  After you save the mapping in Key Mapper, pressing the configured key acts like an Alt‑Tab on Android TV (e.g. quickly toggling between YouTube and Jellyfin).
 
-➡ Result:  
-One button press → instantly switch back to the last app  
-(e.g. YouTube ↔ Jellyfin)
+*(Placeholder for Key Mapper screenshot showing the Last App intent configuration — insert image here)*
 
 ---
 
 ### 📜 Open Recent Apps List
 
-**Custom Intent configuration:**
+To open the Recent App Switcher list itself via Key Mapper, configure another custom intent:
 
-- **Package:**  
-  `com.example.recentsopener`
-- **Action:**  
-  `com.example.recentsopener.SHOW_RECENTS`
+| Field    | Value                                   |
+|---------|-----------------------------------------|
+| **Package** | `eu.recentsopener`                      |
+| **Action**  | `eu.ras.SHOW_RECENTS`                   |
 
-➡ Result:  
-Sorted list of recently used apps  
-(click = open, long-press = exclude)
+Invoking the action `eu.ras.SHOW_RECENTS` launches the recents list UI.  From there you can scroll through your recently used apps, press **Enter**/**OK** to launch an app, or **long‑press** to exclude it.  Excluded apps appear in red and are ignored by the switcher.
+
+*(Placeholder for Key Mapper screenshot showing the Recents List intent configuration — insert image here)*
+
+You can install **Key Mapper** from [F‑Droid](https://f-droid.org/de/packages/io.github.sds100.keymapper/) or download the latest APK from the [GitHub releases page](https://github.com/keymapperorg/KeyMapper/releases).  Refer to the Key Mapper documentation for details on creating custom intent mappings.
 
 ---
 

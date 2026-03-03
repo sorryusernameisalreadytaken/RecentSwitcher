@@ -230,7 +230,9 @@ public class RecentAppsActivity extends AppCompatActivity {
                 if (pkg.startsWith("com.android.tv.settings") || pkg.startsWith("com.google.android.tv.settings") || pkg.startsWith("com.android.settings")) continue;
                 pkgs.add(pkg);
             }
-            performBulkClose(pkgs);
+            // When closing all apps we want to return to the home screen if the recents list
+            // becomes empty.  Pass openLauncherIfEmpty=true and openLastIfSingle=false.
+            performBulkClose(pkgs, /*openLauncherIfEmpty=*/true, /*openLastIfSingle=*/false);
         });
 
         // Close all apps except the one that was in the foreground immediately before
@@ -251,7 +253,10 @@ public class RecentAppsActivity extends AppCompatActivity {
                 if (pkg.startsWith("com.android.tv.settings") || pkg.startsWith("com.google.android.tv.settings") || pkg.startsWith("com.android.settings")) continue;
                 pkgs.add(pkg);
             }
-            performBulkClose(pkgs);
+            // When closing all other apps we want to automatically switch back to the last
+            // foreground app if exactly one app remains.  Pass openLauncherIfEmpty=false
+            // and openLastIfSingle=true.
+            performBulkClose(pkgs, /*openLauncherIfEmpty=*/false, /*openLastIfSingle=*/true);
         });
 
         // If usage access is not granted, prompt the user to enable it. We still
@@ -381,9 +386,7 @@ public class RecentAppsActivity extends AppCompatActivity {
                         // Skip auto close for settings packages
                         boolean isSettingsPkg = appEntry.packageName.startsWith("com.android.tv.settings") ||
                                 appEntry.packageName.startsWith("com.google.android.tv.settings") ||
-                                appEntry.packageName.startsWith("com.android.settings") ||
-                                appEntry.packageName.startsWith("com.andrpid.tv.settings") ||
-                                appEntry.packageName.startsWith("com.andrpid.settings");
+                                appEntry.packageName.startsWith("com.android.settings");
                         if (!isSettingsPkg) {
                             RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
                             if (svc != null) {
@@ -596,7 +599,23 @@ public class RecentAppsActivity extends AppCompatActivity {
      *
      * @param packages list of package names to close
      */
-    private void performBulkClose(java.util.List<String> packages) {
+    /**
+     * Performs a bulk closing of the provided packages. Each package will be closed in
+     * sequence by opening its application details screen, running the force‑stop automation,
+     * then opening and closing the Android TV settings app (com.android.tv.settings) to
+     * ensure the settings UI is properly dismissed before moving on to the next package.
+     * After all packages have been processed the recents list is refreshed and, optionally,
+     * either the default launcher or the last remaining app is opened based on the
+     * parameters. Passing {@code openLauncherIfEmpty} will cause the home screen to be
+     * launched if the recents list is empty. Passing {@code openLastIfSingle} will cause
+     * the sole remaining app to be launched if exactly one entry remains. Only one of
+     * these options should be true at a time.
+     *
+     * @param packages           list of package names to close
+     * @param openLauncherIfEmpty if true, launch the default launcher when no recents remain
+     * @param openLastIfSingle    if true, launch the remaining app when exactly one recent remains
+     */
+    private void performBulkClose(java.util.List<String> packages, boolean openLauncherIfEmpty, boolean openLastIfSingle) {
         if (packages == null || packages.isEmpty()) {
             return;
         }
@@ -607,36 +626,60 @@ public class RecentAppsActivity extends AppCompatActivity {
             return;
         }
         android.os.Handler handler = new android.os.Handler(getMainLooper());
-        // Delay between each close operation (ms). This allows the UI to load the settings screen
-        // and for the force‑stop automation to execute. Adjust if your device is slower or faster.
-        final long stepDelay = 2000L;
+        // Each package is allocated a time slot of 6 seconds.  Within that slot we
+        // perform the following actions separated by 1.5 second delays:
+        // 1. open the target package’s settings page
+        // 2. run the force‑stop automation on the target package
+        // 3. open the Android TV settings app’s details page
+        // 4. run the force‑stop automation on the TV settings app
+        final long actionDelayMs = 1500L;
+        final long stepDurationMs = 6000L;
         for (int i = 0; i < packages.size(); i++) {
             final String pkg = packages.get(i);
-            long delay = i * stepDelay;
+            long delay = i * stepDurationMs;
             handler.postDelayed(() -> {
-                // Open the app details settings
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                intent.setData(Uri.parse("package:" + pkg));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                // Phase 1: open the app details settings for the target package
+                Intent intentTarget = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intentTarget.setData(Uri.parse("package:" + pkg));
+                intentTarget.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 try {
-                    startActivity(intent);
-                    // Trigger automation after a short delay
-                    handler.postDelayed(() -> {
-                        RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
-                        if (service != null) {
-                            service.performForceStopSequence();
-                        }
-                    }, 500);
+                    startActivity(intentTarget);
                 } catch (Exception e) {
-                    Toast.makeText(this, pkg + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RecentAppsActivity.this, pkg + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+                // Phase 2: after a delay, run the force‑stop automation on the target app
+                handler.postDelayed(() -> {
+                    RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
+                    if (service != null) {
+                        service.performForceStopSequence();
+                    }
+                }, actionDelayMs);
+                // Phase 3: after a second delay, open the TV settings details page
+                handler.postDelayed(() -> {
+                    Intent intentSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intentSettings.setData(Uri.parse("package:com.android.tv.settings"));
+                    intentSettings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    try {
+                        startActivity(intentSettings);
+                    } catch (Exception e) {
+                        Toast.makeText(RecentAppsActivity.this, "com.android.tv.settings cannot be opened in settings", Toast.LENGTH_SHORT).show();
+                    }
+                }, actionDelayMs * 2);
+                // Phase 4: after a third delay, run the force‑stop automation on the TV settings app
+                handler.postDelayed(() -> {
+                    RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
+                    if (service != null) {
+                        service.performForceStopSequence();
+                    }
+                }, actionDelayMs * 3);
             }, delay);
         }
-
-        // After all packages have been processed, refresh the recents list to remove
-        // any apps that were successfully stopped. We schedule this after the last
-        // operation plus an extra delay to allow the UI to finish closing.
-        long finalDelay = packages.size() * stepDelay + 1000L;
+        // After all packages have been processed, refresh the recents list to remove any apps
+        // that were successfully stopped.  We schedule this after the last operation plus an
+        // extra delay to allow the UI to finish closing.  At this point we optionally
+        // navigate to the home screen or launch the remaining app.
+        long finalDelay = packages.size() * stepDurationMs + 2000L;
         handler.postDelayed(() -> {
             loadRecents();
             if (adapter != null) {
@@ -645,6 +688,44 @@ public class RecentAppsActivity extends AppCompatActivity {
                 if (!recentApps.isEmpty()) {
                     listView.setSelection(0);
                     listView.requestFocus();
+                }
+            }
+            // If there are no apps left in the recents list and openLauncherIfEmpty is true,
+            // launch the default launcher.  We build an ACTION_MAIN/CATEGORY_HOME intent.
+            if (openLauncherIfEmpty && recentApps.isEmpty()) {
+                Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+                homeIntent.addCategory(Intent.CATEGORY_HOME);
+                homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                try {
+                    startActivity(homeIntent);
+                    finish();
+                    return;
+                } catch (Exception e) {
+                    // Fail silently; the user can still navigate manually.
+                }
+            }
+            // If exactly one app remains and openLastIfSingle is true, launch that app.
+            if (openLastIfSingle && recentApps.size() == 1) {
+                AppEntry entry = recentApps.get(0);
+                // Attempt to acquire a TV‑optimised launch intent first.  Some Android TV apps
+                // only declare a LEANBACK_LAUNCHER category and therefore
+                // getLaunchIntentForPackage() returns null.
+                android.content.pm.PackageManager pm = getPackageManager();
+                Intent launchIntent = pm.getLeanbackLaunchIntentForPackage(entry.packageName);
+                if (launchIntent == null) {
+                    launchIntent = pm.getLaunchIntentForPackage(entry.packageName);
+                }
+                if (launchIntent != null) {
+                    // Update the history before launching
+                    PrefsHelper.updateHistory(RecentAppsActivity.this, entry.packageName);
+                    launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    try {
+                        startActivity(launchIntent);
+                        finish();
+                        return;
+                    } catch (Exception e) {
+                        // If we cannot launch the app, do nothing further.
+                    }
                 }
             }
         }, finalDelay);

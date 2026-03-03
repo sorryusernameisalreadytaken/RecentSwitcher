@@ -436,70 +436,98 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
             return;
         }
-        // Determine per‑variant timing and back navigation behaviour.  Variant 1 uses the
-        // shortest interval and no BACK presses.  Higher variants increment the base
-        // interval to allow more time for each settings screen to appear and add extra
-        // BACK presses to return to our app.
-        long baseIntervalMs;
+        // Determine the number of BACK presses and per‑package duration based on the variant.  To
+        // reliably close multiple apps in sequence we now interleave closing the target app
+        // with closing the Android TV settings app (com.android.tv.settings).  Each package
+        // therefore requires a longer time slot consisting of four phases: (1) open the target
+        // app’s details page, (2) run the force‑stop automation, (3) open the TV settings
+        // details page and (4) run the force‑stop automation on that settings app.  Back
+        // presses (to return to our app) are scheduled after the fourth phase.  The
+        // per‑package interval increases for higher variants to allow more time for
+        // slower devices or complex UI transitions.
         int backCount;
+        long stepDurationMs;
         switch (variant) {
             case 2:
-                baseIntervalMs = 4000L;
+                stepDurationMs = 7000L;
                 backCount = 1;
                 break;
             case 3:
-                baseIntervalMs = 5000L;
+                stepDurationMs = 8000L;
                 backCount = 2;
                 break;
             case 4:
-                baseIntervalMs = 6000L;
+                stepDurationMs = 9000L;
                 backCount = 3;
                 break;
             case 1:
             default:
-                baseIntervalMs = 3000L;
+                stepDurationMs = 6000L;
                 backCount = 0;
                 break;
         }
-        // Delay between launching the settings page and triggering the force stop sequence.
-        final long openDelayMs = 1500L;
+        // Delay between individual actions within a package’s sequence.  We use a fixed
+        // interval of 1500 ms to give the Settings UI enough time to load before
+        // automation triggers the next step.  Increasing this value can improve
+        // reliability on slower devices but will also lengthen the total closing time.
+        final long actionDelayMs = 1500L;
         android.os.Handler handler = new android.os.Handler(getMainLooper());
         int index = 0;
         for (String pkg : SPECIFIC_CLOSE_PACKAGES) {
-            // Skip closing our own app or system settings apps
+            // Skip closing our own app or system settings apps. Legacy misspellings of the
+            // package names have been removed from the default exclusion list.
             if (pkg.equals(getPackageName()) ||
                     pkg.startsWith("com.android.tv.settings") ||
                     pkg.startsWith("com.google.android.tv.settings") ||
-                    pkg.startsWith("com.android.settings") ||
-                    pkg.startsWith("com.andrpid.tv.settings") ||
-                    pkg.startsWith("com.andrpid.settings")) {
+                    pkg.startsWith("com.android.settings")) {
                 continue;
             }
             final String targetPkg = pkg;
-            long startDelay = index * baseIntervalMs;
+            long startDelay = index * stepDurationMs;
             handler.postDelayed(() -> {
-                // Step 1: launch the app details settings for the target package
-                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                intent.setData(Uri.parse("package:" + targetPkg));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                // Phase 1: open the app details screen for the target package
+                Intent intentTarget = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intentTarget.setData(Uri.parse("package:" + targetPkg));
+                intentTarget.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 try {
-                    startActivity(intent);
+                    startActivity(intentTarget);
                 } catch (Exception e) {
                     Toast.makeText(MainActivity.this, targetPkg + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                // Step 2: after a short delay, perform the force stop sequence
+                // Phase 2: after a delay, run the force‑stop automation on the target app
                 handler.postDelayed(() -> {
                     RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
                     if (service != null) {
                         service.performForceStopSequence();
-                        // Optionally press BACK multiple times to return to our app
+                    }
+                }, actionDelayMs);
+                // Phase 3: after a second delay, open the details screen for the TV settings app
+                handler.postDelayed(() -> {
+                    Intent intentSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intentSettings.setData(Uri.parse("package:com.android.tv.settings"));
+                    intentSettings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    try {
+                        startActivity(intentSettings);
+                    } catch (Exception e) {
+                        // It's unlikely that com.android.tv.settings cannot be opened.  Log and continue.
+                        Toast.makeText(MainActivity.this, "com.android.tv.settings cannot be opened in settings", Toast.LENGTH_SHORT).show();
+                    }
+                }, actionDelayMs * 2);
+                // Phase 4: after a third delay, run the force‑stop automation on the TV settings app
+                handler.postDelayed(() -> {
+                    RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
+                    if (service != null) {
+                        service.performForceStopSequence();
+                        // Schedule BACK presses if required by the variant.  Each BACK press
+                        // is delayed by 500 ms so they occur after the final force‑stop
+                        // operation.  This returns the user to our app between closings.
                         for (int i = 0; i < backCount; i++) {
                             final int idxLocal = i;
                             handler.postDelayed(() -> service.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK), idxLocal * 500L);
                         }
                     }
-                }, openDelayMs);
+                }, actionDelayMs * 3);
             }, startDelay);
             index++;
         }
