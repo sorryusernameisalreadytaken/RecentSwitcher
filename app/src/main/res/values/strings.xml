@@ -7,7 +7,11 @@
 -->
 <resources>
     <!-- Application name shown in the launcher and system UI -->
-    <string name="app_name">RecentAppSwitcher</string>
+    <!-- Application name shown in the launcher and system UI.  The user wants
+         the app to be labelled "Recents-App-Switcher" even though the
+         applicationId remains eu.ras.  Update both default and German
+         translations accordingly. -->
+    <string name="app_name">Recents‑App‑Switcher</string>
 
     <!-- Button labels on the main screen -->
     <string name="show_recent_apps_button">Recent apps</string>

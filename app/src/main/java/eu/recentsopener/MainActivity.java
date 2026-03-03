@@ -472,17 +472,20 @@ public class MainActivity extends AppCompatActivity {
         // reliability on slower devices but will also lengthen the total closing time.
         final long actionDelayMs = 1500L;
         android.os.Handler handler = new android.os.Handler(getMainLooper());
-        int index = 0;
+        // Build a list of packages to close, filtering out our own app and system settings apps.
+        java.util.List<String> targets = new java.util.ArrayList<>();
         for (String pkg : SPECIFIC_CLOSE_PACKAGES) {
-            // Skip closing our own app or system settings apps. Legacy misspellings of the
-            // package names have been removed from the default exclusion list.
             if (pkg.equals(getPackageName()) ||
                     pkg.startsWith("com.android.tv.settings") ||
                     pkg.startsWith("com.google.android.tv.settings") ||
                     pkg.startsWith("com.android.settings")) {
                 continue;
             }
-            final String targetPkg = pkg;
+            targets.add(pkg);
+        }
+        int index = 0;
+        for (String targetPkg : targets) {
+            final boolean isLast = (index == targets.size() - 1);
             long startDelay = index * stepDurationMs;
             handler.postDelayed(() -> {
                 // Phase 1: open the app details screen for the target package
@@ -502,32 +505,45 @@ public class MainActivity extends AppCompatActivity {
                         service.performForceStopSequence();
                     }
                 }, actionDelayMs);
-                // Phase 3: after a second delay, open the details screen for the TV settings app
-                handler.postDelayed(() -> {
-                    Intent intentSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                    intentSettings.setData(Uri.parse("package:com.android.tv.settings"));
-                    intentSettings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    try {
-                        startActivity(intentSettings);
-                    } catch (Exception e) {
-                        // It's unlikely that com.android.tv.settings cannot be opened.  Log and continue.
-                        Toast.makeText(MainActivity.this, "com.android.tv.settings cannot be opened in settings", Toast.LENGTH_SHORT).show();
-                    }
-                }, actionDelayMs * 2);
-                // Phase 4: after a third delay, run the force‑stop automation on the TV settings app
-                handler.postDelayed(() -> {
-                    RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
-                    if (service != null) {
-                        service.performForceStopSequence();
-                        // Schedule BACK presses if required by the variant.  Each BACK press
-                        // is delayed by 500 ms so they occur after the final force‑stop
-                        // operation.  This returns the user to our app between closings.
-                        for (int i = 0; i < backCount; i++) {
-                            final int idxLocal = i;
-                            handler.postDelayed(() -> service.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK), idxLocal * 500L);
+                if (!isLast) {
+                    // Phase 3 (multi‑close only): open the details screen for the TV settings app
+                    handler.postDelayed(() -> {
+                        Intent intentSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intentSettings.setData(Uri.parse("package:com.android.tv.settings"));
+                        intentSettings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        try {
+                            startActivity(intentSettings);
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, "com.android.tv.settings cannot be opened in settings", Toast.LENGTH_SHORT).show();
                         }
-                    }
-                }, actionDelayMs * 3);
+                    }, actionDelayMs * 2);
+                    // Phase 4 (multi‑close only): run the force‑stop automation on the TV settings app and then schedule BACKs
+                    handler.postDelayed(() -> {
+                        RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
+                        if (service != null) {
+                            service.performForceStopSequence();
+                            // Schedule BACK presses if required by the variant. Each BACK press is delayed
+                            // by 500 ms so they occur after the final force‑stop operation. This returns
+                            // the user to our app between closings.
+                            for (int i = 0; i < backCount; i++) {
+                                final int idxLocal = i;
+                                handler.postDelayed(() -> service.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK), idxLocal * 500L);
+                            }
+                        }
+                    }, actionDelayMs * 3);
+                } else {
+                    // If this is the last package, we only close the target app. After a brief pause
+                    // schedule BACK presses as necessary.
+                    handler.postDelayed(() -> {
+                        RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
+                        if (service != null) {
+                            for (int i = 0; i < backCount; i++) {
+                                final int idxLocal = i;
+                                handler.postDelayed(() -> service.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK), idxLocal * 500L);
+                            }
+                        }
+                    }, actionDelayMs * 2);
+                }
             }, startDelay);
             index++;
         }

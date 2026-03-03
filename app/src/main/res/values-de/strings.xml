@@ -6,7 +6,8 @@
 -->
 <resources>
     <!-- Application name -->
-    <string name="app_name">RecentAppSwitcher</string>
+    <!-- Anwendungsname (deutsch) -->
+    <string name="app_name">Recents‑App‑Switcher</string>
 
     <!-- Button labels on the main screen -->
     <string name="show_recent_apps_button">Alle geöffneten Apps</string>
