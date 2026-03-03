@@ -638,19 +638,18 @@ public class RecentAppsActivity extends AppCompatActivity {
         // additionally close the Android TV settings app (com.android.tv.settings) between
         // packages to ensure the UI is reset.  When only a single package is present the
         // settings app is not closed.
-        // Increase delays to allow the system UI to fully update between actions.
-        // Each step now takes 2 seconds (instead of 1.5 seconds) to account for
-        // slower transitions on some Android TV devices.  We allocate four
-        // steps per package: open the app details, force‑stop the app, open
-        // the Android TV settings app and force‑stop it.  For the final
-        // package the settings closing steps are skipped, so the per‑package
-        // duration scales accordingly.
-        final long actionDelayMs = 2000L;
-        final long stepDurationMs = actionDelayMs * 4;
+        // Set delays based on observed behaviour when automating the system settings.
+        // A 1 second delay between launching the app details and initiating the
+        // force‑stop sequence allows the UI to appear before accessibility actions
+        // execute.  Each package is given a 3 second window (open, force‑stop and
+        // return) before moving on to the next package.
+        final long actionDelayMs = 1000L;
+        final long stepDurationMs = actionDelayMs * 3;
         // Build a local copy of the package list so we can determine last/non‑last entries
         java.util.List<String> targets = new java.util.ArrayList<>(packages);
         for (int i = 0; i < targets.size(); i++) {
             final String pkg = targets.get(i);
+            // Determine whether this is the last package.  Currently unused but kept for clarity.
             final boolean isLast = (i == targets.size() - 1);
             long delay = i * stepDurationMs;
             handler.postDelayed(() -> {
@@ -669,39 +668,13 @@ public class RecentAppsActivity extends AppCompatActivity {
                     Toast.makeText(RecentAppsActivity.this, pkg + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                // Phase 2: after a delay, run the force‑stop automation on the target app
+                // Phase 2: after a delay, run the force‑stop automation on the target app.
                 handler.postDelayed(() -> {
                     RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
                     if (service != null) {
                         service.performForceStopSequence();
                     }
                 }, actionDelayMs);
-                if (!isLast) {
-                    // For multi‑close only: close the Android TV settings app between apps
-                    // Phase 3: after a second delay, open the TV settings details page
-                    handler.postDelayed(() -> {
-                        Intent intentSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                        intentSettings.setData(Uri.parse("package:com.android.tv.settings"));
-                        // Use the same flags as the target app: start a fresh task and
-                        // clear any existing instance.  This helps ensure the settings
-                        // app can be reopened repeatedly without being blocked by the
-                        // previous instance.
-                        intentSettings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        try {
-                            startActivity(intentSettings);
-                        } catch (Exception e) {
-                            Toast.makeText(RecentAppsActivity.this,
-                                    "com.android.tv.settings cannot be opened in settings", Toast.LENGTH_SHORT).show();
-                        }
-                    }, actionDelayMs * 2);
-                    // Phase 4: after a third delay, run the force‑stop automation on the TV settings app
-                    handler.postDelayed(() -> {
-                        RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
-                        if (service != null) {
-                            service.performForceStopSequence();
-                        }
-                    }, actionDelayMs * 3);
-                }
             }, delay);
         }
         // After all packages have been processed, refresh the recents list to remove any apps
