@@ -7,9 +7,8 @@
 <resources>
     <!-- Application name -->
     <!-- Anwendungsname (deutsch) -->
-    <!-- Anwendungsname (Deutsch). Wir verwenden den gleichen hyphenierten Namen wie
-         im Englischen, damit die Nutzungseinstellungen nur einen Eintrag zeigen. -->
-    <string name="app_name">Recents-App-Switcher</string>
+    <!-- Anwendungsname (Deutsch) -->
+    <string name="app_name">RecentAppSwitcher</string>
 
     <!-- Button labels on the main screen -->
     <string name="show_recent_apps_button">Alle geöffneten Apps</string>
@@ -128,8 +127,8 @@
 
     <!-- Beschreibung und Bezeichnung für unseren Bedienungshilfe‑Dienst in den System‑Einstellungen -->
     <string name="accessibility_service_description">Ermöglicht der App, globale Aktionen auszuführen, wie das Öffnen des System-Recents-Menüs und das Navigieren in den App-Einstellungen.</string>
-    <!-- Beschriftung des Bedienungshilfe-Dienstes für Recents‑App‑Switcher. -->
-    <string name="accessibility_service_label">Bedienungshilfe-Dienst von Recents-App-Switcher</string>
+    <!-- Beschriftung des Bedienungshilfe-Dienstes für RecentAppSwitcher -->
+    <string name="accessibility_service_label">Bedienungshilfe-Dienst von RecentAppSwitcher</string>
 
     <!-- Descriptive texts for list screens (German translations) -->
     <string name="recent_apps_description">Wähle eine App zum Starten. Langer Druck, um sie auszuschließen oder wieder aufzunehmen.</string>
