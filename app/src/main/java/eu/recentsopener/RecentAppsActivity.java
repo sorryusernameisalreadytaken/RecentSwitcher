@@ -638,8 +638,15 @@ public class RecentAppsActivity extends AppCompatActivity {
         // additionally close the Android TV settings app (com.android.tv.settings) between
         // packages to ensure the UI is reset.  When only a single package is present the
         // settings app is not closed.
-        final long actionDelayMs = 1500L;
-        final long stepDurationMs = 6000L;
+        // Increase delays to allow the system UI to fully update between actions.
+        // Each step now takes 2 seconds (instead of 1.5 seconds) to account for
+        // slower transitions on some Android TV devices.  We allocate four
+        // steps per package: open the app details, force‑stop the app, open
+        // the Android TV settings app and force‑stop it.  For the final
+        // package the settings closing steps are skipped, so the per‑package
+        // duration scales accordingly.
+        final long actionDelayMs = 2000L;
+        final long stepDurationMs = actionDelayMs * 4;
         // Build a local copy of the package list so we can determine last/non‑last entries
         java.util.List<String> targets = new java.util.ArrayList<>(packages);
         for (int i = 0; i < targets.size(); i++) {
@@ -650,7 +657,12 @@ public class RecentAppsActivity extends AppCompatActivity {
                 // Phase 1: open the app details settings for the target package
                 Intent intentTarget = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                 intentTarget.setData(Uri.parse("package:" + pkg));
-                intentTarget.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                // Launch the settings page in a new task and clear any existing
+                // instance on the task stack.  Without CLEAR_TOP some devices
+                // refuse to launch a new details page when an existing one is
+                // already on screen, causing subsequent closes to hang on the
+                // first app.
+                intentTarget.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 try {
                     startActivity(intentTarget);
                 } catch (Exception e) {
@@ -670,11 +682,16 @@ public class RecentAppsActivity extends AppCompatActivity {
                     handler.postDelayed(() -> {
                         Intent intentSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                         intentSettings.setData(Uri.parse("package:com.android.tv.settings"));
-                        intentSettings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        // Use the same flags as the target app: start a fresh task and
+                        // clear any existing instance.  This helps ensure the settings
+                        // app can be reopened repeatedly without being blocked by the
+                        // previous instance.
+                        intentSettings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         try {
                             startActivity(intentSettings);
                         } catch (Exception e) {
-                            Toast.makeText(RecentAppsActivity.this, "com.android.tv.settings cannot be opened in settings", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(RecentAppsActivity.this,
+                                    "com.android.tv.settings cannot be opened in settings", Toast.LENGTH_SHORT).show();
                         }
                     }, actionDelayMs * 2);
                     // Phase 4: after a third delay, run the force‑stop automation on the TV settings app
