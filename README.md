@@ -7,9 +7,9 @@ The code works, the app is useful — but the need for this app highlights a pla
 
 ---
 
-# RecentAppSwitcher (RAS)
+# Recents‑App‑Switcher (RAS)
 
-**RecentAppSwitcher** (short: **RAS**) is a utility app for **Android TV / Google TV (Android 11–14)**  
+**Recents‑App‑Switcher** (short: **RAS**) is a utility app for **Android TV / Google TV (Android 11–14)**  
 that solves a problem intentionally left unsolved by Google and many device manufacturers:
 
 > 👉 **On many Android TV devices, the system “Recent Apps / App Switcher” simply does not exist.**
@@ -32,11 +32,11 @@ On **Android TV / Google TV**, reality looks like this:
 **Result:**  
 👉 No fast way to switch between two apps (e.g. YouTube ↔ Jellyfin ↔ Browser)
 
-**RecentAppSwitcher exists solely to fix that gap.**
+**Recents‑App‑Switcher exists solely to fix that gap.**
 
 ---
 
-## What does RecentAppSwitcher do?
+## What does Recents‑App‑Switcher do?
 
 ### ✅ Core Features
 
@@ -91,7 +91,7 @@ Optional:
 
 ---
 
-## Using RecentAppSwitcher with Key Mapper (recommended)
+## Using Recents‑App‑Switcher with Key Mapper (recommended)
 
 With **Key Mapper**, RAS behaves like a real system feature.
 
@@ -169,8 +169,8 @@ Potential future use:
 
 ## Project Goal
 
-**RecentAppSwitcher is not a hack.**  
-It is a **utility born out of necessity** to restore basic multitasking on Android TV —  
+**Recents‑App‑Switcher is not a hack.**  
+It is a **utility born out of necessity** to restore basic multitasking on Android TV —  
 as far as the platform still allows.
 
 ---

@@ -407,11 +407,63 @@ public class RecentAppsActivity extends AppCompatActivity {
      * Returns true if usage access is already granted. We query for events in
      * the last hour and check if any are available.
      */
+    /**
+     * Determine whether this app currently has permission to access usage
+     * statistics. The built‑in check using {@link UsageEvents} can return
+     * false negatives when no events have occurred in the last hour, even if
+     * the permission is granted. To improve reliability we fall back to
+     * querying {@link UsageStatsManager#queryUsageStats(int,long,long)} and
+     * checking {@link AppOpsManager}. The order of checks is:
+     * <ol>
+     *   <li>Check AppOpsManager for {@code OPSTR_GET_USAGE_STATS}. If the mode
+     *       is {@code MODE_ALLOWED} or {@code MODE_FOREGROUND}, permission is granted.</li>
+     *   <li>Query recent {@link UsageEvents} within the last hour. If events
+     *       exist, permission is considered granted.</li>
+     *   <li>Query daily usage stats for the past day. If any stats are
+     *       returned, permission is considered granted.</li>
+     * </ol>
+     * If all checks indicate no access, the method returns false.
+     */
     private boolean hasUsageAccess() {
-        UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-        long now = System.currentTimeMillis();
-        UsageEvents events = usm.queryEvents(now - 1000 * 60 * 60, now);
-        return events != null && events.hasNextEvent();
+        try {
+            // First check the AppOpsManager for usage stats access. This avoids the
+            // issue where no events are present yet still permission is granted.
+            android.app.AppOpsManager appOps = (android.app.AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+            // Check both allowed and foreground modes. The unsafe variant is available
+            // on newer API levels (API 31+). For older versions fall back to checkOpNoThrow.
+            int mode;
+            try {
+                // Use reflection to call unsafeCheckOpNoThrow if available
+                java.lang.reflect.Method m = appOps.getClass().getMethod("unsafeCheckOpNoThrow", String.class, int.class, String.class);
+                mode = (Integer) m.invoke(appOps, android.app.AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getPackageName());
+            } catch (Exception ex) {
+                // Fallback to checkOpNoThrow on older API levels
+                mode = appOps.checkOpNoThrow(android.app.AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getPackageName());
+            }
+            if (mode == android.app.AppOpsManager.MODE_ALLOWED || mode == android.app.AppOpsManager.MODE_FOREGROUND) {
+                return true;
+            }
+        } catch (Exception e) {
+            // Ignore and fall through to usage stats check
+        }
+        try {
+            UsageStatsManager usm = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
+            long now = System.currentTimeMillis();
+            // Check for recent usage events within the last hour. If any events are present
+            // then permission is granted and we can read usage stats.
+            UsageEvents events = usm.queryEvents(now - 1000L * 60L * 60L, now);
+            if (events != null && events.hasNextEvent()) {
+                return true;
+            }
+            // Fallback: query daily usage stats for the past day. On many devices this
+            // returns a non‑empty list when permission is granted, even if no events
+            // occurred in the last hour.
+            java.util.List<android.app.usage.UsageStats> stats = usm.queryUsageStats(
+                    UsageStatsManager.INTERVAL_DAILY, now - 1000L * 60L * 60L * 24L, now);
+            return stats != null && !stats.isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**

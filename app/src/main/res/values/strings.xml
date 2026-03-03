@@ -7,11 +7,12 @@
 -->
 <resources>
     <!-- Application name shown in the launcher and system UI -->
-    <!-- Application name shown in the launcher and system UI.  The user wants
-         the app to be labelled "Recents-App-Switcher" even though the
-         applicationId remains eu.ras.  Update both default and German
-         translations accordingly. -->
-    <string name="app_name">Recents‑App‑Switcher</string>
+    <!-- Application name shown in the launcher and system UI -->
+    <!-- Application name shown in the launcher and system UI.  Use a hyphenated name
+         to make it clear this app provides a Recents App Switcher feature. This
+         string is used by the application and all exported activities so that
+         the usage access screen lists only a single entry. -->
+    <string name="app_name">Recents-App-Switcher</string>
 
     <!-- Button labels on the main screen -->
     <string name="show_recent_apps_button">Recent apps</string>
@@ -131,7 +132,8 @@
 
     <!-- Description and label shown in the system accessibility settings for our service -->
     <string name="accessibility_service_description">Allows the app to perform global actions such as showing the system recents menu and automating navigation within app settings.</string>
-    <string name="accessibility_service_label">RecentAppSwitcher accessibility service</string>
+    <!-- Label for the accessibility service used by Recents‑App‑Switcher -->
+    <string name="accessibility_service_label">Recents-App-Switcher accessibility service</string>
 
     <!-- Descriptive texts for list screens -->
     <string name="recent_apps_description">Select an app to launch it. Long press to exclude or include.</string>
