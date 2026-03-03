@@ -22,6 +22,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
+import eu.recentsopener.MainActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -30,7 +31,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import android.util.Log;
 
 /**
  * RecentAppsActivity displays a list of recently used packages using the
@@ -555,6 +555,18 @@ public class RecentAppsActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         }
+        // If there are no recent apps after loading, return to the main UI
+        if (access && recentApps.isEmpty()) {
+            try {
+                Intent intentHome = new Intent(this, MainActivity.class);
+                intentHome.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intentHome);
+            } catch (Exception e) {
+                // ignore
+            }
+            finish();
+            return;
+        }
         // Show or hide the bulk close buttons based on accessibility service state and
         // set the description text accordingly. When the service is enabled we also
         // set the initial focus to the "Close other apps" button. When the service
@@ -570,6 +582,16 @@ public class RecentAppsActivity extends AppCompatActivity {
         // Show/hide the buttons
         btnCloseAll.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
         btnCloseOthers.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
+        // Update the "close other apps" button text to include the label of the current app
+        if (serviceEnabled) {
+            if (!recentApps.isEmpty()) {
+                String lastLabel = recentApps.get(0).label;
+                btnCloseOthers.setText(getString(R.string.close_other_apps_button) + " (" + lastLabel + ")");
+            } else {
+                btnCloseOthers.setText(getString(R.string.close_other_apps_button));
+            }
+        }
+
         if (serviceEnabled) {
             // When service is active, default focus to the close others button
             if (btnCloseOthers.getVisibility() == android.view.View.VISIBLE) {
