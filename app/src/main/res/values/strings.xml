@@ -89,6 +89,9 @@
     <!-- Note indicating that the accessibility service is not currently used by this app -->
     <string name="service_note_not_used">Note: This app does not currently make use of the accessibility service.</string>
 
+    <!-- Toast message shown when there are no recent apps to display -->
+    <string name="no_open_apps_message">No open apps</string>
+
     <!-- Messages and prompts on the recents screen -->
     <!-- Buttons on the recents screen to close apps via the accessibility service -->
     <string name="close_all_apps_button">Close all apps</string>

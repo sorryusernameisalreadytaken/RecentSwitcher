@@ -42,34 +42,33 @@ On **Android TV / Google TV**, reality looks like this:
 ### ✅ Core Features
 
 - 📜 **Shows recently used apps**
-  - built on top of the official `UsageStatsManager` API
-- 🔁 **Alt‑Tab–like behaviour**
+  - based on `UsageStatsManager` (official, allowed API)
+- 🔁 **Alt-Tab–like behavior**
   - jump back to the last used app instantly
 - 🚀 **Launch apps directly**
   - click an entry → app opens
 - 🚫 **Exclude apps**
-  - long‑press → app is marked red and ignored
+  - long-press → app is marked red and ignored
   - perfect for launchers & system apps
 - 💾 **Persistent storage**
   - exclusions & last app survive reboots
-- 🧩 **Intent‑based control**
+- 🧩 **Intent-based control**
   - ideal for automation & key remapping
-- ♿ **Experimental: close running apps via Accessibility**
-  - when the optional accessibility service is enabled a **Close all apps** and **Close other apps** button appears in the recents list
-  - closing apps works by automating the Settings → App info screen; it remains fully optional and opt‑in
-  - between each close the Android TV Settings app is also closed to improve reliability
+- ♿ **Accessibility optional**
+  - not required for core functionality
 
 ---
 
 ## What this app intentionally does NOT do
 
-Even with the new experimental closing features there are limits to what an unprivileged app can accomplish. RecentAppSwitcher **does not**:
+Due to **Android 14 platform restrictions**:
 
-- ❌ Kill or manage apps at the process level outside of the Settings UI.  Closing works by opening each app’s details screen and triggering the **Force stop** button via accessibility.
-- ❌ Leverage hidden SystemUI intents or private APIs — everything is implemented via official public APIs and accessibility services.
-- ❌ Require root or system privileges.
+- ❌ No “Close all apps”
+- ❌ No killing or force-stopping other apps
+- ❌ No hidden SystemUI intents
+- ❌ No root access required
 
-> 💡 Everything this app does is **Google‑compliant**, stable, and update‑safe.  Enabling the accessibility service is optional; if disabled the app behaves exactly as before (no close buttons).
+> 💡 Everything this app does is **Google-compliant**, stable, and update-safe.
 
 ---
 
@@ -86,11 +85,10 @@ Optional:
 
 ## Quick Start
 
-1. Install the APK (via ADB or a file manager)
+1. Install APK (ADB or file manager)
 2. Launch the app
-3. Grant **Usage Access** when prompted (this populates the recents list)
-4. *(Optional)* Enable the **RecentsAppSwitcher Accessibility Service** in Settings → Accessibility → RecentsAppSwitcher.  This is required for the experimental closing features.
-5. Done 🎉
+3. Grant **Usage Access**
+4. Done 🎉
 
 ---
 
@@ -157,19 +155,6 @@ Potential future use:
 - Automated navigation inside system settings
 - Support for extremely restricted TV firmwares
 - Experimental UI automation (optional only)
-
-## Experimental closing features
-
-Beginning with this release you can optionally close running apps directly from the recents list.  To use this feature you **must** enable the **RecentsAppSwitcher Accessibility Service** in the system settings (Settings → Accessibility → RecentsAppSwitcher).  Once enabled, two extra buttons appear at the top of the recents list:
-
-- **Close all apps** – closes every app in the list except the switcher itself and system settings apps.  After all apps are closed you are returned to your TV’s home screen.
-- **Close other apps** – closes all apps except the one that was in the foreground before opening the recents list.  When only one app remains it will be automatically reopened.
-
-Closing is implemented via accessibility automation.  For each app the switcher opens its *App Info* page in the Settings app, triggers the **Force stop** button and confirms the dialog.  Between each app the switcher also opens and force‑stops the Android TV Settings app (`com.android.tv.settings`) to ensure the next app’s info page loads reliably.  Because this uses public UI automation, timings are deliberately generous (about 6 seconds per app); on slower devices you may need to wait a moment for the sequence to complete.
-
-These buttons remain hidden when the accessibility service is disabled, so the app’s default recents functionality is unchanged.  Individual apps can still be closed manually by pressing **DPAD‑LEFT** on an entry (when the service is enabled): this opens the app’s settings screen and automatically runs the force‑stop sequence.
-
-There are currently no standalone intents for closing all/other apps.  To trigger closing actions via Key Mapper or automation you should map a key to open the recents list (`eu.ras.SHOW_RECENTS`) and then navigate to the appropriate button.
 
 ---
 

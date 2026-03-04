@@ -72,19 +72,13 @@ public class MainActivity extends AppCompatActivity {
     private Button btnShowRecentAppsVariant31;
     private Button btnShowRecentAppsVariant32;
 
-    // Buttons for closing a fixed set of packages using different strategies
-    private Button btnCloseSpecificAppsVariant1;
-    private Button btnCloseSpecificAppsVariant2;
-    private Button btnCloseSpecificAppsVariant3;
-    private Button btnCloseSpecificAppsVariant4;
-
-    // List of packages targeted by the specific close buttons
-    private static final String[] SPECIFIC_CLOSE_PACKAGES = new String[] {
-            "org.polymorphicshade.tubular",
-            "ca.devmesh.seerrtv",
-            "org.jellyfin.androidtv",
-            "de.swr.avp.ard.tv"
-    };
+    // Debug-only controls for closing a fixed set of packages have been removed.
+    // The following declarations remain commented to preserve line numbers and avoid unused fields.
+    // private Button btnCloseSpecificAppsVariant1;
+    // private Button btnCloseSpecificAppsVariant2;
+    // private Button btnCloseSpecificAppsVariant3;
+    // private Button btnCloseSpecificAppsVariant4;
+    private static final String[] SPECIFIC_CLOSE_PACKAGES = new String[0];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,11 +137,7 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentAppsVariant31 = findViewById(R.id.btn_show_recent_apps_variant31);
         btnShowRecentAppsVariant32 = findViewById(R.id.btn_show_recent_apps_variant32);
 
-        // Buttons for specific test closers
-        btnCloseSpecificAppsVariant1 = findViewById(R.id.btn_close_specific_apps_variant1);
-        btnCloseSpecificAppsVariant2 = findViewById(R.id.btn_close_specific_apps_variant2);
-        btnCloseSpecificAppsVariant3 = findViewById(R.id.btn_close_specific_apps_variant3);
-        btnCloseSpecificAppsVariant4 = findViewById(R.id.btn_close_specific_apps_variant4);
+        // Removed debug-only specific app closing buttons (v1–v4).
 
         // Show the list of recent apps via UsageStats API
         btnShowRecentApps.setOnClickListener(v -> {
@@ -332,11 +322,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        // Click listeners for closing specific packages using different strategies
-        btnCloseSpecificAppsVariant1.setOnClickListener(v -> closeSpecificApps(1));
-        btnCloseSpecificAppsVariant2.setOnClickListener(v -> closeSpecificApps(2));
-        btnCloseSpecificAppsVariant3.setOnClickListener(v -> closeSpecificApps(3));
-        btnCloseSpecificAppsVariant4.setOnClickListener(v -> closeSpecificApps(4));
+        // Removed click listeners for debug-only specific app closing buttons.
 
         // Show the last app. Require usage access permission similarly to the recents list.
         btnOpenLastApp.setOnClickListener(v -> {
@@ -406,13 +392,12 @@ public class MainActivity extends AppCompatActivity {
      */
     private void updateUi() {
         // Determine whether the accessibility service is currently enabled. We
-        // update the status message accordingly and always append a note that
-        // the service is not utilised by this app. When the service is not
+        // update the status message accordingly. When the service is not
         // enabled we also show a button to jump to the accessibility settings.
         boolean serviceEnabled = RecentsAccessibilityService.isServiceEnabled();
         String status = getString(serviceEnabled ? R.string.service_enabled : R.string.service_not_enabled);
-        String note = getString(R.string.service_note_not_used);
-        tvStatus.setText(status + "\n" + note);
+        // Show only the status message; do not append any note about service usage.
+        tvStatus.setText(status);
         btnEnableService.setVisibility(serviceEnabled ? View.GONE : View.VISIBLE);
     }
 
