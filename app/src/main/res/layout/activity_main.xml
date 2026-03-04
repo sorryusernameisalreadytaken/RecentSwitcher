@@ -35,7 +35,6 @@
         android:textColor="@color/recent_app_text_color"
         android:textSize="16sp" />
 
-    <Button
         android:id="@+id/btn_enable_service"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -44,7 +43,6 @@
         android:visibility="gone" />
 
     <!-- Button to launch the recent apps screen (UsageStats) -->
-    <Button
         android:id="@+id/btn_show_recent_apps"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -59,28 +57,24 @@
          disables focus on the gear entirely so navigation stays on the row. Variant 4
          makes the row focusable and the gear not focusable while still using
          afterDescendants focus order. -->
-    <Button
         android:id="@+id/btn_show_recent_apps_variant1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant1_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant2_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant3_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -89,28 +83,24 @@
         android:visibility="gone" />
 
     <!-- Additional buttons for recents list variants V5–V8 -->
-    <Button
         android:id="@+id/btn_show_recent_apps_variant5"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant5_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant6"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant6_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant7"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant7_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant8"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -121,28 +111,24 @@
     <!-- Buttons for recents list variants V9–V12. These allow further
          experimentation with focus behaviour as described in the string
          resources. See MainActivity for the handling logic. -->
-    <Button
         android:id="@+id/btn_show_recent_apps_variant9"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant9_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant10"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant10_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant11"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant11_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant12"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -152,14 +138,12 @@
 
     <!-- Table‑style variants (V13–V14). These layouts separate the app
          details from the action button into distinct columns. -->
-    <Button
         android:id="@+id/btn_show_recent_apps_variant13"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant13_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant14"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -171,56 +155,48 @@
          list layouts that combine different focusability and focus-order
          configurations to achieve a predictable DPAD navigation similar to a
          two-column table. -->
-    <Button
         android:id="@+id/btn_show_recent_apps_variant15"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant15_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant16"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant16_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant17"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant17_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant18"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant18_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant19"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant19_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant20"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant20_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant21"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant21_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant22"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -230,70 +206,60 @@
 
     <!-- Buttons for additional recents list variants (V23–V32). These continue
          the experimental layouts exploring focusability and focus order. -->
-    <Button
         android:id="@+id/btn_show_recent_apps_variant23"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant23_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant24"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant24_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant25"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant25_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant26"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant26_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant27"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant27_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant28"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant28_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant29"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant29_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant30"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant30_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant31"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/show_recent_apps_variant31_button"
         android:padding="12dp"
         android:visibility="gone" />
-    <Button
         android:id="@+id/btn_show_recent_apps_variant32"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -303,7 +269,6 @@
 
 
     <!-- Button to immediately switch back to the last app -->
-    <Button
         android:id="@+id/btn_open_last_app"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -311,7 +276,6 @@
         android:padding="12dp" />
 
     <!-- Button to invoke the system recents screen via accessibility (List Actions) -->
-    <Button
         android:id="@+id/btn_list_actions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -319,7 +283,6 @@
         android:padding="12dp" />
 
     <!-- Button to manage excluded applications -->
-    <Button
         android:id="@+id/btn_manage_excluded"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -327,7 +290,6 @@
         android:padding="12dp" />
 
     <!-- Button to generate a debug report for troubleshooting -->
-    <Button
         android:id="@+id/btn_collect_debug"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -335,7 +297,6 @@
         android:padding="12dp" />
 
     <!-- Button to show live events with detailed info -->
-    <Button
         android:id="@+id/btn_show_live_events"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -344,10 +305,6 @@
 
     <!-- Buttons to close a specific set of apps using different strategies (v1–v4). These
          buttons are only functional when the accessibility service is enabled. -->
-    <Button
-    <Button
-    <Button
-    <Button
 
     </LinearLayout>
 
