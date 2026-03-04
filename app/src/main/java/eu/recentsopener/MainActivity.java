@@ -72,6 +72,15 @@ public class MainActivity extends AppCompatActivity {
     private Button btnShowRecentAppsVariant31;
     private Button btnShowRecentAppsVariant32;
 
+    /**
+     * Fixed list of packages that were previously used for debugging bulk close logic.
+     * As the debug buttons have been removed from the user interface, this array is
+     * intentionally left empty. Keeping the field defined avoids compilation
+     * errors for legacy code paths that may still refer to it in private
+     * methods (e.g. {@code closeSpecificApps}).
+     */
+    private static final String[] SPECIFIC_CLOSE_PACKAGES = new String[0];
+
     // Debug buttons for closing specific apps have been removed
 
     @Override

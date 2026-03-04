@@ -145,4 +145,10 @@
 
     <!-- Beschreibung für das Zahnrad-Symbol in der Liste der letzten Apps -->
     <string name="open_settings_description">App-Einstellungen öffnen</string>
+
+    <!-- Toast-Meldung, die angezeigt wird, wenn keine Apps geöffnet sind.  Wird
+         verwendet, wenn die Liste der letzten Apps leer ist und der Benutzer
+         Aktionen ausführt, die normalerweise auf vorhandene Apps angewendet
+         würden (z.B. "Alle anderen Apps schließen" oder "Letzte App öffnen"). -->
+    <string name="no_open_apps_message">Keine geöffneten Apps</string>
 </resources>

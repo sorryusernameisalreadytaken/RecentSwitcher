@@ -194,9 +194,12 @@ public class RecentAppsActivity extends AppCompatActivity {
         // to the main screen when there are no open apps. Service‑based
         // invocations typically leave this false to avoid unnecessary
         // navigation when no apps are running.
-        Intent launchIntent = getIntent();
-        if (launchIntent != null) {
-            returnToMainIfEmpty = launchIntent.getBooleanExtra("returnToMainIfEmpty", false);
+        // Use a distinct variable name for the incoming Intent to avoid
+        // collisions with other local variables later in the method.  This
+        // intent may contain extras such as the returnToMainIfEmpty flag.
+        Intent incomingIntent = getIntent();
+        if (incomingIntent != null) {
+            returnToMainIfEmpty = incomingIntent.getBooleanExtra("returnToMainIfEmpty", false);
         }
 
         // Ignore any requested variant index passed via the intent.  Always
@@ -305,14 +308,17 @@ public class RecentAppsActivity extends AppCompatActivity {
                 // therefore getLaunchIntentForPackage() returns null. See
                 // Google issue 242899915 for details【618002977037848†L92-L100】.
                 PackageManager pm = getPackageManager();
-                Intent launchIntent = pm.getLeanbackLaunchIntentForPackage(entry.packageName);
-                if (launchIntent == null) {
-                    launchIntent = pm.getLaunchIntentForPackage(entry.packageName);
+                // Use a distinct variable name to avoid collisions with other
+                // launchIntent declarations within this class.  This intent
+                // holds the specific launch Intent for the selected app.
+                Intent appLaunchIntent = pm.getLeanbackLaunchIntentForPackage(entry.packageName);
+                if (appLaunchIntent == null) {
+                    appLaunchIntent = pm.getLaunchIntentForPackage(entry.packageName);
                 }
-                if (launchIntent != null) {
+                if (appLaunchIntent != null) {
                     // Update the last/previous history before launching
                     PrefsHelper.updateHistory(this, entry.packageName);
-                    startActivity(launchIntent);
+                    startActivity(appLaunchIntent);
                     finish();
                 } else {
                     // Special-case system settings packages
@@ -760,16 +766,17 @@ public class RecentAppsActivity extends AppCompatActivity {
                 // only declare a LEANBACK_LAUNCHER category and therefore
                 // getLaunchIntentForPackage() returns null.
                 android.content.pm.PackageManager pm = getPackageManager();
-                Intent launchIntent = pm.getLeanbackLaunchIntentForPackage(entry.packageName);
-                if (launchIntent == null) {
-                    launchIntent = pm.getLaunchIntentForPackage(entry.packageName);
+                // Use a distinct variable name to avoid colliding with other launchIntent variables
+                Intent appLaunchIntent = pm.getLeanbackLaunchIntentForPackage(entry.packageName);
+                if (appLaunchIntent == null) {
+                    appLaunchIntent = pm.getLaunchIntentForPackage(entry.packageName);
                 }
-                if (launchIntent != null) {
+                if (appLaunchIntent != null) {
                     // Update the history before launching
                     PrefsHelper.updateHistory(RecentAppsActivity.this, entry.packageName);
-                    launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    appLaunchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     try {
-                        startActivity(launchIntent);
+                        startActivity(appLaunchIntent);
                         finish();
                         return;
                     } catch (Exception e) {

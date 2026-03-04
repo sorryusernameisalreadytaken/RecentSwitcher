@@ -147,4 +147,10 @@
 
     <!-- Description for settings gear button in recent apps list -->
     <string name="open_settings_description">Open app settings</string>
+
+    <!-- Toast message shown when there are no open apps available.  This string is used
+         when the recents list is empty and the user triggers actions that would
+         otherwise operate on existing apps (e.g. closing other apps or opening the
+         last app). -->
+    <string name="no_open_apps_message">No open apps</string>
 </resources>
