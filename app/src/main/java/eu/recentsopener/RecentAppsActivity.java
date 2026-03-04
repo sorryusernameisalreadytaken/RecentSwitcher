@@ -22,7 +22,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
-import eu.recentsopener.MainActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -31,6 +30,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import android.util.Log;
+// Import the main activity so we can return to it when no recents remain
+import eu.recentsopener.MainActivity;
 
 /**
  * RecentAppsActivity displays a list of recently used packages using the
@@ -555,14 +557,18 @@ public class RecentAppsActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         }
-        // If there are no recent apps after loading, return to the main UI
+        // If there are no recent apps after loading, immediately return to the main UI.  This prevents
+        // displaying an empty list indefinitely and mirrors the behaviour of the debug branch.  We
+        // launch MainActivity and finish this activity.  Note that this check occurs after
+        // potentially loading recents above so that newly granted usage access is honoured.
         if (access && recentApps.isEmpty()) {
             try {
                 Intent intentHome = new Intent(this, MainActivity.class);
+                // Clear any existing task stack to avoid stacking multiple activities
                 intentHome.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intentHome);
             } catch (Exception e) {
-                // ignore
+                // Ignore; failing here simply means we remain in the current screen
             }
             finish();
             return;
@@ -582,7 +588,12 @@ public class RecentAppsActivity extends AppCompatActivity {
         // Show/hide the buttons
         btnCloseAll.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
         btnCloseOthers.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
-        // Update the "close other apps" button text to include the label of the current app
+
+        // When the accessibility service is active, update the "close other apps" button text
+        // to include the label of the most recently used app.  This provides a hint about
+        // which app will remain after closing others.  If there are no recents the base
+        // string is used.  This logic is only applied when the service is enabled; when
+        // disabled the button is hidden.
         if (serviceEnabled) {
             if (!recentApps.isEmpty()) {
                 String lastLabel = recentApps.get(0).label;
@@ -591,7 +602,6 @@ public class RecentAppsActivity extends AppCompatActivity {
                 btnCloseOthers.setText(getString(R.string.close_other_apps_button));
             }
         }
-
         if (serviceEnabled) {
             // When service is active, default focus to the close others button
             if (btnCloseOthers.getVisibility() == android.view.View.VISIBLE) {
@@ -648,41 +658,36 @@ public class RecentAppsActivity extends AppCompatActivity {
         if (packages == null || packages.isEmpty()) {
             return;
         }
-        // Only proceed if the accessibility service is connected
+        // Only proceed if the accessibility service is connected.  Without the service
+        // we cannot automate the force‑stop operation and thus cannot close apps.
         RecentsAccessibilityService svc = RecentsAccessibilityService.getInstance();
         if (svc == null) {
             Toast.makeText(this, R.string.service_not_enabled, Toast.LENGTH_SHORT).show();
             return;
         }
         android.os.Handler handler = new android.os.Handler(getMainLooper());
-        // Each package is allocated a time slot of 6 seconds.  Within that slot we perform the
-        // following actions separated by 1.5 second delays.  For multi‑close scenarios we
-        // additionally close the Android TV settings app (com.android.tv.settings) between
-        // packages to ensure the UI is reset.  When only a single package is present the
-        // settings app is not closed.
-        // Set delays based on observed behaviour when automating the system settings.
-        // A 1 second delay between launching the app details and initiating the
-        // force‑stop sequence allows the UI to appear before accessibility actions
-        // execute.  Each package is given a 3 second window (open, force‑stop and
-        // return) before moving on to the next package.
-        final long actionDelayMs = 1000L;
-        final long stepDurationMs = actionDelayMs * 3;
-        // Build a local copy of the package list so we can determine last/non‑last entries
+        // Delay between each action within a single package’s closing sequence.  We use
+        // 1500 ms to allow the settings UI to appear before accessibility actions are
+        // triggered.  Each package will therefore occupy roughly 6 seconds (four phases) in
+        // the multi‑close case: open target details (phase 1), force stop target (phase 2),
+        // open TV settings details (phase 3) and force stop TV settings (phase 4).  For the
+        // final package we only perform phases 1–2 to avoid leaving the user in the TV
+        // settings screen at the end of the sequence.  Increasing these delays can improve
+        // reliability on slower devices.
+        final long actionDelayMs = 1500L;
+        final long stepDurationMs = actionDelayMs * 4;
+        // Create a local copy of the target list so that modifications to the original list
+        // (e.g. filtering or ordering) do not affect the scheduled operations.  This also
+        // allows us to determine whether the current package is the last one in the sequence.
         java.util.List<String> targets = new java.util.ArrayList<>(packages);
         for (int i = 0; i < targets.size(); i++) {
             final String pkg = targets.get(i);
-            // Determine whether this is the last package.  Currently unused but kept for clarity.
             final boolean isLast = (i == targets.size() - 1);
-            long delay = i * stepDurationMs;
+            long baseDelay = i * stepDurationMs;
+            // Phase 1: open the app details settings for the target package
             handler.postDelayed(() -> {
-                // Phase 1: open the app details settings for the target package
                 Intent intentTarget = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
                 intentTarget.setData(Uri.parse("package:" + pkg));
-                // Launch the settings page in a new task and clear any existing
-                // instance on the task stack.  Without CLEAR_TOP some devices
-                // refuse to launch a new details page when an existing one is
-                // already on screen, causing subsequent closes to hang on the
-                // first app.
                 intentTarget.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 try {
                     startActivity(intentTarget);
@@ -690,32 +695,55 @@ public class RecentAppsActivity extends AppCompatActivity {
                     Toast.makeText(RecentAppsActivity.this, pkg + " cannot be opened in settings", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                // Phase 2: after a delay, run the force‑stop automation on the target app.
+                // Phase 2: run the force‑stop automation on the target app after a delay
                 handler.postDelayed(() -> {
                     RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
                     if (service != null) {
                         service.performForceStopSequence();
                     }
                 }, actionDelayMs);
-            }, delay);
+                // For all but the last package, interleave closing the TV settings app.  This
+                // resets the Settings UI between closes and prevents the automation from
+                // hanging on subsequent packages.  We schedule these additional phases only
+                // when closing multiple packages.  The delays are relative to phase 1’s
+                // execution time.
+                if (!isLast) {
+                    // Phase 3: open the details screen for the Android TV settings app
+                    handler.postDelayed(() -> {
+                        Intent intentSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intentSettings.setData(Uri.parse("package:com.android.tv.settings"));
+                        intentSettings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        try {
+                            startActivity(intentSettings);
+                        } catch (Exception e) {
+                            Toast.makeText(RecentAppsActivity.this, "com.android.tv.settings cannot be opened in settings", Toast.LENGTH_SHORT).show();
+                        }
+                    }, actionDelayMs * 2);
+                    // Phase 4: run the force‑stop automation on the TV settings app
+                    handler.postDelayed(() -> {
+                        RecentsAccessibilityService service = RecentsAccessibilityService.getInstance();
+                        if (service != null) {
+                            service.performForceStopSequence();
+                        }
+                    }, actionDelayMs * 3);
+                }
+            }, baseDelay);
         }
-        // After all packages have been processed, refresh the recents list to remove any apps
-        // that were successfully stopped.  We schedule this after the last operation plus an
-        // extra delay to allow the UI to finish closing.  At this point we optionally
-        // navigate to the home screen or launch the remaining app.
-        long finalDelay = packages.size() * stepDurationMs + 2000L;
+        // After all packages have been processed, refresh the recents list and optionally
+        // navigate to the home screen or last remaining app.  We schedule this after the
+        // entire sequence plus an additional buffer to allow the Settings UI to dismiss.
+        long finalDelay = targets.size() * stepDurationMs + 2000L;
         handler.postDelayed(() -> {
+            // Reload the recents list and update the adapter
             loadRecents();
             if (adapter != null) {
                 adapter.notifyDataSetChanged();
-                // Restore selection/focus to the first entry
                 if (!recentApps.isEmpty()) {
                     listView.setSelection(0);
                     listView.requestFocus();
                 }
             }
-            // If there are no apps left in the recents list and openLauncherIfEmpty is true,
-            // launch the default launcher.  We build an ACTION_MAIN/CATEGORY_HOME intent.
+            // Navigate to the launcher if requested and no recents remain
             if (openLauncherIfEmpty && recentApps.isEmpty()) {
                 Intent homeIntent = new Intent(Intent.ACTION_MAIN);
                 homeIntent.addCategory(Intent.CATEGORY_HOME);
@@ -725,22 +753,18 @@ public class RecentAppsActivity extends AppCompatActivity {
                     finish();
                     return;
                 } catch (Exception e) {
-                    // Fail silently; the user can still navigate manually.
+                    // Ignore; the user can still navigate manually
                 }
             }
-            // If exactly one app remains and openLastIfSingle is true, launch that app.
+            // Launch the sole remaining app if requested
             if (openLastIfSingle && recentApps.size() == 1) {
                 AppEntry entry = recentApps.get(0);
-                // Attempt to acquire a TV‑optimised launch intent first.  Some Android TV apps
-                // only declare a LEANBACK_LAUNCHER category and therefore
-                // getLaunchIntentForPackage() returns null.
                 android.content.pm.PackageManager pm = getPackageManager();
                 Intent launchIntent = pm.getLeanbackLaunchIntentForPackage(entry.packageName);
                 if (launchIntent == null) {
                     launchIntent = pm.getLaunchIntentForPackage(entry.packageName);
                 }
                 if (launchIntent != null) {
-                    // Update the history before launching
                     PrefsHelper.updateHistory(RecentAppsActivity.this, entry.packageName);
                     launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     try {
@@ -748,7 +772,7 @@ public class RecentAppsActivity extends AppCompatActivity {
                         finish();
                         return;
                     } catch (Exception e) {
-                        // If we cannot launch the app, do nothing further.
+                        // If launch fails, remain on the current screen
                     }
                 }
             }
