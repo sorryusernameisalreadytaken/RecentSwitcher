@@ -72,13 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnShowRecentAppsVariant31;
     private Button btnShowRecentAppsVariant32;
 
-    // Debug-only controls for closing a fixed set of packages have been removed.
-    // The following declarations remain commented to preserve line numbers and avoid unused fields.
-    // private Button btnCloseSpecificAppsVariant1;
-    // private Button btnCloseSpecificAppsVariant2;
-    // private Button btnCloseSpecificAppsVariant3;
-    // private Button btnCloseSpecificAppsVariant4;
-    private static final String[] SPECIFIC_CLOSE_PACKAGES = new String[0];
+    // Debug buttons for closing specific apps have been removed
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,12 +131,14 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentAppsVariant31 = findViewById(R.id.btn_show_recent_apps_variant31);
         btnShowRecentAppsVariant32 = findViewById(R.id.btn_show_recent_apps_variant32);
 
-        // Removed debug-only specific app closing buttons (v1–v4).
+        // Debug buttons removed: no specific test closers
 
         // Show the list of recent apps via UsageStats API
         btnShowRecentApps.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 1);
+            // Indicate that RecentAppsActivity should return to the main UI when no apps are found
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
 
@@ -150,24 +146,28 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentAppsVariant1.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 1);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         // Launch variant 2 of the recents list
         btnShowRecentAppsVariant2.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 2);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         // Launch variant 3 of the recents list
         btnShowRecentAppsVariant3.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 3);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         // Launch variant 4 of the recents list
         btnShowRecentAppsVariant4.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 4);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
 
@@ -175,21 +175,25 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentAppsVariant5.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 5);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant6.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 6);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant7.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 7);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant8.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 8);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
 
@@ -197,21 +201,25 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentAppsVariant9.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 9);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant10.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 10);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant11.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 11);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant12.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 12);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
 
@@ -219,11 +227,13 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentAppsVariant13.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 13);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant14.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 14);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
 
@@ -231,41 +241,49 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentAppsVariant15.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 15);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant16.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 16);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant17.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 17);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant18.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 18);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant19.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 19);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant20.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 20);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant21.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 21);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant22.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 22);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
 
@@ -273,56 +291,66 @@ public class MainActivity extends AppCompatActivity {
         btnShowRecentAppsVariant23.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 23);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant24.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 24);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant25.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 25);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant26.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 26);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant27.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 27);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant28.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 28);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant29.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 29);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant30.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 30);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant31.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 31);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
         btnShowRecentAppsVariant32.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, RecentAppsActivity.class);
             intent.putExtra("variant", 32);
+            intent.putExtra("returnToMainIfEmpty", true);
             startActivity(intent);
         });
 
 
-        // Removed click listeners for debug-only specific app closing buttons.
+        // Removed click listeners for debug close buttons
 
         // Show the last app. Require usage access permission similarly to the recents list.
         btnOpenLastApp.setOnClickListener(v -> {
@@ -392,12 +420,13 @@ public class MainActivity extends AppCompatActivity {
      */
     private void updateUi() {
         // Determine whether the accessibility service is currently enabled. We
-        // update the status message accordingly. When the service is not
+        // update the status message accordingly and always append a note that
+        // the service is not utilised by this app. When the service is not
         // enabled we also show a button to jump to the accessibility settings.
         boolean serviceEnabled = RecentsAccessibilityService.isServiceEnabled();
         String status = getString(serviceEnabled ? R.string.service_enabled : R.string.service_not_enabled);
-        // Show only the status message; do not append any note about service usage.
-        tvStatus.setText(status);
+        String note = getString(R.string.service_note_not_used);
+        tvStatus.setText(status + "\n" + note);
         btnEnableService.setVisibility(serviceEnabled ? View.GONE : View.VISIBLE);
     }
 

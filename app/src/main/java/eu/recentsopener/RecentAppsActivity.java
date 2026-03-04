@@ -22,7 +22,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
-import eu.recentsopener.MainActivity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -157,6 +156,15 @@ public class RecentAppsActivity extends AppCompatActivity {
     private Button btnCloseAllVariant4;
 
     /**
+     * Determines whether the activity should navigate back to the main UI
+     * when there are no recent apps to display. This flag is supplied by
+     * the launching intent. When false the activity simply shows a toast
+     * and finishes without redirecting. When true the main activity is
+     * started after the toast. Defaults to false.
+     */
+    private boolean returnToMainIfEmpty = false;
+
+    /**
      * Maintains the list of package names from the previous load of recent apps. This
      * is used to detect whether the recents list has actually changed and to
      * suppress unnecessary UI updates. Avoiding repeated notifyDataSetChanged()
@@ -178,6 +186,18 @@ public class RecentAppsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recent_apps);
+
+        // Retrieve the flag that controls whether we return to the main UI when
+        // the recents list is empty. If the launching intent does not specify
+        // this extra it defaults to false. External callers (e.g. from
+        // MainActivity) should set this to true so that the user is returned
+        // to the main screen when there are no open apps. Service‑based
+        // invocations typically leave this false to avoid unnecessary
+        // navigation when no apps are running.
+        Intent launchIntent = getIntent();
+        if (launchIntent != null) {
+            returnToMainIfEmpty = launchIntent.getBooleanExtra("returnToMainIfEmpty", false);
+        }
 
         // Ignore any requested variant index passed via the intent.  Always
         // use variant 3 for the recents list.
@@ -546,6 +566,7 @@ public class RecentAppsActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        // BEGIN updated onResume implementation
         super.onResume();
         boolean access = hasUsageAccess();
         // If usage access was just granted and the list is empty, initialise excluded defaults and load recents
@@ -556,25 +577,22 @@ public class RecentAppsActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         }
-        // If there are no recent apps after loading, return to the main UI with a toast.
+        // After loading, if there are still no recent apps, show a toast and optionally return to main UI
         if (access && recentApps.isEmpty()) {
             Toast.makeText(this, R.string.no_open_apps_message, Toast.LENGTH_SHORT).show();
-            try {
-                Intent intentHome = new Intent(this, MainActivity.class);
-                intentHome.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intentHome);
-            } catch (Exception e) {
-                // ignore any failure to launch the main activity
+            if (returnToMainIfEmpty) {
+                try {
+                    Intent intentHome = new Intent(this, MainActivity.class);
+                    intentHome.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intentHome);
+                } catch (Exception e) {
+                    // ignore failures launching the main activity
+                }
             }
             finish();
             return;
         }
-
-        // Show or hide the bulk close buttons based on accessibility service state and
-        // set the description text accordingly. When the service is enabled we also
-        // set the initial focus to the "Close other apps" button. When the service
-        // is disabled the focus remains on the list so users can navigate the
-        // recents entries.
+        // Retrieve buttons for close actions
         android.widget.Button btnCloseAll = findViewById(R.id.btn_close_all);
         android.widget.Button btnCloseOthers = findViewById(R.id.btn_close_others);
         boolean serviceEnabled = RecentsAccessibilityService.isServiceEnabled();
@@ -582,23 +600,29 @@ public class RecentAppsActivity extends AppCompatActivity {
         if (tvDescription != null) {
             tvDescription.setText(serviceEnabled ? R.string.recent_apps_description_with_service : R.string.recent_apps_description_without_service);
         }
-        // Show/hide the buttons
+        // Show/hide the bulk close buttons based on accessibility service state
         btnCloseAll.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
         btnCloseOthers.setVisibility(serviceEnabled ? android.view.View.VISIBLE : android.view.View.GONE);
-        // Update the "close other apps" button text to include the label of the most recent app when the service is enabled
         if (serviceEnabled) {
+            // Update the "Close other apps" button label to include the most recent app
             if (!recentApps.isEmpty()) {
                 String lastLabel = recentApps.get(0).label;
                 btnCloseOthers.setText(getString(R.string.close_other_apps_button) + " (" + lastLabel + ")");
             } else {
                 btnCloseOthers.setText(getString(R.string.close_other_apps_button));
             }
-            // When service is active, default focus to the close others button
+            // Visually disable (grey out) when only one app remains while keeping it clickable
+            if (recentApps.size() <= 1) {
+                btnCloseOthers.setAlpha(0.5f);
+            } else {
+                btnCloseOthers.setAlpha(1.0f);
+            }
+            // Default focus to the close others button when visible
             if (btnCloseOthers.getVisibility() == android.view.View.VISIBLE) {
                 btnCloseOthers.requestFocus();
             }
         } else {
-            // Without service, ensure the list has a selection and focus
+            // Without the accessibility service, ensure the list has a selection and focus
             if (!recentApps.isEmpty()) {
                 if (listView.getSelectedItemPosition() == android.widget.AdapterView.INVALID_POSITION) {
                     listView.setSelection(0);
@@ -611,6 +635,7 @@ public class RecentAppsActivity extends AppCompatActivity {
         if (access) {
             refreshHandler.postDelayed(refreshRunnable, REFRESH_INTERVAL_MS);
         }
+        // END updated onResume implementation
     }
 
     @Override

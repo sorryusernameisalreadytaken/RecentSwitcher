@@ -342,7 +342,32 @@
         android:text="@string/show_live_events_button"
         android:padding="12dp" />
 
-    <!-- Removed debug-only buttons for closing specific apps (variants 1–4). -->
+    <!-- Buttons to close a specific set of apps using different strategies (v1–v4). These
+         buttons are only functional when the accessibility service is enabled. -->
+    <Button
+        android:id="@+id/btn_close_specific_apps_variant1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/close_specific_apps_variant1_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_close_specific_apps_variant2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/close_specific_apps_variant2_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_close_specific_apps_variant3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/close_specific_apps_variant3_button"
+        android:padding="12dp" />
+    <Button
+        android:id="@+id/btn_close_specific_apps_variant4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/close_specific_apps_variant4_button"
+        android:padding="12dp" />
 
     </LinearLayout>
 
